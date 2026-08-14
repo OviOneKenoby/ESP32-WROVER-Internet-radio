@@ -31,6 +31,12 @@ Play/Pause to phone play/pause; Next/Previous send AVRCP track commands.
 Long press still leaves Bluetooth mode. Metadata is copied under a critical
 section before the UI reads it, avoiding an asynchronous callback race.
 
+Leaving Bluetooth now calls the A2DP library's `end(true)` rather than its
+stream-only `stop()`. This releases the Classic Bluetooth/AVRCP memory that
+otherwise left too little contiguous internal heap for the next HTTPS station
+directory request. The serial log reports free and largest heap blocks before
+and after the teardown for hardware verification.
+
 ## 2026-08-14 — Browse stations by name letter within a country
 
 After choosing a country, the browser now presents `Station Letter` with

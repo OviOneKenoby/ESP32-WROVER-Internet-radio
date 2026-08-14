@@ -332,18 +332,27 @@ void AudioPlayer::enableBluetooth() {
 void AudioPlayer::disableBluetooth() {
     if (!btEnabled) return;
 
-    a2dp_sink.stop();
+    // stop() only stops the A2DP stream; it deliberately keeps the Classic
+    // Bluetooth controller, Bluedroid stack, and AVRCP allocations alive for
+    // a fast restart. That left only a ~14KB contiguous internal block on
+    // this board, too little for a subsequent HTTPS Radio Browser request.
+    // end(true) is the library's explicit full teardown and releases those
+    // allocations before the radio/browser path needs TLS again.
+    Serial.printf("[AUDIO] Releasing Bluetooth memory (before: free=%u, largest=%u)\n",
+                  ESP.getFreeHeap(), ESP.getMaxAllocHeap());
+    a2dp_sink.end(true);
     btEnabled = false;
     currentSource = AUDIO_SOURCE_NONE;
     playbackState = STATE_STOPPED;
 
     // Give the A2DP library's I2S teardown a moment to complete before
     // anything tries to reclaim the peripheral.
-    delay(100);
+    delay(200);
 
     // i2sOutput->begin() happens automatically the next time play() runs
     // (via mp3Decoder->begin() internally) - nothing further needed here.
-    Serial.println("[AUDIO] Bluetooth A2DP sink stopped, I2S released for radio mode");
+    Serial.printf("[AUDIO] Bluetooth released (after: free=%u, largest=%u)\n",
+                  ESP.getFreeHeap(), ESP.getMaxAllocHeap());
 }
 
 bool AudioPlayer::isBluetoothConnected() {
