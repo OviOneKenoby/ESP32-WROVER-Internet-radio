@@ -153,11 +153,11 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
         // complete decoder state through this PSRAM allocation instead.
         // The resolved decoder's SBR state alone is roughly 50KB. Its
         // baseline state (including the SBR work buffer), input buffer,
-        // and PCM output buffer bring the verified requirement above 80KB.
-        constexpr size_t AAC_DECODER_MEMORY_SIZE = 96 * 1024;
+        // and corrected AAC+ PCM output buffer require more than 80KB.
+        constexpr size_t AAC_DECODER_MEMORY_SIZE = 128 * 1024;
         aacDecoderMemory = ps_malloc(AAC_DECODER_MEMORY_SIZE);
         if (!aacDecoderMemory) {
-            Serial.println("[AUDIO] AAC requires 96KB of available PSRAM");
+            Serial.println("[AUDIO] AAC requires 128KB of available PSRAM");
             teardownRadioPlayback();
             xSemaphoreGive(audioMutex);
             return false;

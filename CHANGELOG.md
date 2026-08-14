@@ -22,6 +22,24 @@ Validated with PlatformIO `espressif32@7.0.1` / Arduino ESP32 framework
 1,927,261 / 3,145,728 bytes; RAM: 80,420 / 327,680 bytes). Hardware playback
 still needs to be checked on the WROVER board with an AAC+ stream.
 
+## 2026-08-14 — AAC+/SBR output-buffer corruption fix
+
+Hardware testing of Europe 1 (`https://stream.europe1.fr/europe1.aac`) exposed
+a second, independent AAC+ issue: a Core 1 `LoadStoreError` in
+`raac_QMFSynthesisConv` / `raac_DecodeSBRData`. The stack trace is the known
+non-ESP8266 `AudioGeneratorAAC` SBR buffer-overflow path. The pinned library
+allocated space for 1024 stereo PCM samples, but SBR produces 2048 samples per
+channel and writes 4096 interleaved samples.
+
+The precise upstream fix is commit `05f2fb0045cc294b4e0d1a1a9747b89c22c1fea4`
+(`Fix memory corruption in AudioGeneratorAAC on non-ESP8266 platforms`). This
+project retains its pinned pre-IDF-6 library revision for I2S compatibility and
+uses a checked pre-build script to apply only that upstream AAC buffer fix.
+The PSRAM reservation is increased to 128KB to cover the corrected 8KB AAC+
+PCM buffer and all decoder state. The script aborts the build if the expected
+pinned library source is not present, rather than silently patching an unknown
+version.
+
 This replaces several earlier documents that made confident claims which turned out
 to be wrong. This one only lists things that were confirmed against either the real
 compiler output you pasted back, or the actual library source code fetched directly
