@@ -8,8 +8,9 @@ def patch_aac_sbr_output_buffer(build_env):
     header = library_dir / "AudioGeneratorAAC.h"
     implementation = library_dir / "AudioGeneratorAAC.cpp"
     mp3_implementation = library_dir / "AudioGeneratorMP3a.cpp"
+    http_icy_implementation = library_dir / "AudioFileSourceICYStream.cpp"
 
-    if not header.is_file() or not implementation.is_file() or not mp3_implementation.is_file():
+    if not header.is_file() or not implementation.is_file() or not mp3_implementation.is_file() or not http_icy_implementation.is_file():
         raise RuntimeError("ESP8266Audio dependency was not installed before the AAC patch step")
 
     header_text = header.read_text(encoding="utf-8")
@@ -58,13 +59,28 @@ def patch_aac_sbr_output_buffer(build_env):
     elif new_mp3_block not in mp3_text:
         raise RuntimeError("Unexpected AudioGeneratorMP3a.cpp; refusing to apply an unverified patch")
 
+    # The upstream ICY source rejects a stream when no bytes arrive within
+    # 500ms. DIGI FM is a healthy Icecast stream, but its initial response
+    # can exceed that interval. Match this project's verified 3s connection
+    # timeout without changing the source's later read behavior.
+    http_icy_text = http_icy_implementation.read_text(encoding="utf-8")
+    old_http_icy_wait = "while ((stream->available() < (int)len) && (millis() - start < 500))"
+    new_http_icy_wait = "while ((stream->available() < (int)len) && (millis() - start < 3000))"
+    if old_http_icy_wait in http_icy_text:
+        http_icy_implementation.write_text(
+            http_icy_text.replace(old_http_icy_wait, new_http_icy_wait), encoding="utf-8")
+    elif new_http_icy_wait not in http_icy_text:
+        raise RuntimeError("Unexpected AudioFileSourceICYStream.cpp; refusing to apply an unverified patch")
+
 
 def patch_before_aac_compilation(build_env, node):
     # Build middleware runs when PlatformIO is about to compile each source
     # node, after dependencies have been installed but before this library
     # source is compiled. This also works on a completely clean first build.
     source = str(node).replace("\\", "/")
-    if source.endswith("/ESP8266Audio/src/AudioGeneratorAAC.cpp") or source.endswith("/ESP8266Audio/src/AudioGeneratorMP3a.cpp"):
+    if (source.endswith("/ESP8266Audio/src/AudioGeneratorAAC.cpp") or
+            source.endswith("/ESP8266Audio/src/AudioGeneratorMP3a.cpp") or
+            source.endswith("/ESP8266Audio/src/AudioFileSourceICYStream.cpp")):
         patch_aac_sbr_output_buffer(build_env)
     return node
 

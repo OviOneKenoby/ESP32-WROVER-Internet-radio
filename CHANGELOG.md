@@ -1,5 +1,19 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Allow slow-starting HTTP Icecast streams
+
+DIGI FM (`http://edge76.rdsnet.ro:84/digifm/digifm.mp3`) was checked directly
+and is a healthy, continuous `audio/mpeg` Icecast stream. On the ESP32 it
+reported `No stream data available` then repeated disconnect messages because
+the pinned upstream HTTP ICY reader gave the server only 500 ms to produce
+its first audio bytes. The checked build patch changes only that exact
+first-byte wait to 3 seconds, matching this project's existing connection
+timeout. It aborts on an unexpected library source rather than silently
+patching a different version.
+
+An empty `StreamTitle` no longer replaces the `Live stream` fallback with a
+blank title.
+
 ## 2026-08-14 — Trim KIIS machine metadata from the Now Playing title
 
 102.7 KIIS FM sends its ICY title as a readable prefix followed by a

@@ -443,7 +443,7 @@ void AudioPlayer::metadataCallback(void* cbData, const char* type, bool isUnicod
     AudioPlayer* self = (AudioPlayer*)cbData;
     if (!self || !type || !str) return;
 
-    if (strcmp(type, "StreamTitle") == 0) {
+    if (strcmp(type, "StreamTitle") == 0 && str[0] != '\0') {
         simplifyStreamTitle(self->nowPlaying, sizeof(self->nowPlaying), str);
         Serial.printf("[AUDIO] Now playing: %s\n", self->nowPlaying);
     }
