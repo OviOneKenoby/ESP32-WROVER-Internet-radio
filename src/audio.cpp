@@ -243,9 +243,11 @@ void AudioPlayer::resume() {
 }
 
 void AudioPlayer::stop() {
+    if (audioMutex) xSemaphoreTake(audioMutex, portMAX_DELAY);
     playbackState = STATE_STOPPED;
     teardownRadioPlayback();
     currentSource = AUDIO_SOURCE_NONE;
+    if (audioMutex) xSemaphoreGive(audioMutex);
     Serial.println("[AUDIO] Stopped");
 }
 
@@ -288,6 +290,8 @@ void AudioPlayer::volumeDown() {
 void AudioPlayer::enableBluetooth() {
     if (btEnabled) return;
 
+    if (audioMutex) xSemaphoreTake(audioMutex, portMAX_DELAY);
+
     // Release the I2S peripheral if radio playback currently holds it.
     // AudioOutputI2S uses the newer i2s_std.h channel API; the A2DP
     // library uses the legacy driver/i2s.h API - they can't both own the
@@ -310,6 +314,8 @@ void AudioPlayer::enableBluetooth() {
     btEnabled = true;
     currentSource = AUDIO_SOURCE_BLUETOOTH;
     playbackState = STATE_PLAYING;
+
+    if (audioMutex) xSemaphoreGive(audioMutex);
 
     Serial.printf("[AUDIO] Bluetooth A2DP sink started - discoverable as '%s'\n", BT_DEVICE_NAME);
 }
@@ -361,16 +367,23 @@ void AudioPlayer::audioTaskFunc() {
     // I2S in one call.
     uint32_t lastYield = millis();
     while (true) {
-        if (currentSource == AUDIO_SOURCE_INTERNET_RADIO &&
-            playbackState == STATE_PLAYING &&
-            mp3Decoder && mp3Decoder->isRunning()) {
-
+        // play(), stop(), and the Bluetooth handoff delete and replace the
+        // decoder/source chain. Use their mutex here as well, so the audio
+        // task never calls loop() on a decoder another task just freed.
+        xSemaphoreTake(audioMutex, portMAX_DELAY);
+        bool isDecoding = currentSource == AUDIO_SOURCE_INTERNET_RADIO &&
+                          playbackState == STATE_PLAYING &&
+                          mp3Decoder && mp3Decoder->isRunning();
+        if (isDecoding) {
             if (!mp3Decoder->loop()) {
                 Serial.println("[AUDIO] Stream ended or decode error, stopping");
                 playbackState = STATE_STOPPED;
                 mp3Decoder->stop();
             }
+        }
+        xSemaphoreGive(audioMutex);
 
+        if (isDecoding) {
             // Time-bounded yield, not a per-call one. The decoder's
             // loop() is designed to be called back-to-back as fast as
             // possible - it returns almost immediately once the I2S

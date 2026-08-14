@@ -40,6 +40,22 @@ PCM buffer and all decoder state. The script aborts the build if the expected
 pinned library source is not present, rather than silently patching an unknown
 version.
 
+## 2026-08-14 — Playback-chain race fix
+
+Selecting another station while the previous HTTPS stream was stalled caused an
+`IntegerDivideByZero` in `AudioGeneratorMP3a::loop()`. The backtrace showed the
+audio task running decoder code concurrently with the main task replacing the
+decoder chain. `play()` locked its teardown, but the audio task did not take
+that same lock before reading or calling `mp3Decoder`; it could therefore use a
+decoder/source object after the main task had deleted it. The normal stop and
+Bluetooth handoff had the same teardown gap.
+
+The audio task now holds `audioMutex` while it checks and drives the decoder;
+`stop()` and `enableBluetooth()` use the same mutex while tearing down the
+chain. This serializes access to the decoder, stream sources, and PSRAM buffers
+and prevents use-after-free while changing stations. The separate HTTPS
+chunked-stream issue remains tracked independently.
+
 This replaces several earlier documents that made confident claims which turned out
 to be wrong. This one only lists things that were confirmed against either the real
 compiler output you pasted back, or the actual library source code fetched directly
