@@ -508,6 +508,7 @@ void playStation(uint8_t stationIdx) {
 // times.
 // ============================================
 void playDiscoveredStation(const char* name, const char* url, StationCodec codec, bool addFavorite) {
+    codec = stationCodecForURL(url, codec);
     stationManager.addToRecent(name, url, codec);
     if (addFavorite) {
         if (stationManager.addToFavorites(name, url, codec)) {

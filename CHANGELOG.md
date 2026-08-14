@@ -1,5 +1,26 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Correct saved AAC codec and reject invalid MP3 clock data
+
+The new hardware trace was an `IntegerDivideByZero` in ESP-IDF's
+`i2s_set_clk()`, called from `AudioGeneratorMP3a::loop()`. This was not the
+previous decoder-lifetime race. The saved Europe 1 entry announced itself as
+MP3 while its saved stream URL is `https://stream.europe1.fr/europe1.aac`.
+The MP3 decoder was therefore fed AAC data and supplied a zero sample rate to
+the legacy I2S driver, which divides by the requested rate.
+
+Saved Favorites/Recent entries, and newly added entries, now treat a URL
+containing `.aac` as AAC. This is a deliberately narrow migration for
+unambiguous AAC URLs; all other stored/API codec values are preserved. It
+makes already-saved Europe 1 entries play through the AAC decoder immediately
+after reboot, and the next playback re-saves the corrected Recent entry.
+
+The checked ESP8266Audio pre-build patch also rejects a decoded MP3 frame with
+zero rate or channel count before it reaches `AudioOutputI2S::SetRate()`. That
+does not make a wrongly labelled stream playable, but ensures it ends cleanly
+instead of resetting the ESP32. The patch validates the exact expected pinned
+source before changing it.
+
 ## 2026-08-14 — AAC+/SBR PSRAM allocation
 
 The AAC path was compiled and inspected against the exact resolved

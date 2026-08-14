@@ -9,6 +9,10 @@ enum StationCodec {
     STATION_CODEC_AAC
 };
 
+// Some older saved entries predate AAC discovery support.  Preserve the
+// stored codec normally, but correct the unambiguous ".aac" stream URLs.
+StationCodec stationCodecForURL(const char* url, StationCodec storedCodec);
+
 struct RadioStation {
     char name[MAX_NAME_LENGTH];
     char url[MAX_URL_LENGTH];

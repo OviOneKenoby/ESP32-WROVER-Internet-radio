@@ -5,6 +5,14 @@
 // Global station manager
 StationManager stationManager;
 
+StationCodec stationCodecForURL(const char* url, StationCodec storedCodec) {
+    if (!url) return storedCodec;
+
+    String normalizedURL(url);
+    normalizedURL.toLowerCase();
+    return normalizedURL.indexOf(".aac") >= 0 ? STATION_CODEC_AAC : storedCodec;
+}
+
 // ============================================
 // Constructor
 // ============================================
@@ -237,7 +245,8 @@ void StationManager::loadPersistedLists() {
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
         prefs.getString(nameKey, recent[i].name, MAX_NAME_LENGTH);
         prefs.getString(urlKey, recent[i].url, MAX_URL_LENGTH);
-        recent[i].codec = (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3);
+        recent[i].codec = stationCodecForURL(
+            recent[i].url, (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
     }
     prefs.end();
 
@@ -251,7 +260,8 @@ void StationManager::loadPersistedLists() {
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
         prefs.getString(nameKey, favorites[i].name, MAX_NAME_LENGTH);
         prefs.getString(urlKey, favorites[i].url, MAX_URL_LENGTH);
-        favorites[i].codec = (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3);
+        favorites[i].codec = stationCodecForURL(
+            favorites[i].url, (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
     }
     prefs.end();
 
@@ -259,6 +269,7 @@ void StationManager::loadPersistedLists() {
 }
 
 void StationManager::addToRecent(const char* name, const char* url, StationCodec codec) {
+    codec = stationCodecForURL(url, codec);
     // If already present, remove the old entry first - it gets re-added
     // at the front below, avoiding duplicate entries piling up.
     for (uint8_t i = 0; i < recentCount; i++) {
@@ -311,6 +322,7 @@ void StationManager::saveRecentToPrefs() {
 }
 
 bool StationManager::addToFavorites(const char* name, const char* url, StationCodec codec) {
+    codec = stationCodecForURL(url, codec);
     if (isFavorite(url)) {
         return false; // already there - caller can tell the user
     }
