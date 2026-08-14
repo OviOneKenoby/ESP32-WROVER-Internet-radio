@@ -1,5 +1,14 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Trim KIIS machine metadata from the Now Playing title
+
+102.7 KIIS FM sends its ICY title as a readable prefix followed by a
+`text="…"` field and many machine-only fields (`song_spot`, IDs, artwork URL,
+and more). The application previously displayed that whole payload. Stream
+title handling now recognizes this format and displays only the useful
+`prefix - text` portion (for example, `Olivia Rodrigo - Stupid Song`), while
+leaving normal ICY titles unchanged.
+
 ## 2026-08-14 — Show a truthful fallback when track metadata is absent
 
 Europe 1 plays audio but explicitly sends `icy-metaint: 0`, so it cannot

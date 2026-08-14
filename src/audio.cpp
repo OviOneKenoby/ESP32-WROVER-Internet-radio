@@ -413,14 +413,38 @@ void AudioPlayer::audioTaskFunc() {
 // ============================================
 // Callbacks (static - required plain C function pointer signatures)
 // ============================================
+static void simplifyStreamTitle(char* destination, size_t destinationSize, const char* source) {
+    const char* marker = strstr(source, " - text=\"");
+    if (marker) {
+        const char* titleStart = marker + strlen(" - text=\"");
+        const char* titleEnd = strchr(titleStart, '\"');
+        if (titleEnd && titleEnd > titleStart) {
+            size_t prefixLength = marker - source;
+            size_t titleLength = titleEnd - titleStart;
+            if (prefixLength > destinationSize - 1) prefixLength = destinationSize - 1;
+            if (titleLength > destinationSize - 1) titleLength = destinationSize - 1;
+
+            if (prefixLength > 0) {
+                snprintf(destination, destinationSize, "%.*s - %.*s",
+                         (int)prefixLength, source, (int)titleLength, titleStart);
+            } else {
+                snprintf(destination, destinationSize, "%.*s", (int)titleLength, titleStart);
+            }
+            return;
+        }
+    }
+
+    strncpy(destination, source, destinationSize - 1);
+    destination[destinationSize - 1] = '\0';
+}
+
 void AudioPlayer::metadataCallback(void* cbData, const char* type, bool isUnicode, const char* str) {
     (void)isUnicode;
     AudioPlayer* self = (AudioPlayer*)cbData;
     if (!self || !type || !str) return;
 
     if (strcmp(type, "StreamTitle") == 0) {
-        strncpy(self->nowPlaying, str, sizeof(self->nowPlaying) - 1);
-        self->nowPlaying[sizeof(self->nowPlaying) - 1] = '\0';
+        simplifyStreamTitle(self->nowPlaying, sizeof(self->nowPlaying), str);
         Serial.printf("[AUDIO] Now playing: %s\n", self->nowPlaying);
     }
 }
