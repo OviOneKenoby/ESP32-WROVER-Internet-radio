@@ -508,13 +508,22 @@ void playStation(uint8_t stationIdx) {
 // times.
 // ============================================
 void playDiscoveredStation(const char* name, const char* url, StationCodec codec, bool addFavorite) {
-    codec = stationCodecForURL(url, codec);
-    stationManager.addToRecent(name, url, codec);
+    // `name`/`url` may point into the Recent array. addToRecent() shifts
+    // that array, so keep an independent copy before updating the list.
+    char stationName[MAX_NAME_LENGTH];
+    char stationURL[MAX_URL_LENGTH];
+    strncpy(stationName, name, sizeof(stationName) - 1);
+    stationName[sizeof(stationName) - 1] = '\0';
+    strncpy(stationURL, url, sizeof(stationURL) - 1);
+    stationURL[sizeof(stationURL) - 1] = '\0';
+
+    codec = stationCodecForURL(stationURL, codec);
+    stationManager.addToRecent(stationName, stationURL, codec);
     if (addFavorite) {
-        if (stationManager.addToFavorites(name, url, codec)) {
-            Serial.printf("[MAIN] Added to favorites: %s\n", name);
+        if (stationManager.addToFavorites(stationName, stationURL, codec)) {
+            Serial.printf("[MAIN] Added to favorites: %s\n", stationName);
         } else {
-            Serial.printf("[MAIN] Not added to favorites (already there, or list full): %s\n", name);
+            Serial.printf("[MAIN] Not added to favorites (already there, or list full): %s\n", stationName);
         }
     }
     
@@ -530,12 +539,12 @@ void playDiscoveredStation(const char* name, const char* url, StationCodec codec
     delay(200);
     
     AudioCodec audioCodec = (codec == STATION_CODEC_AAC) ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
-    Serial.printf("[MAIN] Playing (discovered): %s (%s)\n", name, codec == STATION_CODEC_AAC ? "AAC" : "MP3");
+    Serial.printf("[MAIN] Playing (discovered): %s (%s)\n", stationName, codec == STATION_CODEC_AAC ? "AAC" : "MP3");
     
-    if (audioPlayer.play(url, audioCodec)) {
+    if (audioPlayer.play(stationURL, audioCodec)) {
         currentMode = MODE_PLAYING_RADIO;
         lastKnownPlaybackState = STATE_BUFFERING;
-        strncpy(nowPlayingName, name, MAX_NAME_LENGTH - 1);
+        strncpy(nowPlayingName, stationName, MAX_NAME_LENGTH - 1);
         nowPlayingName[MAX_NAME_LENGTH - 1] = '\0';
         nowPlayingIsDiscovered = true;
         display.showPlaying(name, "Buffering...", nowPlayingFooter());

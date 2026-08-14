@@ -1,5 +1,20 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Preserve the selected station while updating Recent
+
+Selecting an entry from Recent could play a different station. The click
+handler passed pointers into the Recent array to `playDiscoveredStation()`,
+which immediately called `addToRecent()`. That function shifts the same array
+to put the selected entry first, invalidating the incoming pointers before the
+log, favorite check, and `audioPlayer.play()` used them. The observed result
+was selecting Europe 1 while the log and connection attempt named 102.7 KIIS
+FM.
+
+`playDiscoveredStation()` now copies the selected name and URL into local,
+null-terminated buffers before it modifies Recent. The copied values are used
+for every later operation, so Browse, Favorites, and Recent all retain the
+station the user actually chose.
+
 ## 2026-08-14 — Correct saved AAC codec and reject invalid MP3 clock data
 
 The new hardware trace was an `IntegerDivideByZero` in ESP-IDF's
