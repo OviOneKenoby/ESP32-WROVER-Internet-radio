@@ -1,5 +1,18 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Browse stations by name letter within a country
+
+After choosing a country, the browser now presents `Station Letter` with
+`Popular Stations` followed by A–Z. `Popular Stations` preserves the existing
+country/genre popularity search. Choosing a letter adds a server-side station
+name filter and then retains only names beginning with that letter before
+showing the results. This makes a station such as Romania's `West City Radio`
+discoverable under `W` without loading the country's entire directory.
+
+The Radio Browser API's name filter is a substring search, not a prefix
+search, which was verified directly. The local first-character filter is
+therefore required to keep the display's A–Z classification truthful.
+
 ## 2026-08-14 — Allow slow-starting HTTP Icecast streams
 
 DIGI FM (`http://edge76.rdsnet.ro:84/digifm/digifm.mp3`) was checked directly

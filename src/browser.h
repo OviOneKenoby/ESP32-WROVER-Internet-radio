@@ -42,7 +42,8 @@ public:
     // allocated (see freeBrowseMemory()).
     bool fetchCountries();
     bool fetchTags();
-    bool searchStations(const char* countryCode, const char* tagName);
+    bool searchStations(const char* countryCode, const char* tagName,
+                        const char* stationNameFilter);
 
     uint16_t getCountryCount() { return countryCount; }
     BrowseCountry* getCountry(uint16_t idx);

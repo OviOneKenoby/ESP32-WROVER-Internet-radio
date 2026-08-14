@@ -20,6 +20,7 @@ enum AppMode {
     MODE_ERROR,
     MODE_BROWSE_LETTER,
     MODE_BROWSE_COUNTRY,
+    MODE_BROWSE_STATION_LETTER,
     MODE_BROWSE_TAG,
     MODE_BROWSE_RESULTS,
     MODE_FAVORITES,
@@ -40,12 +41,12 @@ uint32_t volumeDisplayUntil = 0; // 0 = not currently showing volume overlay
 // than five separate ones. Reset to 0 whenever entering any of these modes.
 uint8_t browseIndex = 0;
 
-// Remembers the country/tag picked while stepping through
-// country -> tag -> results, so searchStations() has both by the time
-// the results screen needs to fetch.
+// Remembers the country, station-name prefix, and tag picked while stepping
+// through country -> station letter -> tag -> results.
 char selectedCountryCode[BROWSE_COUNTRY_CODE_LEN] = "";
 char selectedCountryName[BROWSE_COUNTRY_NAME_LEN] = "";
 char selectedTagName[BROWSE_TAG_NAME_LEN] = "";
+char selectedStationLetter[2] = "";
 
 // Alphabet-first country navigation - scrolling one-by-one through ~250
 // countries took several minutes to reach anything starting with a
@@ -109,6 +110,10 @@ void applyLetterFilter(char letter);
 
 void handleBrowseCountryInput(InputEvent event);
 void refreshBrowseCountryDisplay();
+
+void enterBrowseStationLetter();
+void handleBrowseStationLetterInput(InputEvent event);
+void refreshBrowseStationLetterDisplay();
 
 void enterBrowseTag();
 void handleBrowseTagInput(InputEvent event);
@@ -308,6 +313,10 @@ void handleInput(InputEvent event) {
             
         case MODE_BROWSE_COUNTRY:
             handleBrowseCountryInput(event);
+            break;
+
+        case MODE_BROWSE_STATION_LETTER:
+            handleBrowseStationLetterInput(event);
             break;
             
         case MODE_BROWSE_TAG:
@@ -630,7 +639,7 @@ void handleBrowseLetterInput(InputEvent event) {
                 selectedCountryCode[0] = '\0';
                 strncpy(selectedCountryName, "Any Country", BROWSE_COUNTRY_NAME_LEN - 1);
                 selectedCountryName[BROWSE_COUNTRY_NAME_LEN - 1] = '\0';
-                enterBrowseTag();
+                enterBrowseStationLetter();
             } else {
                 char letter = 'A' + (browseIndex - 1);
                 applyLetterFilter(letter);
@@ -689,13 +698,68 @@ void handleBrowseCountryInput(InputEvent event) {
                 selectedCountryCode[BROWSE_COUNTRY_CODE_LEN - 1] = '\0';
                 strncpy(selectedCountryName, c->name, BROWSE_COUNTRY_NAME_LEN - 1);
                 selectedCountryName[BROWSE_COUNTRY_NAME_LEN - 1] = '\0';
-                enterBrowseTag();
+                enterBrowseStationLetter();
             }
             break;
         }
         case EVENT_LONG_PRESS:
             currentMode = MODE_BROWSE_LETTER;
             refreshBrowseLetterDisplay();
+            break;
+        default:
+            break;
+    }
+}
+
+// ---- Station-name letter (within the selected country) ----
+void enterBrowseStationLetter() {
+    browseIndex = 0;
+    selectedStationLetter[0] = '\0'; // Popular Stations
+    currentMode = MODE_BROWSE_STATION_LETTER;
+    refreshBrowseStationLetterDisplay();
+}
+
+void refreshBrowseStationLetterDisplay() {
+    static const char* names[27];
+    static char letterLabels[26][2];
+    names[0] = "Popular Stations";
+    for (int i = 0; i < 26; i++) {
+        letterLabels[i][0] = 'A' + i;
+        letterLabels[i][1] = '\0';
+        names[i + 1] = letterLabels[i];
+    }
+    display.showStationList(names, 27, browseIndex, "Station Letter", "Click=Next  Long=Back");
+}
+
+void handleBrowseStationLetterInput(InputEvent event) {
+    const uint8_t total = 27; // Popular Stations + A-Z
+    switch (event) {
+        case EVENT_ENCODER_UP:
+            browseIndex = (browseIndex < total - 1) ? browseIndex + 1 : 0;
+            refreshBrowseStationLetterDisplay();
+            break;
+        case EVENT_ENCODER_DOWN:
+            browseIndex = (browseIndex > 0) ? browseIndex - 1 : (total - 1);
+            refreshBrowseStationLetterDisplay();
+            break;
+        case EVENT_ENCODER_CLICK:
+        case EVENT_PLAY_PAUSE:
+            if (browseIndex == 0) {
+                selectedStationLetter[0] = '\0';
+            } else {
+                selectedStationLetter[0] = 'A' + (browseIndex - 1);
+                selectedStationLetter[1] = '\0';
+            }
+            enterBrowseTag();
+            break;
+        case EVENT_LONG_PRESS:
+            if (skippedCountrySelection) {
+                currentMode = MODE_BROWSE_LETTER;
+                refreshBrowseLetterDisplay();
+            } else {
+                currentMode = MODE_BROWSE_COUNTRY;
+                refreshBrowseCountryDisplay();
+            }
             break;
         default:
             break;
@@ -751,13 +815,8 @@ void handleBrowseTagInput(InputEvent event) {
             break;
         case EVENT_LONG_PRESS:
             browseIndex = 0;
-            if (skippedCountrySelection) {
-                currentMode = MODE_BROWSE_LETTER;
-                refreshBrowseLetterDisplay();
-            } else {
-                currentMode = MODE_BROWSE_COUNTRY;
-                refreshBrowseCountryDisplay();
-            }
+            currentMode = MODE_BROWSE_STATION_LETTER;
+            refreshBrowseStationLetterDisplay();
             break;
         default:
             break;
@@ -767,7 +826,8 @@ void handleBrowseTagInput(InputEvent event) {
 // ---- Search Results ----
 void enterBrowseResults() {
     display.showLoading("Searching stations...", "(15-20 seconds)");
-    if (stationBrowser.searchStations(selectedCountryCode, selectedTagName)) {
+    if (stationBrowser.searchStations(selectedCountryCode, selectedTagName,
+                                      selectedStationLetter)) {
         browseIndex = 0;
         currentMode = MODE_BROWSE_RESULTS;
         refreshBrowseResultsDisplay();

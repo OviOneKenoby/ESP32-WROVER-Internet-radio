@@ -279,7 +279,8 @@ BrowseTag* StationBrowser::getTag(uint8_t idx) {
 // the AAC+/SBR memory risk (see CHANGELOG round 23) and because it was
 // explicitly requested.
 // ============================================
-bool StationBrowser::searchStations(const char* countryCode, const char* tagName) {
+bool StationBrowser::searchStations(const char* countryCode, const char* tagName,
+                                    const char* stationNameFilter) {
     if (!results) {
         results = new BrowseResult[MAX_BROWSE_RESULTS];
     }
@@ -298,6 +299,12 @@ bool StationBrowser::searchStations(const char* countryCode, const char* tagName
     }
     if (tagName && tagName[0]) {
         path += "&tag=" + urlEncodeSimple(tagName);
+    }
+    if (stationNameFilter && stationNameFilter[0]) {
+        // Radio Browser's name parameter is a case-insensitive substring
+        // search. It cuts the response down to a practical size, while the
+        // first-character check below turns it into the promised A-Z list.
+        path += "&name=" + urlEncodeSimple(stationNameFilter);
     }
 
     JsonDocument filter;
@@ -318,6 +325,11 @@ bool StationBrowser::searchStations(const char* countryCode, const char* tagName
         const char* url = obj["url_resolved"] | "";
         const char* codecStr = obj["codec"] | "";
         if (!name[0] || !url[0]) continue;
+
+        if (stationNameFilter && stationNameFilter[0] &&
+            toupper((unsigned char)name[0]) != toupper((unsigned char)stationNameFilter[0])) {
+            continue;
+        }
 
         // Case-insensitive match - "MP3" has been the consistently
         // observed format throughout this project's testing, but
