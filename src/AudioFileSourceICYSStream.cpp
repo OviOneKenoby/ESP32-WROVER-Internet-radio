@@ -35,6 +35,11 @@ bool AudioFileSourceICYSStream::open(const char *url) {
     pos = 0;
     client.setInsecure();
     http.begin(client, url);
+    // This source reads directly from HTTPClient's underlying stream.
+    // Europe 1's redirected HTTPS endpoint uses HTTP/1.1 chunked transfer
+    // encoding, whose chunk framing is not audio data. Request HTTP/1.0 so
+    // the server sends the continuous raw AAC/ICY body this reader expects.
+    http.useHTTP10(true);
     // See AudioFileSourceHTTPSStream::open() - same deliberate addition,
     // same reasoning (bounds how long a slow/unreachable station can
     // freeze the whole UI, since this call is synchronous).

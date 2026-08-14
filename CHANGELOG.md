@@ -1,5 +1,19 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Read chunked Europe 1 stream as raw AAC
+
+Europe 1 opened successfully but repeatedly reported `No stream data
+available`. The public endpoint was checked directly: it redirects to
+`europe1.lmn.fm`, which sends `Content-Type: audio/aac` using HTTP/1.1
+`Transfer-Encoding: chunked`. The project's ICY source reads from
+`HTTPClient`'s underlying stream, so it requires a continuous audio body,
+not HTTP chunk framing.
+
+The HTTPS/ICY source now requests HTTP/1.0 before its GET. The same endpoint
+then sends a continuous raw AAC stream with `Connection: close`; redirect
+handling and ICY metadata requests remain enabled. This change applies only
+to HTTPS radio streams using the project’s direct-stream reader.
+
 ## 2026-08-14 — Preserve the selected station while updating Recent
 
 Selecting an entry from Recent could play a different station. The click
