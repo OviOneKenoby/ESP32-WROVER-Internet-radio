@@ -1252,6 +1252,15 @@ void printCurrentScreen() {
             Serial.println("[Click=select, Long-press=back]");
             break;
         }
+        case MODE_BROWSE_STATION_LETTER: {
+            Serial.println("Station Letter:");
+            Serial.printf("  %s 1. Popular Stations\n", browseIndex == 0 ? ">" : " ");
+            for (int i = 0; i < 26; i++) {
+                Serial.printf("  %s %d. %c\n", (i + 1) == browseIndex ? ">" : " ", i + 2, 'A' + i);
+            }
+            Serial.println("[Click=select, Long-press=back]");
+            break;
+        }
         case MODE_BROWSE_TAG: {
             uint8_t count = stationBrowser.getTagCount();
             Serial.println("Select Genre:");

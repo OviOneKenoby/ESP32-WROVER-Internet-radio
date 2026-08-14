@@ -13,6 +13,10 @@ The Radio Browser API's name filter is a substring search, not a prefix
 search, which was verified directly. The local first-character filter is
 therefore required to keep the display's A–Z classification truthful.
 
+The serial `s` screen dump now also recognizes the new `Station Letter` mode;
+without that case it printed `(unknown mode)` immediately after choosing a
+country even though the e-paper menu had been drawn.
+
 ## 2026-08-14 — Allow slow-starting HTTP Icecast streams
 
 DIGI FM (`http://edge76.rdsnet.ro:84/digifm/digifm.mp3`) was checked directly
