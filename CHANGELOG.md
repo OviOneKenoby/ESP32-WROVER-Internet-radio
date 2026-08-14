@@ -1,5 +1,32 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Local web configuration and NVS station manager
+
+The radio now serves a local management page on its Wi-Fi address. It shows
+connection status, saves Wi-Fi credentials, and can add/delete the separate
+user station list and remove Favorites. User stations are persisted in the
+`stations` NVS namespace; Favorites and Recent retain their existing,
+separate NVS namespaces.
+
+If both the saved Wi-Fi connection and configured fallback fail, the device
+starts a WPA2 setup AP named `ESP32-Radio-Setup-XXXX`. Its password is derived
+from the device MAC (rather than committed as a shared password) and printed
+to the serial monitor and shown on the e-paper. Join that AP and open
+`http://192.168.4.1/` to enter new Wi-Fi credentials.
+
+## 2026-08-14 — E-paper refresh policy and Bluetooth AVRCP metadata
+
+The existing partial full-screen redraws now automatically use a full panel
+refresh every 12 redraws, limiting e-paper ghosting while preserving fast,
+non-flashing encoder updates. The existing header and Now Playing tickers
+remain timer-driven partial-region updates, so they do not block audio.
+
+Bluetooth mode now requests AVRCP Title and Artist metadata, displays the
+combined artist/title through the existing ticker, and maps encoder click or
+Play/Pause to phone play/pause; Next/Previous send AVRCP track commands.
+Long press still leaves Bluetooth mode. Metadata is copied under a critical
+section before the UI reads it, avoiding an asynchronous callback race.
+
 ## 2026-08-14 — Browse stations by name letter within a country
 
 After choosing a country, the browser now presents `Station Letter` with

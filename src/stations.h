@@ -71,6 +71,10 @@ private:
     RadioStation favorites[MAX_FAVORITES];
     uint8_t favoriteCount;
     void saveFavoritesToPrefs();
+
+    // User-managed station list, persisted separately from Favorites and
+    // Recent so the web UI can safely manage it through NVS.
+    void saveStationsToPrefs();
 };
 
 extern StationManager stationManager;

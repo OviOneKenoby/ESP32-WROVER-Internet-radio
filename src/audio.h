@@ -67,6 +67,10 @@ public:
                                   // actually updated (always false)
     const char* getBluetoothDeviceName(); // connected device's name, or
                                            // "unknown" if not connected yet
+    const char* getBluetoothNowPlaying();
+    void bluetoothPlayPause();
+    void bluetoothNext();
+    void bluetoothPrevious();
 
 private:
     // Real MP3 decoding pipeline (ESP8266Audio library):
@@ -123,6 +127,7 @@ private:
     // must be a plain function pointer, not a member function pointer.
     static void metadataCallback(void* cbData, const char* type, bool isUnicode, const char* str);
     static void statusCallback(void* cbData, int code, const char* str);
+    static void bluetoothMetadataCallback(uint8_t attribute, const uint8_t* value);
 
     // State variables
     PlaybackState playbackState;
@@ -135,6 +140,13 @@ private:
 
     // Bluetooth
     bool btEnabled;
+    bool bluetoothPlaybackPaused = false;
+    char bluetoothTitle[128];
+    char bluetoothArtist[128];
+    char bluetoothNowPlaying[256];
+    char bluetoothNowPlayingSnapshot[256];
+    portMUX_TYPE bluetoothMetadataMux = portMUX_INITIALIZER_UNLOCKED;
+    void setBluetoothMetadata(uint8_t attribute, const char* value);
 
     // Task handle
     TaskHandle_t audioTaskHandle;

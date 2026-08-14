@@ -47,8 +47,9 @@ uint8_t StationManager::addStation(const char* name, const char* url, StationCod
     
     Serial.printf("[STATION] Added: %s -> %s (%s)\n", name, url,
                   codec == STATION_CODEC_AAC ? "AAC" : "MP3");
-    
-    return stationCount++;
+    uint8_t addedIndex = stationCount++;
+    saveStationsToPrefs();
+    return addedIndex;
 }
 
 bool StationManager::removeStation(uint8_t idx) {
@@ -69,6 +70,7 @@ bool StationManager::removeStation(uint8_t idx) {
     }
     
     Serial.printf("[STATION] Removed station at index %d\n", idx);
+    saveStationsToPrefs();
     return true;
 }
 
@@ -225,8 +227,40 @@ bool StationManager::loadDefaultStations() {
                STATION_CODEC_AAC);
 #endif
     
-    Serial.printf("[STATION] Loaded %d default stations\n", stationCount);
+    Preferences prefs;
+    prefs.begin("stations", true);
+    stationCount = prefs.getUChar("count", 0);
+    if (stationCount > MAX_STATIONS) stationCount = MAX_STATIONS;
+    for (uint8_t i = 0; i < stationCount; i++) {
+        char nameKey[8], urlKey[8], codecKey[8];
+        snprintf(nameKey, sizeof(nameKey), "n%d", i);
+        snprintf(urlKey, sizeof(urlKey), "u%d", i);
+        snprintf(codecKey, sizeof(codecKey), "c%d", i);
+        prefs.getString(nameKey, stations[i].name, MAX_NAME_LENGTH);
+        prefs.getString(urlKey, stations[i].url, MAX_URL_LENGTH);
+        stations[i].codec = stationCodecForURL(
+            stations[i].url, (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
+    }
+    prefs.end();
+
+    Serial.printf("[STATION] Loaded %d saved stations\n", stationCount);
     return true;
+}
+
+void StationManager::saveStationsToPrefs() {
+    Preferences prefs;
+    prefs.begin("stations", false);
+    prefs.putUChar("count", stationCount);
+    for (uint8_t i = 0; i < stationCount; i++) {
+        char nameKey[8], urlKey[8], codecKey[8];
+        snprintf(nameKey, sizeof(nameKey), "n%d", i);
+        snprintf(urlKey, sizeof(urlKey), "u%d", i);
+        snprintf(codecKey, sizeof(codecKey), "c%d", i);
+        prefs.putString(nameKey, stations[i].name);
+        prefs.putString(urlKey, stations[i].url);
+        prefs.putUChar(codecKey, stations[i].codec);
+    }
+    prefs.end();
 }
 
 // ============================================

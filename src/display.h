@@ -42,6 +42,7 @@ public:
     void showLoading(const char* message, const char* message2 = nullptr);
     void showWiFiConnecting();
     void showWiFiConnected(const char* ssid, const char* ip);
+    void showWiFiPortal(const char* ssid, const char* password);
     
     // State management
     void setState(DisplayState state);
@@ -99,6 +100,9 @@ private:
     // Partial update tracking
     uint32_t lastUpdateTime;
     bool needsFullUpdate;
+    uint8_t partialScreenRefreshes = 0;
+    bool useFullScreenRefresh();
+    void noteFullScreenRefresh();
 };
 
 extern Display display;

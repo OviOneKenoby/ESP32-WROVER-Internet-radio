@@ -40,6 +40,20 @@ void Display::update() {
     updateTitleScrollIfNeeded();
 }
 
+bool Display::useFullScreenRefresh() {
+    // Full-window partial redraws are cheap and do not flash, but repeated
+    // ones leave residue on this panel. Every Nth complete repaint uses the
+    // panel's full waveform to clear that ghosting without penalizing every
+    // encoder movement or ticker step.
+    if (++partialScreenRefreshes >= EPD_FULL_REFRESH_INTERVAL) {
+        partialScreenRefreshes = 0;
+        return true;
+    }
+    return false;
+}
+
+void Display::noteFullScreenRefresh() { partialScreenRefreshes = 0; }
+
 // ============================================
 // Display Functions - Boot Screen
 // ============================================
@@ -48,6 +62,7 @@ void Display::showBoot() {
     needsFullUpdate = true;
     
     epd.setFullWindow();
+    noteFullScreenRefresh();
     epd.firstPage();
     do {
         epd.fillScreen(GxEPD_WHITE);
@@ -116,6 +131,24 @@ void Display::showWiFiConnected(const char* ssid, const char* ip) {
     } while (epd.nextPage());
 }
 
+void Display::showWiFiPortal(const char* ssid, const char* password) {
+    currentState = DISPLAY_SETTINGS;
+    epd.setFullWindow();
+    noteFullScreenRefresh();
+    epd.firstPage();
+    do {
+        epd.fillScreen(GxEPD_WHITE);
+        drawHeader("WiFi Setup Portal");
+        epd.setFont(&FreeSerif9pt7b);
+        drawCenteredText(100, 55, "Join WiFi:");
+        drawCenteredText(100, 78, ssid);
+        drawCenteredText(100, 108, "Password:");
+        drawCenteredText(100, 130, password);
+        drawCenteredText(100, 160, "Open 192.168.4.1");
+        drawFooter("Configure WiFi from phone");
+    } while (epd.nextPage());
+}
+
 // ============================================
 // Display Functions - Now Playing
 // ============================================
@@ -127,7 +160,8 @@ void Display::showPlaying(const char* stationName, const char* statusText, const
     // Partial window - this now redraws automatically on playback state
     // transitions and pause/resume, so a flashing full refresh every time
     // would be just as disruptive here as it was on the station list.
-    epd.setPartialWindow(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    if (useFullScreenRefresh()) epd.setFullWindow();
+    else epd.setPartialWindow(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
     epd.firstPage();
     do {
         epd.fillScreen(GxEPD_WHITE);
@@ -166,6 +200,7 @@ void Display::showBluetooth(const char* btName, bool connected) {
     needsFullUpdate = true;
     
     epd.setFullWindow();
+    noteFullScreenRefresh();
     epd.firstPage();
     do {
         epd.fillScreen(GxEPD_WHITE);
@@ -219,7 +254,8 @@ void Display::showStationList(const char** stations, uint8_t count, uint8_t sele
     // flash. Trade-off: partial updates can accumulate faint ghosting over
     // many cycles without an occasional full refresh - acceptable here
     // since this screen isn't shown continuously for very long stretches.
-    epd.setPartialWindow(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    if (useFullScreenRefresh()) epd.setFullWindow();
+    else epd.setPartialWindow(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
     epd.firstPage();
     do {
         epd.fillScreen(GxEPD_WHITE);
@@ -297,6 +333,7 @@ void Display::showError(const char* message) {
     needsFullUpdate = true;
     
     epd.setFullWindow();
+    noteFullScreenRefresh();
     epd.firstPage();
     do {
         epd.fillScreen(GxEPD_WHITE);
@@ -324,6 +361,7 @@ void Display::showLoading(const char* message, const char* message2) {
     needsFullUpdate = true;
     
     epd.setFullWindow();
+    noteFullScreenRefresh();
     epd.firstPage();
     do {
         epd.fillScreen(GxEPD_WHITE);
@@ -421,7 +459,7 @@ void Display::updateHeaderScrollIfNeeded() {
 }
 
 void Display::updateNowPlayingTitle(const char* title) {
-    if (currentState != DISPLAY_PLAYING) return; // not on this screen
+    if (currentState != DISPLAY_PLAYING && currentState != DISPLAY_BT_MODE) return;
     if (titleFullText == String(title)) return;  // no change, skip redraw
     drawTitleText(title);
 }
@@ -578,6 +616,7 @@ void Display::wake() {
 
 void Display::clearScreen() {
     epd.setFullWindow();
+    noteFullScreenRefresh();
     epd.firstPage();
     do {
         epd.fillScreen(GxEPD_WHITE);

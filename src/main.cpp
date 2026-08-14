@@ -6,6 +6,7 @@
 #include "net_manager.h"
 #include "stations.h"
 #include "browser.h"
+#include "web_portal.h"
 
 // ============================================
 // Global State
@@ -34,6 +35,7 @@ uint8_t selectedStation = 0;
 PlaybackState lastKnownPlaybackState = STATE_STOPPED;
 bool lastKnownBluetoothConnected = false;
 uint32_t volumeDisplayUntil = 0; // 0 = not currently showing volume overlay
+char lastBluetoothMetadata[256] = "";
 
 // Shared cursor for all the browse-mode list screens (country/tag/results/
 // favorites/recent) - these are always mutually exclusive (only one such
@@ -198,7 +200,11 @@ void setup() {
     
     // Load default stations and switch to station selection
     currentMode = MODE_STATION_SELECT;
-    refreshStationListDisplay();
+    if (webPortal.isConfigPortalActive()) {
+        display.showWiFiPortal(webPortal.getPortalSSID(), webPortal.getPortalPassword());
+    } else {
+        refreshStationListDisplay();
+    }
     
     Serial.println("[MAIN] Setup complete!");
     Serial.println();
@@ -217,6 +223,8 @@ void setup() {
 // Main Loop
 // ============================================
 void loop() {
+    webPortal.handle();
+
     // Update input controls
     inputControl.update();
     
@@ -253,6 +261,7 @@ void setupWiFi() {
     if (wifiManager.isConnected()) {
         Serial.println("[MAIN] Already connected to WiFi");
         display.showWiFiConnected(wifiManager.getSSID(), wifiManager.getIP());
+        webPortal.begin();
         delay(2000);
         return;
     }
@@ -264,6 +273,7 @@ void setupWiFi() {
         
         if (wifiManager.isConnected()) {
             display.showWiFiConnected(wifiManager.getSSID(), wifiManager.getIP());
+            webPortal.begin();
             delay(2000);
             return;
         }
@@ -277,13 +287,20 @@ void setupWiFi() {
     Serial.printf("[MAIN] Connecting to configured network: %s\n", WIFI_SSID);
     if (wifiManager.connect(WIFI_SSID, WIFI_PASSWORD)) {
         display.showWiFiConnected(WIFI_SSID, wifiManager.getIP());
+        webPortal.begin();
         delay(2000);
         return;
     }
     
-    Serial.println("[MAIN] WiFi connection failed");
-    display.showError("WiFi connection failed");
-    delay(3000);
+    Serial.println("[MAIN] WiFi connection failed; starting setup portal");
+    webPortal.beginConfigPortal();
+    if (webPortal.isConfigPortalActive()) {
+        display.showError("WiFi setup: 192.168.4.1");
+        Serial.printf("[MAIN] Join '%s' then open http://192.168.4.1/\n",
+                      webPortal.getPortalSSID());
+    } else {
+        display.showError("WiFi setup AP failed");
+    }
 }
 
 // ============================================
@@ -455,11 +472,20 @@ void handlePlayingInput(InputEvent event) {
 void handleBluetoothInput(InputEvent event) {
     switch (event) {
         case EVENT_LONG_PRESS:
-        case EVENT_ENCODER_CLICK:
             currentMode = MODE_STATION_SELECT;
             audioPlayer.disableBluetooth();
             refreshStationListDisplay();
             Serial.println("[MAIN] Switched back to station select");
+            break;
+        case EVENT_ENCODER_CLICK:
+        case EVENT_PLAY_PAUSE:
+            audioPlayer.bluetoothPlayPause();
+            break;
+        case EVENT_NEXT:
+            audioPlayer.bluetoothNext();
+            break;
+        case EVENT_PREV:
+            audioPlayer.bluetoothPrevious();
             break;
             
         case EVENT_ENCODER_UP:
@@ -1058,6 +1084,12 @@ void updateUI() {
                 nowConnected ? audioPlayer.getBluetoothDeviceName() : BT_DEVICE_NAME,
                 nowConnected
             );
+        }
+        const char* metadata = audioPlayer.getBluetoothNowPlaying();
+        if (metadata && strcmp(metadata, lastBluetoothMetadata) != 0) {
+            strncpy(lastBluetoothMetadata, metadata, sizeof(lastBluetoothMetadata) - 1);
+            lastBluetoothMetadata[sizeof(lastBluetoothMetadata) - 1] = '\0';
+            display.updateNowPlayingTitle(lastBluetoothMetadata);
         }
     }
     

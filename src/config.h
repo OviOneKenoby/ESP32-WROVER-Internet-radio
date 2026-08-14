@@ -27,6 +27,7 @@
 
 #define DISPLAY_WIDTH   200
 #define DISPLAY_HEIGHT  200
+#define EPD_FULL_REFRESH_INTERVAL  12  // whole-screen partial redraws
 
 // ============================================
 // AUDIO OUTPUT CONFIGURATION (PCM5102A DAC)
@@ -94,6 +95,13 @@
 // so you only need these correct for the very first boot after flashing.
 #define WIFI_SSID           "YourNetworkName"
 #define WIFI_PASSWORD       "YourNetworkPassword"
+
+// Web configuration portal. It is hosted on the normal Wi-Fi address when
+// connected, or on a temporary WPA2-protected setup AP at 192.168.4.1 when
+// a saved connection fails. The AP password is derived from the ESP32 MAC at
+// runtime and shown on the serial monitor/display; it is never hard-coded.
+#define WEB_SERVER_PORT      80
+#define PORTAL_AP_PREFIX     "ESP32-Radio-Setup-"
 
 // ============================================
 // BLUETOOTH CONFIGURATION

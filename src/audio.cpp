@@ -33,6 +33,10 @@ AudioPlayer::AudioPlayer()
 
     memset(nowPlaying, 0, sizeof(nowPlaying));
     memset(currentURL, 0, sizeof(currentURL));
+    memset(bluetoothTitle, 0, sizeof(bluetoothTitle));
+    memset(bluetoothArtist, 0, sizeof(bluetoothArtist));
+    memset(bluetoothNowPlaying, 0, sizeof(bluetoothNowPlaying));
+    memset(bluetoothNowPlayingSnapshot, 0, sizeof(bluetoothNowPlayingSnapshot));
     strcpy(nowPlaying, "Live stream");
 }
 
@@ -308,10 +312,15 @@ void AudioPlayer::enableBluetooth() {
     };
     a2dp_sink.set_pin_config(pin_config);
     a2dp_sink.set_volume((uint8_t)((uint16_t)currentVolume * 127 / 100));
+    // Ask for only the two human-readable AVRCP fields we render. The
+    // callback is registered before start(), as required by this library.
+    a2dp_sink.set_avrc_metadata_attribute_mask(ESP_AVRC_MD_ATTR_TITLE | ESP_AVRC_MD_ATTR_ARTIST);
+    a2dp_sink.set_avrc_metadata_callback(bluetoothMetadataCallback);
 
     a2dp_sink.start(BT_DEVICE_NAME);
 
     btEnabled = true;
+    bluetoothPlaybackPaused = false;
     currentSource = AUDIO_SOURCE_BLUETOOTH;
     playbackState = STATE_PLAYING;
 
@@ -436,6 +445,61 @@ static void simplifyStreamTitle(char* destination, size_t destinationSize, const
 
     strncpy(destination, source, destinationSize - 1);
     destination[destinationSize - 1] = '\0';
+}
+
+const char* AudioPlayer::getBluetoothNowPlaying() {
+    portENTER_CRITICAL(&bluetoothMetadataMux);
+    strncpy(bluetoothNowPlayingSnapshot, bluetoothNowPlaying,
+            sizeof(bluetoothNowPlayingSnapshot) - 1);
+    bluetoothNowPlayingSnapshot[sizeof(bluetoothNowPlayingSnapshot) - 1] = '\0';
+    portEXIT_CRITICAL(&bluetoothMetadataMux);
+    return bluetoothNowPlayingSnapshot[0] ? bluetoothNowPlayingSnapshot : "Waiting for metadata";
+}
+
+void AudioPlayer::bluetoothPlayPause() {
+    if (!btEnabled) return;
+    // AVRCP commands control the connected phone/source; they do not mute
+    // the local I2S output like pause() does for an Internet radio stream.
+    if (bluetoothPlaybackPaused) {
+        a2dp_sink.play();
+        bluetoothPlaybackPaused = false;
+        Serial.println("[BT] AVRCP play requested");
+    } else {
+        a2dp_sink.pause();
+        bluetoothPlaybackPaused = true;
+        Serial.println("[BT] AVRCP pause requested");
+    }
+}
+
+void AudioPlayer::bluetoothNext() { if (btEnabled) { a2dp_sink.next(); Serial.println("[BT] AVRCP next requested"); } }
+void AudioPlayer::bluetoothPrevious() { if (btEnabled) { a2dp_sink.previous(); Serial.println("[BT] AVRCP previous requested"); } }
+
+void AudioPlayer::bluetoothMetadataCallback(uint8_t attribute, const uint8_t* value) {
+    if (!value) return;
+    audioPlayer.setBluetoothMetadata(attribute, reinterpret_cast<const char*>(value));
+}
+
+void AudioPlayer::setBluetoothMetadata(uint8_t attribute, const char* value) {
+    portENTER_CRITICAL(&bluetoothMetadataMux);
+    if (attribute == ESP_AVRC_MD_ATTR_TITLE) {
+        strncpy(bluetoothTitle, value, sizeof(bluetoothTitle) - 1);
+        bluetoothTitle[sizeof(bluetoothTitle) - 1] = '\0';
+    } else if (attribute == ESP_AVRC_MD_ATTR_ARTIST) {
+        strncpy(bluetoothArtist, value, sizeof(bluetoothArtist) - 1);
+        bluetoothArtist[sizeof(bluetoothArtist) - 1] = '\0';
+    } else {
+        portEXIT_CRITICAL(&bluetoothMetadataMux);
+        return;
+    }
+    if (bluetoothArtist[0] && bluetoothTitle[0]) {
+        snprintf(bluetoothNowPlaying, sizeof(bluetoothNowPlaying), "%s - %s", bluetoothArtist, bluetoothTitle);
+    } else {
+        strncpy(bluetoothNowPlaying, bluetoothTitle[0] ? bluetoothTitle : bluetoothArtist,
+                sizeof(bluetoothNowPlaying) - 1);
+        bluetoothNowPlaying[sizeof(bluetoothNowPlaying) - 1] = '\0';
+    }
+    portEXIT_CRITICAL(&bluetoothMetadataMux);
+    Serial.printf("[BT] Metadata: %s\n", bluetoothNowPlaying);
 }
 
 void AudioPlayer::metadataCallback(void* cbData, const char* type, bool isUnicode, const char* str) {
