@@ -547,7 +547,7 @@ void playDiscoveredStation(const char* name, const char* url, StationCodec codec
         strncpy(nowPlayingName, stationName, MAX_NAME_LENGTH - 1);
         nowPlayingName[MAX_NAME_LENGTH - 1] = '\0';
         nowPlayingIsDiscovered = true;
-        display.showPlaying(name, "Buffering...", nowPlayingFooter());
+        display.showPlaying(stationName, "Buffering...", nowPlayingFooter());
     } else {
         currentMode = MODE_ERROR;
         display.showError("Failed to play station");
@@ -979,7 +979,7 @@ void updateUI() {
     // actually changed since last checked.
     if (currentMode == MODE_PLAYING_RADIO) {
         const char* npTitle = audioPlayer.getNowPlaying();
-        if (npTitle && strcmp(npTitle, "No stream") != 0) {
+        if (npTitle && strcmp(npTitle, "Live stream") != 0) {
             display.updateNowPlayingTitle(npTitle);
         }
     }

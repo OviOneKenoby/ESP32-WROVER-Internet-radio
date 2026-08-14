@@ -1,5 +1,15 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — Show a truthful fallback when track metadata is absent
+
+Europe 1 plays audio but explicitly sends `icy-metaint: 0`, so it cannot
+provide individual track titles. The UI showed the inherited placeholder
+`Now playing: No stream`, which incorrectly suggested a playback failure.
+The fallback is now `Live stream`; real `StreamTitle` metadata still replaces
+it when a station supplies it. The initial discovered-station display also
+uses the protected local station-name copy, consistent with the Recent-list
+pointer fix.
+
 ## 2026-08-14 — Read chunked Europe 1 stream as raw AAC
 
 Europe 1 opened successfully but repeatedly reported `No stream data

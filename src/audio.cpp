@@ -33,7 +33,7 @@ AudioPlayer::AudioPlayer()
 
     memset(nowPlaying, 0, sizeof(nowPlaying));
     memset(currentURL, 0, sizeof(currentURL));
-    strcpy(nowPlaying, "No stream");
+    strcpy(nowPlaying, "Live stream");
 }
 
 AudioPlayer::~AudioPlayer() {
@@ -92,7 +92,7 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
     teardownRadioPlayback();
 
     strncpy(currentURL, streamURL, sizeof(currentURL) - 1);
-    strcpy(nowPlaying, "No stream"); // reset until real ICY metadata arrives
+    strcpy(nowPlaying, "Live stream"); // replaced when ICY metadata arrives
 
     // Pick the source class based on the URL's scheme - both can coexist
     // in the same station list. HTTPS uses more RAM during the TLS
