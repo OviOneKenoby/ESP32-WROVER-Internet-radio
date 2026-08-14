@@ -98,6 +98,11 @@ private:
                                  // deallocateBuffer=false (confirmed in
                                  // its source) specifically so the caller
                                  // manages this memory instead.
+    void* aacDecoderMemory;      // PSRAM backing for AudioGeneratorAAC's
+                                 // preallocated decoder state. HE-AAC/SBR
+                                 // needs a roughly 50KB state block, which
+                                 // must not come from the limited internal
+                                 // heap used by WiFi and TLS.
     AudioGenerator* mp3Decoder; // base pointer - actually either
                                 // AudioGeneratorMP3a or AudioGeneratorAAC,
                                 // chosen in play() based on the station's

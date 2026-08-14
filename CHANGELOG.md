@@ -1,5 +1,27 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-14 — AAC+/SBR PSRAM allocation
+
+The AAC path was compiled and inspected against the exact resolved
+`ESP8266Audio` dependency (`058e131b26e459b9aadcb589a50f07877f1a09fd`).
+`AudioGeneratorAAC`'s default constructor allocates its Helix decoder state
+from the ordinary heap; that includes the SBR state allocation which reports
+as roughly 50KB when it fails. This is the direct cause of the previously
+recorded `OOM in SBR` failure, and moving only the 16KB stream ring buffer did
+not change where that allocation occurs.
+
+`AudioGeneratorAAC` provides a verified preallocated-memory constructor. The
+AAC path now reserves a 96KB block with `ps_malloc()` and passes it to that
+constructor, so the decoder's input buffer, PCM buffer, base state, and SBR
+state live in PSRAM. If that block is unavailable, playback fails cleanly with
+a serial message rather than falling back to internal heap and risking the
+known crash. MP3 playback is unchanged.
+
+Validated with PlatformIO `espressif32@7.0.1` / Arduino ESP32 framework
+`3.20017.241212`: the `esp32-dev` build completed successfully (flash:
+1,927,261 / 3,145,728 bytes; RAM: 80,420 / 327,680 bytes). Hardware playback
+still needs to be checked on the WROVER board with an AAC+ stream.
+
 This replaces several earlier documents that made confident claims which turned out
 to be wrong. This one only lists things that were confirmed against either the real
 compiler output you pasted back, or the actual library source code fetched directly

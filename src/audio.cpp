@@ -21,6 +21,7 @@ AudioPlayer::AudioPlayer()
     : audioSource(nullptr),
       audioSourceBuf(nullptr),
       audioBufferMemory(nullptr),
+      aacDecoderMemory(nullptr),
       mp3Decoder(nullptr),
       i2sOutput(nullptr),
       playbackState(STATE_STOPPED),
@@ -144,9 +145,28 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
     }
     audioSourceBuf = new AudioFileSourceBuffer(audioSource, audioBufferMemory, audioBufferSize);
 
-    mp3Decoder = (codec == AUDIO_CODEC_AAC)
-        ? (AudioGenerator*)new AudioGeneratorAAC()
-        : (AudioGenerator*)new AudioGeneratorMP3a();
+    if (codec == AUDIO_CODEC_AAC) {
+        // AudioGeneratorAAC's normal constructor places its Helix decoder
+        // state in the ordinary heap. That includes the ~50KB SBR state
+        // allocation which previously exhausted internal RAM during
+        // HE-AAC/AAC+ playback. Its preallocated constructor routes the
+        // complete decoder state through this PSRAM allocation instead.
+        // The resolved decoder's SBR state alone is roughly 50KB. Its
+        // baseline state (including the SBR work buffer), input buffer,
+        // and PCM output buffer bring the verified requirement above 80KB.
+        constexpr size_t AAC_DECODER_MEMORY_SIZE = 96 * 1024;
+        aacDecoderMemory = ps_malloc(AAC_DECODER_MEMORY_SIZE);
+        if (!aacDecoderMemory) {
+            Serial.println("[AUDIO] AAC requires 96KB of available PSRAM");
+            teardownRadioPlayback();
+            xSemaphoreGive(audioMutex);
+            return false;
+        }
+        mp3Decoder = new AudioGeneratorAAC(aacDecoderMemory,
+                                           AAC_DECODER_MEMORY_SIZE);
+    } else {
+        mp3Decoder = new AudioGeneratorMP3a();
+    }
 
     if (!mp3Decoder->begin(audioSourceBuf, i2sOutput)) {
         Serial.printf("[AUDIO] Failed to start %s decoder\n",
@@ -183,6 +203,10 @@ void AudioPlayer::teardownRadioPlayback() {
     if (audioBufferMemory) {
         free(audioBufferMemory);
         audioBufferMemory = nullptr;
+    }
+    if (aacDecoderMemory) {
+        free(aacDecoderMemory);
+        aacDecoderMemory = nullptr;
     }
     if (audioSource) {
         // AudioFileSourceBuffer's destructor only frees its own ring
