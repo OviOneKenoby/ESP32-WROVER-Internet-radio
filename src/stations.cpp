@@ -228,7 +228,16 @@ bool StationManager::loadDefaultStations() {
 #endif
     
     Preferences prefs;
-    prefs.begin("stations", true);
+    // The user-station namespace does not exist until the first web add.
+    // Opening it read-only makes Preferences emit a misleading NVS
+    // NOT_FOUND error on every fresh device. Read-write opens/creates the
+    // empty namespace without writing station data or touching Favorites/
+    // Recent, which are separate namespaces.
+    if (!prefs.begin("stations", false)) {
+        Serial.println("[STATION] Could not open saved-stations NVS");
+        stationCount = 0;
+        return false;
+    }
     stationCount = prefs.getUChar("count", 0);
     if (stationCount > MAX_STATIONS) stationCount = MAX_STATIONS;
     for (uint8_t i = 0; i < stationCount; i++) {

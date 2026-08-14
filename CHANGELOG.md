@@ -8,6 +8,10 @@ user station list and remove Favorites. User stations are persisted in the
 `stations` NVS namespace; Favorites and Recent retain their existing,
 separate NVS namespaces.
 
+On a device with no web-added stations yet, that namespace is now created
+quietly at startup rather than producing Preferences' misleading `NOT_FOUND`
+diagnostic; it does not modify the existing Favorite or Recent namespaces.
+
 If both the saved Wi-Fi connection and configured fallback fail, the device
 starts a WPA2 setup AP named `ESP32-Radio-Setup-XXXX`. Its password is derived
 from the device MAC (rather than committed as a shared password) and printed
