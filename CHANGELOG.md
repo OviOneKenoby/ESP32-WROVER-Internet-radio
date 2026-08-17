@@ -1,5 +1,14 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-17 — Non-blocking NTP idle clock
+
+When the radio is stopped on the main station screen for one minute, it now
+shows an idle clock with Europe/Bucharest local date and time. SNTP setup is
+requested asynchronously after Wi-Fi connects, so it never blocks audio, UI,
+or the web server. The minute changes through a small partial refresh; any
+physical or serial control wakes the regular station screen without also
+executing that control's original action.
+
 ## 2026-08-17 — Align README with the current hardware and features
 
 The README now identifies the ESP32-WROVER-DEV target and its actual wiring:

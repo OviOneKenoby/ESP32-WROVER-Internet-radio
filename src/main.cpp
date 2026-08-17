@@ -7,6 +7,7 @@
 #include "stations.h"
 #include "browser.h"
 #include "web_portal.h"
+#include "time_service.h"
 
 // ============================================
 // Global State
@@ -25,7 +26,8 @@ enum AppMode {
     MODE_BROWSE_TAG,
     MODE_BROWSE_RESULTS,
     MODE_FAVORITES,
-    MODE_RECENT
+    MODE_RECENT,
+    MODE_IDLE_CLOCK
 };
 
 AppMode currentMode = MODE_BOOT;
@@ -36,6 +38,8 @@ PlaybackState lastKnownPlaybackState = STATE_STOPPED;
 bool lastKnownBluetoothConnected = false;
 uint32_t volumeDisplayUntil = 0; // 0 = not currently showing volume overlay
 char lastBluetoothMetadata[256] = "";
+uint32_t lastUserInteraction = 0;
+char lastIdleClockMinute[6] = "";
 
 // Shared cursor for all the browse-mode list screens (country/tag/results/
 // favorites/recent) - these are always mutually exclusive (only one such
@@ -224,6 +228,7 @@ void setup() {
 // ============================================
 void loop() {
     webPortal.handle();
+    timeService.update();
 
     // Update input controls
     inputControl.update();
@@ -231,7 +236,13 @@ void loop() {
     // Handle any input events
     InputEvent event = inputControl.getEvent();
     if (event != EVENT_NONE) {
-        handleInput(event);
+        lastUserInteraction = millis();
+        if (currentMode == MODE_IDLE_CLOCK) {
+            currentMode = MODE_STATION_SELECT;
+            refreshStationListDisplay();
+        } else {
+            handleInput(event);
+        }
     }
     
     // Remote/headless testing - lets you drive the whole UI from the
@@ -245,6 +256,28 @@ void loop() {
     if (now - lastUIUpdate > 1000) {
         lastUIUpdate = now;
         updateUI();
+    }
+
+    if (currentMode == MODE_STATION_SELECT &&
+        audioPlayer.getState() == STATE_STOPPED &&
+        now - lastUserInteraction >= IDLE_CLOCK_DELAY_MS) {
+        char dateText[48] = "";
+        char timeText[6] = "--:--";
+        bool synchronized = timeService.getDateText(dateText, sizeof(dateText)) &&
+                            timeService.getTimeText(timeText, sizeof(timeText));
+        currentMode = MODE_IDLE_CLOCK;
+        strncpy(lastIdleClockMinute, timeText, sizeof(lastIdleClockMinute) - 1);
+        lastIdleClockMinute[sizeof(lastIdleClockMinute) - 1] = '\0';
+        display.showIdleClock(dateText, timeText, synchronized);
+        Serial.printf("[TIME] Idle clock shown: %s %s\n", dateText, timeText);
+    } else if (currentMode == MODE_IDLE_CLOCK) {
+        char timeText[6];
+        if (timeService.getTimeText(timeText, sizeof(timeText)) &&
+            strcmp(timeText, lastIdleClockMinute) != 0) {
+            strncpy(lastIdleClockMinute, timeText, sizeof(lastIdleClockMinute) - 1);
+            lastIdleClockMinute[sizeof(lastIdleClockMinute) - 1] = '\0';
+            display.updateIdleClockTime(lastIdleClockMinute);
+        }
     }
     
     // Small delay to prevent watchdog issues
@@ -1207,7 +1240,13 @@ void checkSerialCommands() {
     }
     
     Serial.printf("[SERIAL] Simulating input: %c\n", c);
-    handleInput(event);
+    lastUserInteraction = millis();
+    if (currentMode == MODE_IDLE_CLOCK) {
+        currentMode = MODE_STATION_SELECT;
+        refreshStationListDisplay();
+    } else {
+        handleInput(event);
+    }
 }
 
 // Text summary of whatever the e-paper is currently showing - reads the
@@ -1330,6 +1369,9 @@ void printCurrentScreen() {
             Serial.println("[Click=play, Space=+favorite, Long-press=back]");
             break;
         }
+        case MODE_IDLE_CLOCK:
+            Serial.println("Idle Clock (press any control to wake)");
+            break;
         default:
             Serial.println("(unknown mode)");
             break;

@@ -43,6 +43,8 @@ public:
     void showWiFiConnecting();
     void showWiFiConnected(const char* ssid, const char* ip);
     void showWiFiPortal(const char* ssid, const char* password);
+    void showIdleClock(const char* dateText, const char* timeText, bool synchronized);
+    void updateIdleClockTime(const char* timeText);
     
     // State management
     void setState(DisplayState state);

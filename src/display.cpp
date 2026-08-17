@@ -149,6 +149,32 @@ void Display::showWiFiPortal(const char* ssid, const char* password) {
     } while (epd.nextPage());
 }
 
+void Display::showIdleClock(const char* dateText, const char* timeText, bool synchronized) {
+    currentState = DISPLAY_SETTINGS;
+    epd.setFullWindow();
+    noteFullScreenRefresh();
+    epd.firstPage();
+    do {
+        epd.fillScreen(GxEPD_WHITE);
+        drawHeader("ESP32 Radio");
+        epd.setFont(&FreeSerif9pt7b);
+        drawCenteredText(100, 70, synchronized ? dateText : "Waiting for NTP time");
+        epd.setFont(&FreeMonoBold9pt7b);
+        drawCenteredText(100, 125, synchronized ? timeText : "--:--");
+        drawFooter("Press any control to wake");
+    } while (epd.nextPage());
+}
+
+void Display::updateIdleClockTime(const char* timeText) {
+    epd.setPartialWindow(0, 90, 200, 50);
+    epd.firstPage();
+    do {
+        epd.fillRect(0, 90, 200, 50, GxEPD_WHITE);
+        epd.setFont(&FreeMonoBold9pt7b);
+        drawCenteredText(100, 125, timeText);
+    } while (epd.nextPage());
+}
+
 // ============================================
 // Display Functions - Now Playing
 // ============================================

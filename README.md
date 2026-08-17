@@ -8,6 +8,7 @@ A feature-rich internet radio streamer with Bluetooth audio sink support, displa
 ✅ **Bluetooth Audio Sink** - Receive audio from Bluetooth devices (A2DP)
 ✅ **WiFi Management** - Connect to WiFi networks with credential saving
 ✅ **Local Web Manager** - Configure WiFi and manage saved stations from a browser
+✅ **Idle NTP Clock** - Shows Europe/Bucharest date and time after inactivity
 ✅ **E-paper Display** - Beautiful 200x200px B&W display with GxEPD2
 ✅ **Rotary Encoder** - Station selection and volume control with encoder
 ✅ **Physical Buttons** - Play/Pause, Next, Previous buttons
@@ -215,6 +216,7 @@ monitor. Join it and open `http://192.168.4.1/`.
 - Rotation: Landscape (can be changed)
 - Font: Free Mono Bold 9pt & Free Serif 9pt
 - Update Mode: Full & Partial updates
+- Idle Clock: after one minute on the stopped main station screen; any input wakes it
 
 ## Building Custom
 
@@ -277,7 +279,6 @@ If getting low memory warnings:
 ## Future Enhancements
 
 - [ ] MQTT control interface
-- [ ] NTP time display
 - [ ] OTA (Over-The-Air) firmware updates
 
 ## License
