@@ -14,6 +14,11 @@ The web manager now saves the installed location's POSIX timezone rule in the
 and Australian presets plus a custom rule field, so the device is no longer
 hard-wired to Bucharest time. The default remains Bucharest until changed.
 
+Follow-up correction: SNTP now starts with `configTzTime()` rather than the
+UTC-offset `configTime(0, 0, ...)` overload. The latter silently replaced the
+saved timezone with UTC, so a Romania-configured idle clock was three hours
+behind during EEST. The selected POSIX rule is now preserved through NTP sync.
+
 ## 2026-08-17 — Align README with the current hardware and features
 
 The README now identifies the ESP32-WROVER-DEV target and its actual wiring:

@@ -49,9 +49,11 @@ void TimeService::update() {
     lastConfigurationAttempt = millis();
     setenv("TZ", timezone[0] ? timezone : DEFAULT_NTP_TIMEZONE, 1);
     tzset();
-    // configTime starts the SNTP client asynchronously. No wait loop here:
-    // the UI, audio task, and web server remain responsive while it syncs.
-    configTime(0, 0, NTP_SERVER_PRIMARY, NTP_SERVER_SECONDARY);
+    // configTzTime starts the SNTP client asynchronously while preserving the
+    // selected POSIX timezone and its DST rules. configTime(0, 0, ...) would
+    // replace TZ with UTC, causing the idle clock to ignore the web setting.
+    configTzTime(timezone[0] ? timezone : DEFAULT_NTP_TIMEZONE,
+                 NTP_SERVER_PRIMARY, NTP_SERVER_SECONDARY);
     configured = true;
     Serial.println("[TIME] NTP synchronization requested");
 }
