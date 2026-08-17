@@ -2,6 +2,13 @@
 
 A feature-rich internet radio streamer with Bluetooth audio sink support, displaying on a WeAct 1.54" E-paper module (200x200px).
 
+## AI Collaboration
+
+This firmware and its documentation were developed collaboratively with
+OpenAI's ChatGPT/Codex coding assistant. The project owner defined the
+hardware and feature requirements, assembled and flashed the device, and
+performed the real-hardware testing and validation that informed each change.
+
 ## Features
 
 ✅ **Internet Radio Streaming** - Play online radio stations with HTTP streaming

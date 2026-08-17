@@ -1,5 +1,11 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-17 — Document AI collaboration
+
+The README now transparently identifies that the firmware and documentation
+were developed collaboratively with OpenAI's ChatGPT/Codex, while the project
+owner supplied the hardware, requirements, flashing, and real-device testing.
+
 ## 2026-08-17 — Non-blocking NTP idle clock
 
 When the radio is stopped on the main station screen for one minute, it now
