@@ -193,6 +193,7 @@ void setup() {
     // Load WiFi configuration
     Serial.println("[MAIN] Loading WiFi configuration...");
     wifiManager.loadConfig();
+    timeService.loadTimezone();
     
     // Show boot message
     currentMode = MODE_BOOT;

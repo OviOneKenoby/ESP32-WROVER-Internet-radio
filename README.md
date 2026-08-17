@@ -216,7 +216,7 @@ monitor. Join it and open `http://192.168.4.1/`.
 - Rotation: Landscape (can be changed)
 - Font: Free Mono Bold 9pt & Free Serif 9pt
 - Update Mode: Full & Partial updates
-- Idle Clock: after one minute on the stopped main station screen; any input wakes it
+- Idle Clock: after one minute on the stopped main station screen; configure its local timezone in the web manager, then any input wakes it
 
 ## Building Custom
 

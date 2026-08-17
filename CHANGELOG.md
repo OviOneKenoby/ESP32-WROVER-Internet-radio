@@ -9,6 +9,11 @@ or the web server. The minute changes through a small partial refresh; any
 physical or serial control wakes the regular station screen without also
 executing that control's original action.
 
+The web manager now saves the installed location's POSIX timezone rule in the
+`time` NVS namespace. It offers common North American, European, Japanese,
+and Australian presets plus a custom rule field, so the device is no longer
+hard-wired to Bucharest time. The default remains Bucharest until changed.
+
 ## 2026-08-17 — Align README with the current hardware and features
 
 The README now identifies the ESP32-WROVER-DEV target and its actual wiring:

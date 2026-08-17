@@ -106,7 +106,7 @@
 // Idle clock: Europe/Bucharest, including its DST transition rules. NTP is
 // configured only while Wi-Fi is connected; normal radio operation never
 // waits for a time-server response.
-#define NTP_TIMEZONE         "EET-2EEST,M3.5.0/3,M10.5.0/4"
+#define DEFAULT_NTP_TIMEZONE "EET-2EEST,M3.5.0/3,M10.5.0/4" // Bucharest
 #define NTP_SERVER_PRIMARY   "pool.ntp.org"
 #define NTP_SERVER_SECONDARY "time.google.com"
 #define IDLE_CLOCK_DELAY_MS  60000UL

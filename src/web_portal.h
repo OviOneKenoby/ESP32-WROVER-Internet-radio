@@ -32,6 +32,7 @@ private:
     void handleDeleteStation();
     void handleDeleteFavorite();
     void handleWiFiSave();
+    void handleTimezoneSave();
 };
 
 extern WebPortal webPortal;
