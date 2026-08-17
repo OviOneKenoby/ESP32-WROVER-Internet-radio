@@ -7,16 +7,17 @@ A feature-rich internet radio streamer with Bluetooth audio sink support, displa
 ✅ **Internet Radio Streaming** - Play online radio stations with HTTP streaming
 ✅ **Bluetooth Audio Sink** - Receive audio from Bluetooth devices (A2DP)
 ✅ **WiFi Management** - Connect to WiFi networks with credential saving
+✅ **Local Web Manager** - Configure WiFi and manage saved stations from a browser
 ✅ **E-paper Display** - Beautiful 200x200px B&W display with GxEPD2
 ✅ **Rotary Encoder** - Station selection and volume control with encoder
 ✅ **Physical Buttons** - Play/Pause, Next, Previous buttons
 ✅ **Volume Control** - Software-based volume adjustment
-✅ **Station Manager** - Pre-configured stations with easy switching
+✅ **Station Manager** - Browse stations, Favorites, Recent, and NVS-saved stations
 
 ## Hardware Specifications
 
 ### Microcontroller
-- **ESP32 DevKit V1** - Dual-core Tensilica LX6, 2.4GHz WiFi, Bluetooth Classic & BLE
+- **ESP32-WROVER-DEV** - Dual-core Tensilica LX6, 2.4GHz WiFi, Bluetooth Classic & BLE, PSRAM
 
 ### Display
 - **WeAct Studio 1.54" E-paper Module**
@@ -38,7 +39,7 @@ A feature-rich internet radio streamer with Bluetooth audio sink support, displa
   - Previous Station Button (GPIO39)
 
 - **Rotary Encoder with Click**
-  - CLK Pin (GPIO36)
+  - CLK Pin (GPIO27)
   - DT Pin (GPIO32)
   - Click/Push Button (GPIO14)
   - Function: Station selection & Volume control
@@ -47,14 +48,14 @@ A feature-rich internet radio streamer with Bluetooth audio sink support, displa
 
 ```
 ┌─────────────────────────────────────┐
-│         ESP32 DevKit V1             │
+│         ESP32-WROVER-DEV            │
 ├─────────────────────────────────────┤
 │  E-PAPER DISPLAY (SPI)              │
 │  CS    → GPIO 5                     │
 │  CLK   → GPIO 18 (SCK)              │
 │  MOSI  → GPIO 23 (SDA)              │
-│  RST   → GPIO 16                    │
-│  DC    → GPIO 17                    │
+│  RST   → GPIO 19                    │
+│  DC    → GPIO 21                    │
 │  BUSY  → GPIO 4                     │
 ├─────────────────────────────────────┤
 │  AUDIO OUTPUT (I2S)                 │
@@ -66,11 +67,14 @@ A feature-rich internet radio streamer with Bluetooth audio sink support, displa
 │  Button Play/Pause  → GPIO 34       │
 │  Button Next        → GPIO 35       │
 │  Button Prev        → GPIO 39       │
-│  Encoder CLK        → GPIO 36       │
+│  Encoder CLK        → GPIO 27       │
 │  Encoder DT         → GPIO 32       │
 │  Encoder SW (Click) → GPIO 14       │
 └─────────────────────────────────────┘
 ```
+
+GPIO16 and GPIO17 are reserved by PSRAM on this WROVER board, so the e-paper
+reset and data/command lines were moved to GPIO19 and GPIO21 respectively.
 
 ## Project Structure
 
@@ -87,6 +91,7 @@ InternetRadio_ESP32_EPaper/
 │   ├── input.h/.cpp           # Button & encoder input handling
 │   ├── net_manager.h/.cpp     # WiFi connection management
 │   └── stations.h/.cpp        # Radio station manager
+│   └── web_portal.h/.cpp      # Local WiFi/station web manager
 └── lib/                        # External libraries (auto-installed)
 ```
 
@@ -176,21 +181,23 @@ pio device monitor -b 115200 -p /dev/ttyUSB0
 
 #### **Bluetooth Mode**
 - **Encoder UP/DOWN** - Volume control
-- **Encoder CLICK** or **Long Press** - Return to station selection
+- **Encoder CLICK** or **Play/Pause** - Send AVRCP play/pause to the phone
+- **Next/Previous Buttons** - Send AVRCP next/previous to the phone
+- **Long Press** - Return to station selection
 - Device appears as "ESP32-Radio" in Bluetooth settings
 - Automatically receives audio from paired device
+- Displays AVRCP artist/title metadata when the phone provides it
 
-## Default Radio Stations
+## Station Management and Web UI
 
-The firmware includes pre-configured stations:
-1. BBC Radio 1
-2. SomaFM - Groove Salad
-3. Radio Paradise
-4. WFUV - Curated Radio
-5. Ambient Sleeping Pill
-6. NPR
+Browse stations from Radio Browser on the e-paper, save Favorites, or add
+your own direct HTTP(S) MP3/AAC stream URLs through the local web manager.
+Saved stations, Favorites, and Recent entries persist in NVS flash.
 
-You can modify these in `src/stations.cpp` or add/remove stations via configuration.
+When connected to WiFi, open the IP address printed in the serial monitor
+(for example `http://192.168.1.24/`). If WiFi setup fails, the radio starts a
+protected setup AP; its name/password are shown on the e-paper and serial
+monitor. Join it and open `http://192.168.4.1/`.
 
 ## Configuration
 
@@ -212,10 +219,8 @@ You can modify these in `src/stations.cpp` or add/remove stations via configurat
 ## Building Custom
 
 ### Adding New Radio Stations
-Edit `src/stations.cpp` and add to `loadDefaultStations()`:
-```cpp
-addStation("Station Name", "http://stream-url.com/path");
-```
+Use the local web manager to add a station name, direct HTTP(S) stream URL,
+and MP3 or AAC codec. The station is saved to NVS immediately.
 
 ### Changing GPIO Pins
 Edit `src/config.h` and modify the pin definitions:
@@ -271,14 +276,9 @@ If getting low memory warnings:
 
 ## Future Enhancements
 
-- [ ] SD Card support for local file playback
 - [ ] MQTT control interface
 - [ ] NTP time display
-- [ ] Equalizer with hardware filters
-- [ ] Recording to SD card
 - [ ] OTA (Over-The-Air) firmware updates
-- [ ] Web interface for station configuration
-- [ ] Preset presets memory
 
 ## License
 

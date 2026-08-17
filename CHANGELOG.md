@@ -1,5 +1,13 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-17 — Align README with the current hardware and features
+
+The README now identifies the ESP32-WROVER-DEV target and its actual wiring:
+GPIO19/21 for e-paper reset/data-command and GPIO27 for encoder clock.
+It explains that GPIO16/17 are reserved for WROVER PSRAM, documents the local
+web manager and AVRCP controls, and removes dropped SD card, recording,
+equalizer, and redundant preset ideas from the future list.
+
 ## 2026-08-14 — Local web configuration and NVS station manager
 
 The radio now serves a local management page on its Wi-Fi address. It shows
