@@ -35,6 +35,8 @@ bool WiFiManager::connect(const char* ssid, const char* password) {
     // Store credentials
     strncpy(connectedSSID, ssid, MAX_SSID_LENGTH - 1);
     strncpy(connectedPassword, password ? password : "", MAX_PASS_LENGTH - 1);
+    connectedSSID[MAX_SSID_LENGTH - 1] = '\0';
+    connectedPassword[MAX_PASS_LENGTH - 1] = '\0';
     
     currentState = WIFI_CONNECTING;
     
@@ -65,6 +67,7 @@ bool WiFiManager::connect(const char* ssid, const char* password) {
     if (WiFi.status() == WL_CONNECTED) {
         currentState = WIFI_CONNECTED;
         strncpy(ipAddress, WiFi.localIP().toString().c_str(), sizeof(ipAddress) - 1);
+        ipAddress[sizeof(ipAddress) - 1] = '\0';
         signalStrength = WiFi.RSSI();
         
         Serial.printf("[WIFI] Connected!\n");
@@ -119,6 +122,7 @@ bool WiFiManager::startScan() {
     
     for (uint8_t i = 0; i < networkCount; i++) {
         strncpy(networks[i].ssid, WiFi.SSID(i).c_str(), MAX_SSID_LENGTH - 1);
+        networks[i].ssid[MAX_SSID_LENGTH - 1] = '\0';
         networks[i].rssi = WiFi.RSSI(i);
         Serial.printf("[WIFI] %d. %s (%d dBm)\n", i + 1, networks[i].ssid, networks[i].rssi);
     }
@@ -174,6 +178,8 @@ bool WiFiManager::loadConfig() {
     
     strncpy(connectedSSID, ssid, MAX_SSID_LENGTH - 1);
     strncpy(connectedPassword, pass, MAX_PASS_LENGTH - 1);
+    connectedSSID[MAX_SSID_LENGTH - 1] = '\0';
+    connectedPassword[MAX_PASS_LENGTH - 1] = '\0';
     
     Serial.printf("[WIFI] Loaded config: %s\n", connectedSSID);
     

@@ -1,5 +1,12 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-18 — Terminate stored Wi-Fi strings explicitly
+
+Confirmed issue: several `strncpy()` copies in the Wi-Fi manager did not add a
+terminator when source data reached the destination limit. Each SSID, password,
+IP address, and scanned SSID destination is now explicitly terminated without
+changing connection or persistence behavior.
+
 ## 2026-08-18 — Synchronize internet-radio metadata snapshots
 
 Confirmed issue: the Core 1 internet-radio decode task wrote ICY
