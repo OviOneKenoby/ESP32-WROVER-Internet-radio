@@ -96,7 +96,7 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
     teardownRadioPlayback();
 
     strncpy(currentURL, streamURL, sizeof(currentURL) - 1);
-    strcpy(nowPlaying, "Live stream"); // replaced when ICY metadata arrives
+    setNowPlaying("Live stream"); // replaced when ICY metadata arrives
 
     // Pick the source class based on the URL's scheme - both can coexist
     // in the same station list. HTTPS uses more RAM during the TLS
@@ -456,6 +456,22 @@ static void simplifyStreamTitle(char* destination, size_t destinationSize, const
     destination[destinationSize - 1] = '\0';
 }
 
+void AudioPlayer::setNowPlaying(const char* value) {
+    portENTER_CRITICAL(&nowPlayingMux);
+    strncpy(nowPlaying, value ? value : "", sizeof(nowPlaying) - 1);
+    nowPlaying[sizeof(nowPlaying) - 1] = '\0';
+    portEXIT_CRITICAL(&nowPlayingMux);
+}
+
+bool AudioPlayer::getNowPlaying(char* destination, size_t size) {
+    if (!destination || size == 0) return false;
+    portENTER_CRITICAL(&nowPlayingMux);
+    strncpy(destination, nowPlaying, size - 1);
+    destination[size - 1] = '\0';
+    portEXIT_CRITICAL(&nowPlayingMux);
+    return destination[0] != '\0';
+}
+
 const char* AudioPlayer::getBluetoothNowPlaying() {
     portENTER_CRITICAL(&bluetoothMetadataMux);
     strncpy(bluetoothNowPlayingSnapshot, bluetoothNowPlaying,
@@ -517,8 +533,10 @@ void AudioPlayer::metadataCallback(void* cbData, const char* type, bool isUnicod
     if (!self || !type || !str) return;
 
     if (strcmp(type, "StreamTitle") == 0 && str[0] != '\0') {
-        simplifyStreamTitle(self->nowPlaying, sizeof(self->nowPlaying), str);
-        Serial.printf("[AUDIO] Now playing: %s\n", self->nowPlaying);
+        char title[sizeof(self->nowPlaying)];
+        simplifyStreamTitle(title, sizeof(title), str);
+        self->setNowPlaying(title);
+        Serial.printf("[AUDIO] Now playing: %s\n", title);
     }
 }
 

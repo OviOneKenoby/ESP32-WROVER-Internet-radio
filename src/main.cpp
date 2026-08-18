@@ -1098,8 +1098,9 @@ void updateUI() {
     // updateNowPlayingTitle() itself skips the redraw if the text hasn't
     // actually changed since last checked.
     if (currentMode == MODE_PLAYING_RADIO) {
-        const char* npTitle = audioPlayer.getNowPlaying();
-        if (npTitle && strcmp(npTitle, "Live stream") != 0) {
+        char npTitle[256];
+        if (audioPlayer.getNowPlaying(npTitle, sizeof(npTitle)) &&
+            strcmp(npTitle, "Live stream") != 0) {
             display.updateNowPlayingTitle(npTitle);
         }
     }
@@ -1288,7 +1289,9 @@ void printCurrentScreen() {
             }
             Serial.printf("%s\n", nowPlayingName);
             Serial.printf("Status: %s\n", statusText);
-            Serial.printf("Now playing: %s\n", audioPlayer.getNowPlaying());
+            char npTitle[256];
+            audioPlayer.getNowPlaying(npTitle, sizeof(npTitle));
+            Serial.printf("Now playing: %s\n", npTitle);
             Serial.printf("Volume: %d%%\n", audioPlayer.getVolume());
             Serial.printf("[%s]\n", nowPlayingFooter());
             break;

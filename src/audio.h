@@ -55,7 +55,7 @@ public:
     // State queries
     PlaybackState getState() { return playbackState; }
     AudioSource getSource() { return currentSource; }
-    const char* getNowPlaying() { return nowPlaying; }
+    bool getNowPlaying(char* destination, size_t size);
     const char* getCurrentURL() { return currentURL; }
 
     // Bluetooth control
@@ -136,6 +136,8 @@ private:
 
     // Stream info
     char nowPlaying[256];
+    portMUX_TYPE nowPlayingMux = portMUX_INITIALIZER_UNLOCKED;
+    void setNowPlaying(const char* value);
     char currentURL[512];
 
     // Bluetooth

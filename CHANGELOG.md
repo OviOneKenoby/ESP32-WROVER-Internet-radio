@@ -1,5 +1,14 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-18 — Synchronize internet-radio metadata snapshots
+
+Confirmed issue: the Core 1 internet-radio decode task wrote ICY
+`StreamTitle` metadata directly into `nowPlaying` while the UI task read the
+same mutable buffer. The public API now copies a protected snapshot into a
+caller-owned buffer; the metadata callback uses its own dedicated critical
+section and never takes `audioMutex`, avoiding a decoder-callback deadlock.
+Hardware playback validation is still required.
+
 ## 2026-08-17 — Document AI collaboration
 
 The README now transparently identifies that the firmware and documentation
