@@ -1,5 +1,12 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-20 — Add read-only runtime diagnostics
+
+Added `/api/diagnostics` with firmware/build identity, uptime, reset reason,
+internal heap health, PSRAM, Wi-Fi RSSI and a mutex-protected audio-state
+snapshot. Boot logging now records the reset reason and detected flash/PSRAM.
+The endpoint never returns Wi-Fi credentials and adds no NVS writes.
+
 ## 2026-08-20 — Correct finite HTTPS stream EOF clamping
 
 Confirmed issue: both vendored HTTPS readers calculated the bytes remaining in

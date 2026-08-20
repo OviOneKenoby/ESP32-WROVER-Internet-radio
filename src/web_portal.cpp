@@ -3,7 +3,11 @@
 #include "net_manager.h"
 #include "stations.h"
 #include "time_service.h"
+#include "audio.h"
+#include "system_info.h"
 #include <ArduinoJson.h>
+#include <WiFi.h>
+#include <esp_heap_caps.h>
 
 WebPortal webPortal;
 
@@ -28,6 +32,7 @@ station.onsubmit=async e=>{e.preventDefault();try{await api('/api/stations',{met
 void WebPortal::registerRoutes() {
     server.on("/", HTTP_GET, [this] { handleRoot(); });
     server.on("/api/status", HTTP_GET, [this] { handleStatus(); });
+    server.on("/api/diagnostics", HTTP_GET, [this] { handleDiagnostics(); });
     server.on("/api/stations", HTTP_GET, [this] { handleStations(); });
     server.on("/api/stations", HTTP_POST, [this] { handleAddStation(); });
     server.on("/api/wifi", HTTP_POST, [this] { handleWiFiSave(); });
@@ -68,6 +73,41 @@ void WebPortal::handleRoot() { server.send_P(200, "text/html", WEB_PAGE); }
 void WebPortal::handleStatus() {
     JsonDocument doc; doc["connected"] = wifiManager.isConnected(); doc["ssid"] = wifiManager.getSSID(); doc["ip"] = wifiManager.getIP(); doc["portal"] = configPortalActive ? portalSSID : ""; doc["timezone"] = timeService.getTimezone();
     String out; serializeJson(doc, out); server.send(200, "application/json", out);
+}
+void WebPortal::handleDiagnostics() {
+    AudioDiagnostics audio{};
+    bool haveAudioSnapshot = audioPlayer.getDiagnostics(audio);
+
+    JsonDocument doc;
+    doc["firmware_version"] = FIRMWARE_VERSION;
+    doc["build_git_id"] = BUILD_GIT_ID;
+    doc["uptime_ms"] = millis();
+    doc["reset_reason"] = SystemInfo::resetReasonName(esp_reset_reason());
+    doc["free_internal_heap"] = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    doc["largest_internal_heap_block"] = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    doc["minimum_free_internal_heap"] = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    doc["total_psram"] = ESP.getPsramSize();
+    doc["free_psram"] = ESP.getFreePsram();
+    if (WiFi.status() == WL_CONNECTED) doc["wifi_rssi_dbm"] = WiFi.RSSI();
+    else doc["wifi_rssi_dbm"] = nullptr;
+
+    if (haveAudioSnapshot) {
+        doc["audio_source"] = SystemInfo::audioSourceName(audio.source);
+        doc["playback_state"] = SystemInfo::playbackStateName(audio.state);
+        doc["codec"] = SystemInfo::audioCodecName(audio.codec);
+        doc["stream_url"] = audio.streamURL;
+        doc["audio_task_stack_high_water_mark"] = audio.taskStackHighWaterMark;
+    } else {
+        doc["audio_source"] = "unavailable";
+        doc["playback_state"] = "unavailable";
+        doc["codec"] = "unavailable";
+        doc["stream_url"] = "";
+        doc["audio_task_stack_high_water_mark"] = 0;
+    }
+
+    String out;
+    serializeJson(doc, out);
+    server.send(200, "application/json", out);
 }
 void WebPortal::handleStations() {
     JsonDocument doc; JsonArray stations = doc["stations"].to<JsonArray>(); JsonArray favorites = doc["favorites"].to<JsonArray>();

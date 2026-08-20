@@ -8,6 +8,7 @@
 #include "browser.h"
 #include "web_portal.h"
 #include "time_service.h"
+#include "system_info.h"
 
 // ============================================
 // Global State
@@ -145,6 +146,8 @@ void playDiscoveredStation(const char* name, const char* url, StationCodec codec
 void setup() {
     Serial.begin(SERIAL_BAUD);
     delay(500);
+
+    SystemInfo::logBootInfo();
     
     Serial.println("\n\n");
     Serial.println("=====================================");
@@ -1382,5 +1385,4 @@ void printCurrentScreen() {
     }
     Serial.println("-----------------------");
 }
-
 
