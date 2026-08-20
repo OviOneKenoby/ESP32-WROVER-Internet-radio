@@ -1,5 +1,12 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-20 — Correct finite HTTPS stream EOF clamping
+
+Confirmed issue: both vendored HTTPS readers calculated the bytes remaining in
+a finite-length response as `pos - size`. Before EOF that unsigned subtraction
+underflows and defeats the read clamp. They now use `size - pos`. Live radio
+streams with an unknown length (`size == 0`) keep their existing behavior.
+
 ## 2026-08-20 — Pin the reproducible V1 build environment
 
 The previously floating PlatformIO platform and registry dependencies are now
