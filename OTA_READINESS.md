@@ -17,9 +17,8 @@ The project uses Arduino-ESP32's `huge_app.csv`:
 - SPIFFS: `0xE0000` (917,504 bytes)
 - Coredump: `0x10000` (65,536 bytes)
 
-The last clean diagnostics build produced a `firmware.bin` of 1,998,688 bytes
-(1,992,105 bytes reported by the linker). A fresh build is required after
-applying this patch series, and its actual result becomes authoritative.
+The clean reconstructed V1 diagnostics build produced a `firmware.bin` of
+1,998,768 bytes (1,992,189 bytes reported by the linker).
 
 ## Proposed 4 MB OTA layout
 
@@ -31,7 +30,7 @@ into two equal application slots:
 - `ota_0`: `0x1F0000` (2,031,616 bytes)
 - `ota_1`: `0x1F0000` (2,031,616 bytes)
 
-Against the last 1,998,688-byte binary, each slot leaves only 32,928 bytes, or
+Against the 1,998,768-byte binary, each slot leaves only 32,848 bytes, or
 1.62%. A 10% slot margin would require a binary no larger than approximately
 1,828,454 bytes, about 170 KiB smaller than the current build.
 

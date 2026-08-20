@@ -33,6 +33,18 @@ pio run -e esp32-dev -t clean
 pio run -e esp32-dev
 ```
 
+The clean V1 stabilization build completed successfully with:
+
+- Static RAM: 83,024 / 327,680 bytes (25.3%)
+- Flash: 1,992,189 / 3,145,728 bytes (63.3%)
+- `firmware.bin`: 1,998,768 bytes
+- Warnings: ESP32-A2DP's optional AudioTools notice and two
+  `ADC_ATTEN_DB_11` deprecations inside the pinned Arduino framework
+
+These figures verify compilation, not hardware behavior. MP3, AAC+, Bluetooth,
+Wi-Fi, e-paper and diagnostics still require testing on the target radio before
+the final `v1.0.0` tag.
+
 ## System Requirements
 
 - **Operating System**: Windows 10+, macOS 10.13+, Linux (Ubuntu 18.04+)

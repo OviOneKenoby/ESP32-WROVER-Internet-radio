@@ -1,5 +1,13 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-20 — Validate reconstructed V1 stabilization build
+
+A clean `esp32-dev` build passed with PlatformIO Core 6.1.19 and the pinned
+platform, framework, toolchain and libraries. It uses 1,992,189 bytes of flash
+(63.3%), 83,024 bytes of static RAM (25.3%), and produces a 1,998,768-byte
+`firmware.bin`. Remaining validation is explicitly a hardware test on the
+ESP32-WROVER radio.
+
 ## 2026-08-20 — Document OTA capacity and web security
 
 Added a proposed, deliberately inactive 4 MB dual-slot OTA partition layout.
