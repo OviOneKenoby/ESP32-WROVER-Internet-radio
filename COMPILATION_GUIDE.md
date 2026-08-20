@@ -2,6 +2,37 @@
 
 This guide will walk you through compiling and uploading the ESP32 Internet Radio firmware.
 
+## Reproducible V1 build environment
+
+The V1 baseline is pinned in `platformio.ini`. The successful reference build
+used the following exact environment; do not upgrade individual components
+without a separate clean build and hardware regression test.
+
+| Component | Pinned version |
+|---|---|
+| PlatformIO Core | 6.1.19 |
+| Espressif32 platform | 7.0.1 |
+| Arduino-ESP32 framework | 3.20017.241212+sha.dcc1105b (Arduino core 2.0.17) |
+| Xtensa GCC toolchain | 8.4.0, crosstool-NG esp-2021r2-patch5 |
+| GxEPD2 | 1.6.9 |
+| Adafruit GFX | 1.12.6 |
+| Adafruit BusIO | 1.17.4 |
+| Bounce2 | 2.72 |
+| ArduinoJson | 7.4.3 |
+| ESP32-A2DP | commit `3245602afc494f9e62160a0cfb2af864af45a37f` |
+| ESP8266Audio | commit `058e131b26e459b9aadcb589a50f07877f1a09fd` |
+
+The ESP8266Audio AAC+/SBR compatibility patch remains applied by
+`tools/patch_esp8266audio_aac.py` before each build. This is intentional and
+must not be removed or replaced with an unverified library upgrade.
+
+Use the exact environment and target:
+
+```bash
+pio run -e esp32-dev -t clean
+pio run -e esp32-dev
+```
+
 ## System Requirements
 
 - **Operating System**: Windows 10+, macOS 10.13+, Linux (Ubuntu 18.04+)

@@ -1,5 +1,13 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-20 — Pin the reproducible V1 build environment
+
+The previously floating PlatformIO platform and registry dependencies are now
+pinned to the exact versions resolved by the successful V1 reference build.
+The established ESP8266Audio revision and AAC+/SBR patch mechanism remain
+unchanged. This prevents a future library release from silently changing a V1
+build.
+
 ## 2026-08-18 — Terminate stored Wi-Fi strings explicitly
 
 Confirmed issue: several `strncpy()` copies in the Wi-Fi manager did not add a
