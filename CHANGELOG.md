@@ -1,5 +1,13 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-20 — Document OTA capacity and web security
+
+Added a proposed, deliberately inactive 4 MB dual-slot OTA partition layout.
+The last verified binary leaves only 32,928 bytes (1.62%) in each maximal slot,
+so OTA remains disabled pending size reduction or verified larger flash. Added
+an audit of every state-changing web route and the minimum authentication,
+signature and rollback requirements that must precede web OTA.
+
 ## 2026-08-20 — Add read-only runtime diagnostics
 
 Added `/api/diagnostics` with firmware/build identity, uptime, reset reason,

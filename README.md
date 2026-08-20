@@ -15,6 +15,7 @@ performed the real-hardware testing and validation that informed each change.
 ✅ **Bluetooth Audio Sink** - Receive audio from Bluetooth devices (A2DP)
 ✅ **WiFi Management** - Connect to WiFi networks with credential saving
 ✅ **Local Web Manager** - Configure WiFi and manage saved stations from a browser
+✅ **Runtime Diagnostics** - Read-only `/api/diagnostics` health snapshot
 ✅ **Idle NTP Clock** - Shows Europe/Bucharest date and time after inactivity
 ✅ **E-paper Display** - Beautiful 200x200px B&W display with GxEPD2
 ✅ **Rotary Encoder** - Station selection and volume control with encoder
@@ -105,20 +106,22 @@ InternetRadio_ESP32_EPaper/
 
 ## Dependencies
 
-The project uses the following libraries (automatically installed by PlatformIO):
+The project uses the following versions pinned in `platformio.ini`:
 
-1. **GxEPD2** (1.4.6+) - E-paper display driver
+1. **GxEPD2 1.6.9** - E-paper display driver
    - Supports WeAct 1.54" module with SSD1681
 
-2. **Adafruit GFX Library** (1.11.9+) - Graphics primitives
+2. **Adafruit GFX 1.12.6** and **Adafruit BusIO 1.17.4** - Graphics support
 
-3. **ESP32-A2DP** (1.7.1+) - Bluetooth A2DP Sink
+3. **ESP32-A2DP commit `3245602afc494f9e62160a0cfb2af864af45a37f`** - Bluetooth A2DP Sink
    - Enables Bluetooth audio reception
    - Uses ESP32's built-in Bluetooth hardware
 
-4. **Bounce2** (2.71.0+) - Button debouncing library
+4. **Bounce2 2.72** - Button debouncing library
 
-5. **ArduinoJson** (6.21.2+) - JSON parsing (for future use)
+5. **ArduinoJson 7.4.3** - JSON parsing
+
+6. **ESP8266Audio commit `058e131b26e459b9aadcb589a50f07877f1a09fd`** - MP3/AAC decoding with the preserved AAC+/SBR build patch
 
 ## Compilation Instructions
 
