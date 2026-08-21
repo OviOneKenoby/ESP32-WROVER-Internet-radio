@@ -27,6 +27,7 @@ private:
     void sendJsonError(int code, const char* message);
     void handleRoot();
     void handleStatus();
+    void handleDiagnostics();
     void handleStations();
     void handleAddStation();
     void handleDeleteStation();

@@ -93,8 +93,8 @@ retry:
     auto *stream = http.getStreamPtr();
 
     // Can't read past EOF...
-    if ((size > 0) && (len > (uint32_t)(pos - size))) {
-        len = pos - size;
+    if ((size > 0) && (len > (uint32_t)(size - pos))) {
+        len = size - pos;
     }
 
     if (!nonBlock) {

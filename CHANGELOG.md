@@ -1,5 +1,63 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-21 - Promote the hardware-validated V1 baseline
+
+The pinned stabilization build passed an ESP32-WROVER hardware regression:
+Wi-Fi reconnect and saved configuration, e-paper full/partial updates, HTTP
+MP3, HTTPS MP3, HTTPS AAC/AAC+, ICY and Bluetooth metadata, A2DP playback,
+Bluetooth-to-radio memory/I2S handoff, Radio Browser country/tag/station
+requests, Recent, Favorites add/play/remove, the web manager, timezone saving,
+reset/flash/PSRAM boot diagnostics, and `/api/diagnostics`. The firmware version
+is promoted from `1.0.0-rc1` to `1.0.0`. OTA remains deliberately disabled;
+the proposed 4 MB dual-slot layout still lacks an acceptable safety margin.
+
+
+## 2026-08-21 — Report the active Bluetooth codec correctly
+
+Hardware validation confirmed that `/api/diagnostics` retained the previous
+internet-radio codec after switching to Bluetooth, so an AAC stream was still
+reported as `AAC` while the A2DP sink was active. Diagnostics now report `SBC`
+for Bluetooth and `none` when no audio source is active. This changes reporting
+only; the working Bluetooth audio and I2S handoff are unchanged.
+
+## 2026-08-20 — Validate reconstructed V1 stabilization build
+
+A clean `esp32-dev` build passed with PlatformIO Core 6.1.19 and the pinned
+platform, framework, toolchain and libraries. It uses 1,992,189 bytes of flash
+(63.3%), 83,024 bytes of static RAM (25.3%), and produces a 1,998,768-byte
+`firmware.bin`. Remaining validation is explicitly a hardware test on the
+ESP32-WROVER radio.
+
+## 2026-08-20 — Document OTA capacity and web security
+
+Added a proposed, deliberately inactive 4 MB dual-slot OTA partition layout.
+The last verified binary leaves only 32,928 bytes (1.62%) in each maximal slot,
+so OTA remains disabled pending size reduction or verified larger flash. Added
+an audit of every state-changing web route and the minimum authentication,
+signature and rollback requirements that must precede web OTA.
+
+## 2026-08-20 — Add read-only runtime diagnostics
+
+Added `/api/diagnostics` with firmware/build identity, uptime, reset reason,
+internal heap health, PSRAM, Wi-Fi RSSI and a mutex-protected audio-state
+snapshot. Boot logging now records the reset reason and detected flash/PSRAM.
+The endpoint never returns Wi-Fi credentials and adds no NVS writes.
+
+## 2026-08-20 — Correct finite HTTPS stream EOF clamping
+
+Confirmed issue: both vendored HTTPS readers calculated the bytes remaining in
+a finite-length response as `pos - size`. Before EOF that unsigned subtraction
+underflows and defeats the read clamp. They now use `size - pos`. Live radio
+streams with an unknown length (`size == 0`) keep their existing behavior.
+
+## 2026-08-20 — Pin the reproducible V1 build environment
+
+The previously floating PlatformIO platform and registry dependencies are now
+pinned to the exact versions resolved by the successful V1 reference build.
+The established ESP8266Audio revision and AAC+/SBR patch mechanism remain
+unchanged. This prevents a future library release from silently changing a V1
+build.
+
 ## 2026-08-18 — Terminate stored Wi-Fi strings explicitly
 
 Confirmed issue: several `strncpy()` copies in the Wi-Fi manager did not add a

@@ -16,7 +16,9 @@
 
 enum AudioCodec {
     AUDIO_CODEC_MP3,
-    AUDIO_CODEC_AAC
+    AUDIO_CODEC_AAC,
+    AUDIO_CODEC_SBC,
+    AUDIO_CODEC_NONE
 };
 
 enum AudioSource {
@@ -30,6 +32,14 @@ enum PlaybackState {
     STATE_PLAYING,
     STATE_PAUSED,
     STATE_BUFFERING
+};
+
+struct AudioDiagnostics {
+    AudioSource source;
+    PlaybackState state;
+    AudioCodec codec;
+    char streamURL[512];
+    UBaseType_t taskStackHighWaterMark;
 };
 
 class AudioPlayer {
@@ -57,6 +67,7 @@ public:
     AudioSource getSource() { return currentSource; }
     bool getNowPlaying(char* destination, size_t size);
     const char* getCurrentURL() { return currentURL; }
+    bool getDiagnostics(AudioDiagnostics& diagnostics);
 
     // Bluetooth control
     void enableBluetooth();
@@ -133,6 +144,7 @@ private:
     PlaybackState playbackState;
     AudioSource currentSource;
     uint8_t currentVolume;
+    AudioCodec currentCodec;
 
     // Stream info
     char nowPlaying[256];

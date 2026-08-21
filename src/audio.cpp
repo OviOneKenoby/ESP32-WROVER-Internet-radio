@@ -27,6 +27,7 @@ AudioPlayer::AudioPlayer()
       playbackState(STATE_STOPPED),
       currentSource(AUDIO_SOURCE_NONE),
       currentVolume(80),
+      currentCodec(AUDIO_CODEC_NONE),
       btEnabled(false),
       audioTaskHandle(nullptr),
       audioMutex(nullptr) {
@@ -96,6 +97,8 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
     teardownRadioPlayback();
 
     strncpy(currentURL, streamURL, sizeof(currentURL) - 1);
+    currentURL[sizeof(currentURL) - 1] = '\0';
+    currentCodec = codec;
     setNowPlaying("Live stream"); // replaced when ICY metadata arrives
 
     // Pick the source class based on the URL's scheme - both can coexist
@@ -116,6 +119,7 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
         Serial.println("[AUDIO] Failed to open stream");
         delete audioSource;
         audioSource = nullptr;
+        currentURL[0] = '\0';
         xSemaphoreGive(audioMutex);
         return false;
     }
@@ -219,6 +223,7 @@ void AudioPlayer::teardownRadioPlayback() {
         delete audioSource;
         audioSource = nullptr;
     }
+    currentURL[0] = '\0';
 }
 
 // ============================================
@@ -251,6 +256,7 @@ void AudioPlayer::stop() {
     playbackState = STATE_STOPPED;
     teardownRadioPlayback();
     currentSource = AUDIO_SOURCE_NONE;
+    currentCodec = AUDIO_CODEC_NONE;
     if (audioMutex) xSemaphoreGive(audioMutex);
     Serial.println("[AUDIO] Stopped");
 }
@@ -322,6 +328,7 @@ void AudioPlayer::enableBluetooth() {
     btEnabled = true;
     bluetoothPlaybackPaused = false;
     currentSource = AUDIO_SOURCE_BLUETOOTH;
+    currentCodec = AUDIO_CODEC_SBC;
     playbackState = STATE_PLAYING;
 
     if (audioMutex) xSemaphoreGive(audioMutex);
@@ -343,6 +350,7 @@ void AudioPlayer::disableBluetooth() {
     a2dp_sink.end(true);
     btEnabled = false;
     currentSource = AUDIO_SOURCE_NONE;
+    currentCodec = AUDIO_CODEC_NONE;
     playbackState = STATE_STOPPED;
 
     // Give the A2DP library's I2S teardown a moment to complete before
@@ -470,6 +478,23 @@ bool AudioPlayer::getNowPlaying(char* destination, size_t size) {
     destination[size - 1] = '\0';
     portEXIT_CRITICAL(&nowPlayingMux);
     return destination[0] != '\0';
+}
+
+bool AudioPlayer::getDiagnostics(AudioDiagnostics& diagnostics) {
+    if (!audioMutex) return false;
+
+    xSemaphoreTake(audioMutex, portMAX_DELAY);
+    diagnostics.source = currentSource;
+    diagnostics.state = playbackState;
+    diagnostics.codec = currentCodec;
+    strncpy(diagnostics.streamURL, currentURL,
+            sizeof(diagnostics.streamURL) - 1);
+    diagnostics.streamURL[sizeof(diagnostics.streamURL) - 1] = '\0';
+    diagnostics.taskStackHighWaterMark = audioTaskHandle
+        ? uxTaskGetStackHighWaterMark(audioTaskHandle)
+        : 0;
+    xSemaphoreGive(audioMutex);
+    return true;
 }
 
 const char* AudioPlayer::getBluetoothNowPlaying() {
