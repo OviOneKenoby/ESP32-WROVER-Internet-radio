@@ -1,5 +1,17 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-21 - Promote the hardware-validated V1 baseline
+
+The pinned stabilization build passed an ESP32-WROVER hardware regression:
+Wi-Fi reconnect and saved configuration, e-paper full/partial updates, HTTP
+MP3, HTTPS MP3, HTTPS AAC/AAC+, ICY and Bluetooth metadata, A2DP playback,
+Bluetooth-to-radio memory/I2S handoff, Radio Browser country/tag/station
+requests, Recent, Favorites add/play/remove, the web manager, timezone saving,
+reset/flash/PSRAM boot diagnostics, and `/api/diagnostics`. The firmware version
+is promoted from `1.0.0-rc1` to `1.0.0`. OTA remains deliberately disabled;
+the proposed 4 MB dual-slot layout still lacks an acceptable safety margin.
+
+
 ## 2026-08-21 — Report the active Bluetooth codec correctly
 
 Hardware validation confirmed that `/api/diagnostics` retained the previous
