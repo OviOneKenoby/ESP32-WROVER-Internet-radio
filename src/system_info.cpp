@@ -41,7 +41,13 @@ const char* playbackStateName(PlaybackState state) {
 }
 
 const char* audioCodecName(AudioCodec codec) {
-    return codec == AUDIO_CODEC_AAC ? "AAC" : "MP3";
+    switch (codec) {
+        case AUDIO_CODEC_MP3: return "MP3";
+        case AUDIO_CODEC_AAC: return "AAC";
+        case AUDIO_CODEC_SBC: return "SBC";
+        case AUDIO_CODEC_NONE:
+        default: return "none";
+    }
 }
 
 void logBootInfo() {

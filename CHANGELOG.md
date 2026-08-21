@@ -1,5 +1,13 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-08-21 — Report the active Bluetooth codec correctly
+
+Hardware validation confirmed that `/api/diagnostics` retained the previous
+internet-radio codec after switching to Bluetooth, so an AAC stream was still
+reported as `AAC` while the A2DP sink was active. Diagnostics now report `SBC`
+for Bluetooth and `none` when no audio source is active. This changes reporting
+only; the working Bluetooth audio and I2S handoff are unchanged.
+
 ## 2026-08-20 — Validate reconstructed V1 stabilization build
 
 A clean `esp32-dev` build passed with PlatformIO Core 6.1.19 and the pinned

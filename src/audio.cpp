@@ -27,7 +27,7 @@ AudioPlayer::AudioPlayer()
       playbackState(STATE_STOPPED),
       currentSource(AUDIO_SOURCE_NONE),
       currentVolume(80),
-      currentCodec(AUDIO_CODEC_MP3),
+      currentCodec(AUDIO_CODEC_NONE),
       btEnabled(false),
       audioTaskHandle(nullptr),
       audioMutex(nullptr) {
@@ -256,6 +256,7 @@ void AudioPlayer::stop() {
     playbackState = STATE_STOPPED;
     teardownRadioPlayback();
     currentSource = AUDIO_SOURCE_NONE;
+    currentCodec = AUDIO_CODEC_NONE;
     if (audioMutex) xSemaphoreGive(audioMutex);
     Serial.println("[AUDIO] Stopped");
 }
@@ -327,6 +328,7 @@ void AudioPlayer::enableBluetooth() {
     btEnabled = true;
     bluetoothPlaybackPaused = false;
     currentSource = AUDIO_SOURCE_BLUETOOTH;
+    currentCodec = AUDIO_CODEC_SBC;
     playbackState = STATE_PLAYING;
 
     if (audioMutex) xSemaphoreGive(audioMutex);
@@ -348,6 +350,7 @@ void AudioPlayer::disableBluetooth() {
     a2dp_sink.end(true);
     btEnabled = false;
     currentSource = AUDIO_SOURCE_NONE;
+    currentCodec = AUDIO_CODEC_NONE;
     playbackState = STATE_STOPPED;
 
     // Give the A2DP library's I2S teardown a moment to complete before

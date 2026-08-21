@@ -16,7 +16,9 @@
 
 enum AudioCodec {
     AUDIO_CODEC_MP3,
-    AUDIO_CODEC_AAC
+    AUDIO_CODEC_AAC,
+    AUDIO_CODEC_SBC,
+    AUDIO_CODEC_NONE
 };
 
 enum AudioSource {
