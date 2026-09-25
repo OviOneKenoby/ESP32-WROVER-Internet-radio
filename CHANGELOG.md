@@ -2061,6 +2061,47 @@ header pins.
     moved out of internal SRAM this session (the audio buffer via
     ps_malloc, the browse arrays now on-demand rather than permanent).
 
+
+86. **Confirmed the encoder issue on real TUNER//01 hardware.**
+    The previous single-edge CLK/FALLING decoder was not reliable for the
+    EC11 module used in the radio and produced incorrect/multiple movements.
+
+87. **GPIO27 was abandoned for encoder CLK/S1 on this hardware.**
+    The encoder did not operate correctly with S1 connected to GPIO27.
+    S1 was moved to GPIO13 and immediately produced valid quadrature input.
+
+88. **GPIO35 must remain exclusively assigned to the Next button.**
+    A temporary diagnostic attempt placed encoder S1 on GPIO35, which caused
+    encoder movement to be interpreted as Next-button presses because GPIO35
+    was already assigned to BUTTON_NEXT_PIN. This wiring/configuration must
+    not be used again.
+
+89. **Replaced the single-edge encoder decoder with a Gray-code quadrature
+    decoder.**
+    Both CLK/S1 and DT/S2 are now monitored on CHANGE interrupts.
+    Only valid one-bit Gray-code transitions are accumulated; invalid
+    transitions are discarded and the decoder resynchronizes automatically.
+
+90. **Final encoder pinout for TUNER//01:**
+    - CLK / S1: GPIO13
+    - DT / S2: GPIO32
+    - SW / KEY: GPIO14
+
+91. **Final EC11 resolution verified on hardware:**
+    `ENCODER_STEPS_PER_DETENT = 4`.
+
+    Hardware test result:
+    - 5 physical detents in one direction produced exactly 5 logical events.
+    - 5 physical detents in the opposite direction produced exactly 5 logical events.
+    - No false movement after stopping.
+    - Navigation is precise and stable in normal UI use.
+    - Fast and slow navigation both operate correctly.
+
+Status:
+- Encoder fix: hardware verified.
+- TUNER//01 navigation: working correctly.
+- PlatformIO clean-build verification of this exact Git working tree: not yet rerun.
+
 Everything else - AAC-aware browsing, Recent/Favorites, the browse flow,
 memory management - is pure software untouched by this hardware switch,
 confirmed still intact.

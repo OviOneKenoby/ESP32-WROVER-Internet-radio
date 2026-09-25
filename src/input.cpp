@@ -1,50 +1,118 @@
 #include "input.h"
 #include "config.h"
+#include <limits.h>
 
 // Global input control
 InputControl inputControl;
 
-// Static member definitions - see input.h for why these aren't declared
-// with C++17 "inline static" syntax instead.
-volatile int16_t InputControl::encoderPosition = 0;
-volatile uint32_t InputControl::encoderLastInterruptMicros = 0;
+// ============================================
+// EC11 encoder shared state
+// ============================================
 
-// ISR for rotary encoder - this is InputControl::encoderISR, matching the
-// static member declared in input.h. attachInterrupt() in init() below
-// resolves the unqualified name "encoderISR" to this class member (member
-// lookup takes priority inside a member function body), so this is the
-// definition that actually needs to exist - a same-named free function
-// here would silently never be called.
+volatile uint8_t InputControl::encoderLastState = 0;
+volatile int8_t InputControl::encoderTransitionAccumulator = 0;
+volatile int16_t InputControl::encoderPendingSteps = 0;
+
+// ============================================
+// EC11 quadrature decoder
+// ============================================
 //
-// Triggered only on ENCODER_CLK_PIN's falling edge (see init() below) -
-// direction is read synchronously by comparing DT's level against CLK's
-// at that moment, the standard technique for this class of module.
+// State encoding:
+//
+// bit 1 = CLK / S1
+// bit 0 = DT  / S2
+//
+// Legal quadrature sequences:
+//
+// Direction A:
+//   00 -> 10 -> 11 -> 01 -> 00
+//
+// Direction B:
+//   00 -> 01 -> 11 -> 10 -> 00
+//
+// Every legal one-bit transition contributes +/-1.
+//
+// Mechanical contact bounce normally generates a transition followed
+// immediately by its reverse. Because those have opposite signs, they
+// cancel instead of creating extra movements.
+//
+// The EC11 module used in TUNER//01 produces four valid quadrature`r`n// transitions per mechanical detent, therefore`r`n// ENCODER_STEPS_PER_DETENT is 4.
+//
+// There is deliberately NO fixed microsecond debounce delay here.
+// A time-based filter can discard legitimate quadrature edges and is
+// not required when the Gray-code sequence itself is validated.
+//
 void IRAM_ATTR InputControl::encoderISR() {
-    // Minimum interval between accepted clicks - filters contact bounce
-    // without being tight enough to risk dropping a fast legitimate turn.
-    // NOTE: this is a mitigation, not a fix, for a floating/unpulled CLK
-    // pin (see config.h ENCODER_CLK_PIN comment) - it can reduce how often
-    // noise gets registered as a click, but it cannot fully stop a
-    // genuinely floating pin from eventually tripping the threshold. If
-    // you're seeing continuous unprompted scrolling, add the pull-up
-    // resistor (or move to a different GPIO) rather than just raising this
-    // number further.
-    uint32_t nowMicros = micros();
-    if (nowMicros - encoderLastInterruptMicros < 5000) {
+    const uint8_t currentState =
+        (digitalRead(ENCODER_CLK_PIN) ? 0x02 : 0x00) |
+        (digitalRead(ENCODER_DT_PIN)  ? 0x01 : 0x00);
+
+    const uint8_t previousState = encoderLastState;
+
+    if (currentState == previousState) {
         return;
     }
-    encoderLastInterruptMicros = nowMicros;
-    
-    if (digitalRead(ENCODER_DT_PIN) != digitalRead(ENCODER_CLK_PIN)) {
-        encoderPosition++;
-    } else {
-        encoderPosition--;
+
+    encoderLastState = currentState;
+
+    int8_t delta = 0;
+
+    switch ((previousState << 2) | currentState) {
+
+        // 00 -> 10
+        // 10 -> 11
+        // 11 -> 01
+        // 01 -> 00
+        case 0x02:
+        case 0x0B:
+        case 0x0D:
+        case 0x04:
+            delta = +1;
+            break;
+
+        // 00 -> 01
+        // 01 -> 11
+        // 11 -> 10
+        // 10 -> 00
+        case 0x01:
+        case 0x07:
+        case 0x0E:
+        case 0x08:
+            delta = -1;
+            break;
+
+        default:
+            // Invalid transition: both bits changed at once.
+            //
+            // This can be caused by missed edges or severe contact noise.
+            // Do not convert it into movement. Discard the partial
+            // sequence and resynchronize from the newly observed state.
+            encoderTransitionAccumulator = 0;
+            return;
+    }
+
+    encoderTransitionAccumulator += delta;
+
+    if (encoderTransitionAccumulator >= ENCODER_STEPS_PER_DETENT) {
+        if (encoderPendingSteps < INT16_MAX) {
+            encoderPendingSteps++;
+        }
+
+        encoderTransitionAccumulator -= ENCODER_STEPS_PER_DETENT;
+    }
+    else if (encoderTransitionAccumulator <= -ENCODER_STEPS_PER_DETENT) {
+        if (encoderPendingSteps > INT16_MIN) {
+            encoderPendingSteps--;
+        }
+
+        encoderTransitionAccumulator += ENCODER_STEPS_PER_DETENT;
     }
 }
 
 // ============================================
 // Constructor
 // ============================================
+
 InputControl::InputControl()
     : lastEvent(EVENT_NONE),
       lastEventTime(0),
@@ -53,111 +121,167 @@ InputControl::InputControl()
 }
 
 InputControl::~InputControl() {
-    // Detach interrupt
     detachInterrupt(digitalPinToInterrupt(ENCODER_CLK_PIN));
+    detachInterrupt(digitalPinToInterrupt(ENCODER_DT_PIN));
 }
 
 // ============================================
 // Initialization
 // ============================================
+
 bool InputControl::init() {
-    // Initialize button pins
+
+    // Buttons
     pinMode(BUTTON_PLAY_PIN, INPUT_PULLUP);
     pinMode(BUTTON_NEXT_PIN, INPUT_PULLUP);
     pinMode(BUTTON_PREV_PIN, INPUT_PULLUP);
-    
-    // Initialize encoder pins
+
+    // EC11 encoder
+    //
+    // GPIO27 and GPIO32 both support internal pull-ups.
+    // The encoder module is powered from 3.3 V.
     pinMode(ENCODER_CLK_PIN, INPUT_PULLUP);
     pinMode(ENCODER_DT_PIN, INPUT_PULLUP);
     pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
-    
-    // Configure Bounce2 buttons
+
+    // Bounce2 buttons
     buttonPlay.attach(BUTTON_PLAY_PIN, INPUT_PULLUP);
     buttonPlay.interval(BUTTON_DEBOUNCE_MS);
-    
+
     buttonNext.attach(BUTTON_NEXT_PIN, INPUT_PULLUP);
     buttonNext.interval(BUTTON_DEBOUNCE_MS);
-    
+
     buttonPrev.attach(BUTTON_PREV_PIN, INPUT_PULLUP);
     buttonPrev.interval(BUTTON_DEBOUNCE_MS);
-    
+
     encoderClick.attach(ENCODER_SW_PIN, INPUT_PULLUP);
     encoderClick.interval(BUTTON_DEBOUNCE_MS);
-    
-    // Attach encoder ISR - only on CLK's falling edge. Previously this
-    // attached CHANGE-triggered interrupts on BOTH CLK and DT, which is
-    // what caused multiple registered movements per single physical click.
-    attachInterrupt(digitalPinToInterrupt(ENCODER_CLK_PIN), encoderISR, FALLING);
-    
-    Serial.println("[INPUT] Initialized: Buttons and Encoder");
+
+    // Synchronize the quadrature state machine with the encoder's
+    // actual electrical state before enabling interrupts.
+    encoderLastState =
+        (digitalRead(ENCODER_CLK_PIN) ? 0x02 : 0x00) |
+        (digitalRead(ENCODER_DT_PIN)  ? 0x01 : 0x00);
+
+    encoderTransitionAccumulator = 0;
+    encoderPendingSteps = 0;
+
+    // Observe both quadrature channels.
+    attachInterrupt(
+        digitalPinToInterrupt(ENCODER_CLK_PIN),
+        encoderISR,
+        CHANGE
+    );
+
+    attachInterrupt(
+        digitalPinToInterrupt(ENCODER_DT_PIN),
+        encoderISR,
+        CHANGE
+    );
+
+    Serial.printf(
+        "[INPUT] Initialized: Buttons + EC11 Encoder (state=%u)\n",
+        encoderLastState
+    );
+
     return true;
 }
 
 // ============================================
-// Update - Call regularly (10-20ms interval)
+// Update
 // ============================================
+
 void InputControl::update() {
-    // Update button states
+
     buttonPlay.update();
     buttonNext.update();
     buttonPrev.update();
     encoderClick.update();
-    
-    uint32_t now = millis();
-    
-    // Clear old events
+
+    const uint32_t now = millis();
+
     if (now - lastEventTime > 200) {
         lastEvent = EVENT_NONE;
     }
-    
-    // Check for button press events
+
+    // ========================================
+    // Buttons
+    // ========================================
+
     if (buttonPlay.fell()) {
         lastEvent = EVENT_PLAY_PAUSE;
         lastEventTime = now;
         Serial.println("[INPUT] Play/Pause pressed");
     }
-    
+
     if (buttonNext.fell()) {
         lastEvent = EVENT_NEXT;
         lastEventTime = now;
         Serial.println("[INPUT] Next pressed");
     }
-    
+
     if (buttonPrev.fell()) {
         lastEvent = EVENT_PREV;
         lastEventTime = now;
         Serial.println("[INPUT] Prev pressed");
     }
-    
+
     if (encoderClick.fell()) {
         lastEvent = EVENT_ENCODER_CLICK;
         lastEventTime = now;
         Serial.println("[INPUT] Encoder clicked");
     }
-    
-    // Check for encoder rotation
-    if (encoderPosition >= ENCODER_STEPS_PER_DETENT) {
-        lastEvent = EVENT_ENCODER_UP;
-        Serial.printf("[INPUT] Encoder UP (raw=%d)\n", encoderPosition);
-        lastEventTime = now;
-        encoderPosition -= ENCODER_STEPS_PER_DETENT;
-    } else if (encoderPosition <= -ENCODER_STEPS_PER_DETENT) {
-        lastEvent = EVENT_ENCODER_DOWN;
-        Serial.printf("[INPUT] Encoder DOWN (raw=%d)\n", encoderPosition);
-        lastEventTime = now;
-        encoderPosition += ENCODER_STEPS_PER_DETENT;
+
+    // ========================================
+    // Encoder
+    // ========================================
+
+    int8_t encoderStep = 0;
+
+    noInterrupts();
+
+    if (encoderPendingSteps > 0) {
+        encoderPendingSteps--;
+        encoderStep = +1;
     }
-    
-    // Check for long press
+    else if (encoderPendingSteps < 0) {
+        encoderPendingSteps++;
+        encoderStep = -1;
+    }
+
+    interrupts();
+
+    if (encoderStep > 0) {
+        lastEvent = EVENT_ENCODER_UP;
+        lastEventTime = now;
+
+        Serial.println("[INPUT] Encoder UP");
+    }
+    else if (encoderStep < 0) {
+        lastEvent = EVENT_ENCODER_DOWN;
+        lastEventTime = now;
+
+        Serial.println("[INPUT] Encoder DOWN");
+    }
+
+    // ========================================
+    // Play button long press
+    // ========================================
+
     if (buttonPlay.isPressed() && !isLongPressing) {
-        uint32_t pressDuration = buttonPlay.currentDuration();
+
+        const uint32_t pressDuration =
+            buttonPlay.currentDuration();
+
         if (pressDuration > LONG_PRESS_TIME) {
             lastEvent = EVENT_LONG_PRESS;
             lastEventTime = now;
             isLongPressing = true;
+
             Serial.println("[INPUT] Long press detected");
         }
-    } else if (!buttonPlay.isPressed()) {
+    }
+    else if (!buttonPlay.isPressed()) {
         isLongPressing = false;
     }
 }
@@ -165,8 +289,9 @@ void InputControl::update() {
 // ============================================
 // Event Retrieval
 // ============================================
+
 InputEvent InputControl::getEvent() {
-    InputEvent event = lastEvent;
+    const InputEvent event = lastEvent;
     lastEvent = EVENT_NONE;
     return event;
 }
@@ -174,8 +299,8 @@ InputEvent InputControl::getEvent() {
 // ============================================
 // Encoder State
 // ============================================
+
 int8_t InputControl::getEncoderDelta() {
-    // Can be used to get precise encoder position if needed
-    // Currently using direct ISR approach
     return 0;
 }
+

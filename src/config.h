@@ -59,10 +59,7 @@
 // ============================================
 // ROTARY ENCODER CONFIGURATION
 // ============================================
-#define ENCODER_CLK_PIN     27   // GPIO27 - normal GPIO, has a working
-                                  // internal pull-up. Moved from GPIO36
-                                  // (input-only, no internal pull-up
-                                  // possible - see CHANGELOG.md item 5/9)
+#define ENCODER_CLK_PIN     13   // GPIO13 - final TUNER//01 encoder CLK/S1 pin
                                   // to here. IMPORTANT: this value must
                                   // always match wherever the CLK wire is
                                   // physically connected - a mismatch here
@@ -81,7 +78,7 @@
 // even on a GPIO with a proper working pull-up). This divides the raw
 // edge count so one physical click = one logical UP/DOWN event. If your
 // specific encoder produces 1 or 4 edges per detent instead, adjust this.
-#define ENCODER_STEPS_PER_DETENT  2
+#define ENCODER_STEPS_PER_DETENT  4
 
 // ============================================
 // WiFi & NETWORK CONFIGURATION
@@ -225,3 +222,4 @@ static const char* const RADIO_BROWSER_MIRRORS[RADIO_BROWSER_MIRROR_COUNT] = {
 #define NETWORK_TASK_STACK      4096
 
 #endif // CONFIG_H
+
