@@ -72,11 +72,11 @@ performed the real-hardware testing and validation that informed each change.
 │  WS    → GPIO 25 (Word Select)      │
 │  DIN   → GPIO 33 (Data In)          │
 ├─────────────────────────────────────┤
-│  CONTROLS                            │
+│  CONTROLS                           │
 │  Button Play/Pause  → GPIO 34       │
 │  Button Next        → GPIO 35       │
 │  Button Prev        → GPIO 39       │
-│  Encoder CLK        → GPIO 27       │
+│  Encoder CLK        → GPIO 13       │
 │  Encoder DT         → GPIO 32       │
 │  Encoder SW (Click) → GPIO 14       │
 └─────────────────────────────────────┘
