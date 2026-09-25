@@ -48,7 +48,7 @@ performed the real-hardware testing and validation that informed each change.
   - Previous Station Button (GPIO39)
 
 - **Rotary Encoder with Click**
-  - CLK Pin (GPIO27)
+  - CLK Pin (GPIO13)
   - DT Pin (GPIO32)
   - Click/Push Button (GPIO14)
   - Function: Station selection & Volume control
