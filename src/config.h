@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define FIRMWARE_VERSION "1.0.0"
+#define FIRMWARE_VERSION "1.1.0"
 
 // ============================================
 // DISPLAY CONFIGURATION (WeAct 1.54" E-paper)
@@ -222,4 +222,3 @@ static const char* const RADIO_BROWSER_MIRRORS[RADIO_BROWSER_MIRROR_COUNT] = {
 #define NETWORK_TASK_STACK      4096
 
 #endif // CONFIG_H
-

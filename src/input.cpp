@@ -36,7 +36,9 @@ volatile int16_t InputControl::encoderPendingSteps = 0;
 // immediately by its reverse. Because those have opposite signs, they
 // cancel instead of creating extra movements.
 //
-// The EC11 module used in TUNER//01 produces four valid quadrature`r`n// transitions per mechanical detent, therefore`r`n// ENCODER_STEPS_PER_DETENT is 4.
+// The EC11 module used in TUNER//01 produces four valid quadrature
+// transitions per mechanical detent, therefore
+// ENCODER_STEPS_PER_DETENT is 4.
 //
 // There is deliberately NO fixed microsecond debounce delay here.
 // A time-based filter can discard legitimate quadrature edges and is
@@ -138,7 +140,7 @@ bool InputControl::init() {
 
     // EC11 encoder
     //
-    // GPIO27 and GPIO32 both support internal pull-ups.
+    // GPIO13 and GPIO32 both support internal pull-ups.
     // The encoder module is powered from 3.3 V.
     pinMode(ENCODER_CLK_PIN, INPUT_PULLUP);
     pinMode(ENCODER_DT_PIN, INPUT_PULLUP);
@@ -303,4 +305,3 @@ InputEvent InputControl::getEvent() {
 int8_t InputControl::getEncoderDelta() {
     return 0;
 }
-

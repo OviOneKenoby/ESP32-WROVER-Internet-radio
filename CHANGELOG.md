@@ -1,5 +1,20 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-09-27 — Release v1.1.0: hardware-verified EC11 encoder input
+
+The TUNER//01 rotary encoder is now decoded as a complete Gray-code
+quadrature signal instead of sampling a single CLK edge. Both encoder channels
+are monitored, invalid transitions are rejected, and four valid transitions
+produce one logical movement. This eliminates double movements, false movement
+after stopping, and unreliable navigation on the installed EC11 encoder.
+
+The final hardware-verified encoder pinout is CLK/S1 on GPIO13, DT/S2 on
+GPIO32, and SW/KEY on GPIO14. Five physical detents in either direction
+produced exactly five logical events during hardware testing. GPIO35 remains
+reserved exclusively for the Next button. The README and firmware pinout now
+match the assembled radio. Audio, Bluetooth, networking, display, station,
+Favorites, Recent, and web-manager behavior are unchanged from v1.0.0.
+
 ## 2026-08-21 - Promote the hardware-validated V1 baseline
 
 The pinned stabilization build passed an ESP32-WROVER hardware regression:
@@ -2100,7 +2115,6 @@ header pins.
 Status:
 - Encoder fix: hardware verified.
 - TUNER//01 navigation: working correctly.
-- PlatformIO clean-build verification of this exact Git working tree: not yet rerun.
 
 Everything else - AAC-aware browsing, Recent/Favorites, the browse flow,
 memory management - is pure software untouched by this hardware switch,
