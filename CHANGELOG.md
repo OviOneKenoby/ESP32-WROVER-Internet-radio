@@ -1,5 +1,17 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-08 — Integrate bounded guards and prepare identified regression artifact
+
+Firmware PR #2 was reviewed at `8fac1da6ccd749a47843d99dc746fc3d6e4bf19b`
+and merged ordinarily as `d1e51765179f99567df3b5d18a451152adac514c`.
+The merge tree is identical to the reviewed tree. The original clean-build
+`firmware.bin` was recovered and rehashed at 1,999,408 bytes with SHA-256
+`AF066BA215F863A7D2583A6313ACEE00020CCFAD4F8F8C3168DEDA76BCD6F5D4`.
+It is published as a non-production owner-regression prerelease together with
+an exact manifest and checklist. No source, dependency, target, partition,
+GPIO, firmware version, Native API or shared contract changed in this review.
+Upload and physical validation remain owner-assisted and PENDING / NOT RUN.
+
 ## 2026-10-08 — Bound destructive and playback-control edge cases
 
 Delete routes now accept only a complete decimal index that fits `uint8_t` and
