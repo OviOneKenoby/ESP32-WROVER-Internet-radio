@@ -1,5 +1,6 @@
 #include "audio.h"
 #include "config.h"
+#include "correctness_guards.h"
 #include <driver/i2s.h> // legacy I2S API - still needed here for
                          // i2s_pin_config_t/I2S_PIN_NO_CHANGE used by
                          // enableBluetooth() below (the A2DP library uses
@@ -290,7 +291,7 @@ void AudioPlayer::volumeUp() {
 
 void AudioPlayer::volumeDown() {
     if (currentVolume > 0) {
-        setVolume(currentVolume - 5);
+        setVolume(CorrectnessGuards::volumeDown(currentVolume));
     }
 }
 

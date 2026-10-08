@@ -1,5 +1,27 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-08 — Bound destructive and playback-control edge cases
+
+Delete routes now accept only a complete decimal index that fits `uint8_t` and
+is inside the current list, so malformed or narrowed values cannot delete item
+zero. Saved-station Next/Previous now refuse empty or stale selections instead
+of dividing by zero or underflowing. Volume Down saturates values 1–5 at zero
+instead of wrapping 1–4 to full volume. The currently playing discovered
+station now retains its actual codec, so adding an opaque AAC/AAC+ URL to
+Favorites persists AAC rather than MP3. Focused host tests cover malformed
+deletes/no-mutation, zero/one/many traversal, all volume values 0–100, and
+MP3/AAC codec persistence. Native API and shared contracts are unchanged.
+
+## 2026-10-08 — A-TUNER-001 baseline and correctness audit
+
+Documented a read-only verification of the live `main` baseline at commit
+`371cdebce7ba2648ea71636d5bdb5d738b42e680` (firmware `1.1.0`) for the shared
+REMOTE/TUNER coordination project. The inspection rechecked correctness items
+B01–B11, current playback/catalog semantics, synchronization ownership and
+the available build/resource evidence. No executable firmware, dependency,
+partition, API, build artifact or hardware state was changed. Corrective
+implementation remains subject to a separately reviewed task.
+
 ## 2026-09-27 — Release v1.1.0: hardware-verified EC11 encoder input
 
 The TUNER//01 rotary encoder is now decoded as a complete Gray-code

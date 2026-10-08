@@ -5,6 +5,7 @@
 #include "time_service.h"
 #include "audio.h"
 #include "system_info.h"
+#include "correctness_guards.h"
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <esp_heap_caps.h>
@@ -122,8 +123,31 @@ void WebPortal::handleAddStation() {
     if (stationManager.addStation(name.c_str(),url.c_str(),c)==0xFF) { sendJsonError(409,"Station list is full"); return; }
     server.send(201,"application/json","{\"ok\":true}");
 }
-void WebPortal::handleDeleteStation() { int idx=server.uri().substring(String("/api/station/").length()).toInt(); if (idx<0 || !stationManager.removeStation((uint8_t)idx)) { sendJsonError(404,"Station not found"); return; } server.send(200,"application/json","{\"ok\":true}"); }
-void WebPortal::handleDeleteFavorite() { int idx=server.uri().substring(String("/api/favorite/").length()).toInt(); if (idx<0 || !stationManager.removeFavorite((uint8_t)idx)) { sendJsonError(404,"Favorite not found"); return; } server.send(200,"application/json","{\"ok\":true}"); }
+void WebPortal::handleDeleteStation() {
+    const String prefix = "/api/station/";
+    const String suffix = server.uri().substring(prefix.length());
+    uint8_t index;
+    if (!CorrectnessGuards::parseListIndex(
+            suffix.c_str(), suffix.length(), stationManager.getStationCount(), index) ||
+        !stationManager.removeStation(index)) {
+        sendJsonError(404, "Station not found");
+        return;
+    }
+    server.send(200, "application/json", "{\"ok\":true}");
+}
+
+void WebPortal::handleDeleteFavorite() {
+    const String prefix = "/api/favorite/";
+    const String suffix = server.uri().substring(prefix.length());
+    uint8_t index;
+    if (!CorrectnessGuards::parseListIndex(
+            suffix.c_str(), suffix.length(), stationManager.getFavoriteCount(), index) ||
+        !stationManager.removeFavorite(index)) {
+        sendJsonError(404, "Favorite not found");
+        return;
+    }
+    server.send(200, "application/json", "{\"ok\":true}");
+}
 void WebPortal::handleWiFiSave() {
     String ssid=server.arg("ssid"), pass=server.arg("password");
     if (ssid.isEmpty() || ssid.length() >= MAX_SSID_LENGTH || pass.length() >= MAX_PASS_LENGTH) { sendJsonError(400,"Invalid Wi-Fi name or password length"); return; }

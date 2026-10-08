@@ -3,15 +3,7 @@
 
 #include <Arduino.h>
 #include "config.h"
-
-enum StationCodec {
-    STATION_CODEC_MP3,
-    STATION_CODEC_AAC
-};
-
-// Some older saved entries predate AAC discovery support.  Preserve the
-// stored codec normally, but correct the unambiguous ".aac" stream URLs.
-StationCodec stationCodecForURL(const char* url, StationCodec storedCodec);
+#include "station_codec.h"
 
 struct RadioStation {
     char name[MAX_NAME_LENGTH];

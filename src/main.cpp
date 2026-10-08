@@ -8,6 +8,8 @@
 #include "browser.h"
 #include "web_portal.h"
 #include "time_service.h"
+#include "correctness_guards.h"
+#include "current_station_context.h"
 #include "system_info.h"
 
 // ============================================
@@ -77,7 +79,7 @@ bool skippedCountrySelection = false;
 // it). Next/Prev are disabled for discovered stations for the same
 // reason - there's no sensible "next" in a one-off search result.
 char nowPlayingName[MAX_NAME_LENGTH] = "";
-bool nowPlayingIsDiscovered = false;
+CurrentStationContext nowPlayingContext;
 
 // Next has no sensible meaning for a discovered (browse/favorites/
 // recent) station - there's no "next" in a one-off search result, so
@@ -86,7 +88,7 @@ bool nowPlayingIsDiscovered = false;
 // that; used consistently everywhere showPlaying() is called so the
 // on-screen hint can't fall out of sync with what Next actually does.
 const char* nowPlayingFooter() {
-    return nowPlayingIsDiscovered ? "< Back  Pause  +Fav >" : "< Prev  Pause  Next >";
+    return nowPlayingContext.discovered ? "< Back  Pause  +Fav >" : "< Prev  Pause  Next >";
 }
 
 // ============================================
@@ -460,29 +462,45 @@ void handlePlayingInput(InputEvent event) {
             break;
             
         case EVENT_NEXT:
-            if (nowPlayingIsDiscovered) {
+            if (nowPlayingContext.discovered) {
                 // Repurposed here specifically - Next has no sensible
                 // meaning for a one-off discovered station (there's no
                 // ordered "next" the way there is in the fixed list), so
                 // it's reused as the "add to favorites" gesture instead.
-                if (stationManager.addToFavorites(nowPlayingName, audioPlayer.getCurrentURL(), STATION_CODEC_MP3)) {
+                if (stationManager.addToFavorites(nowPlayingName, audioPlayer.getCurrentURL(), nowPlayingContext.codec)) {
                     Serial.printf("[MAIN] Added to favorites: %s\n", nowPlayingName);
                 } else {
                     Serial.printf("[MAIN] Not added to favorites (already there, or list full): %s\n", nowPlayingName);
                 }
                 break;
             }
-            selectedStation = (selectedStation + 1) % stationManager.getStationCount();
-            playStation(selectedStation);
+            {
+                uint8_t nextStation;
+                if (!CorrectnessGuards::nextStationIndex(
+                        selectedStation, stationManager.getStationCount(), nextStation)) {
+                    Serial.println("[MAIN] Next unavailable: saved station list is empty or selection is stale");
+                    break;
+                }
+                selectedStation = nextStation;
+                playStation(selectedStation);
+            }
             break;
             
         case EVENT_PREV:
-            if (nowPlayingIsDiscovered) {
+            if (nowPlayingContext.discovered) {
                 Serial.println("[MAIN] Prev not available for a discovered station - Next adds to Favorites, encoder click goes back");
                 break;
             }
-            selectedStation = (selectedStation == 0) ? stationManager.getStationCount() - 1 : selectedStation - 1;
-            playStation(selectedStation);
+            {
+                uint8_t previousStation;
+                if (!CorrectnessGuards::previousStationIndex(
+                        selectedStation, stationManager.getStationCount(), previousStation)) {
+                    Serial.println("[MAIN] Previous unavailable: saved station list is empty or selection is stale");
+                    break;
+                }
+                selectedStation = previousStation;
+                playStation(selectedStation);
+            }
             break;
             
         case EVENT_ENCODER_UP:
@@ -563,7 +581,7 @@ void playStation(uint8_t stationIdx) {
         lastKnownPlaybackState = STATE_BUFFERING;
         strncpy(nowPlayingName, stationName, MAX_NAME_LENGTH - 1);
         nowPlayingName[MAX_NAME_LENGTH - 1] = '\0';
-        nowPlayingIsDiscovered = false;
+        nowPlayingContext.set(stationCodec, false);
         display.showPlaying(stationName, "Buffering...", nowPlayingFooter());
     } else {
         currentMode = MODE_ERROR;
@@ -573,8 +591,7 @@ void playStation(uint8_t stationIdx) {
 
 // ============================================
 // Station Discovery - plays anything not from the fixed stationManager
-// list (browse results, favorites, recent) - always MP3 per requirements,
-// which also means none of these can hit the AAC+/SBR memory crash.
+// list (browse results, favorites, recent) using its resolved MP3/AAC codec.
 // Every entry point below (browse results, favorites, recent) funnels
 // through this one function rather than duplicating play logic three
 // times.
@@ -618,7 +635,7 @@ void playDiscoveredStation(const char* name, const char* url, StationCodec codec
         lastKnownPlaybackState = STATE_BUFFERING;
         strncpy(nowPlayingName, stationName, MAX_NAME_LENGTH - 1);
         nowPlayingName[MAX_NAME_LENGTH - 1] = '\0';
-        nowPlayingIsDiscovered = true;
+        nowPlayingContext.set(codec, true);
         display.showPlaying(stationName, "Buffering...", nowPlayingFooter());
     } else {
         currentMode = MODE_ERROR;
