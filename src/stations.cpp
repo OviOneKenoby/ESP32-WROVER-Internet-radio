@@ -5,14 +5,6 @@
 // Global station manager
 StationManager stationManager;
 
-StationCodec stationCodecForURL(const char* url, StationCodec storedCodec) {
-    if (!url) return storedCodec;
-
-    String normalizedURL(url);
-    normalizedURL.toLowerCase();
-    return normalizedURL.indexOf(".aac") >= 0 ? STATION_CODEC_AAC : storedCodec;
-}
-
 // ============================================
 // Constructor
 // ============================================
