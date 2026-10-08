@@ -1,5 +1,15 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-08 — A-TUNER-001 baseline and correctness audit
+
+Documented a read-only verification of the live `main` baseline at commit
+`371cdebce7ba2648ea71636d5bdb5d738b42e680` (firmware `1.1.0`) for the shared
+REMOTE/TUNER coordination project. The inspection rechecked correctness items
+B01–B11, current playback/catalog semantics, synchronization ownership and
+the available build/resource evidence. No executable firmware, dependency,
+partition, API, build artifact or hardware state was changed. Corrective
+implementation remains subject to a separately reviewed task.
+
 ## 2026-09-27 — Release v1.1.0: hardware-verified EC11 encoder input
 
 The TUNER//01 rotary encoder is now decoded as a complete Gray-code
