@@ -34,10 +34,20 @@ enum PlaybackState {
     STATE_BUFFERING
 };
 
+enum BluetoothLifecycleState {
+    BT_LIFECYCLE_INACTIVE,
+    BT_LIFECYCLE_STARTING,
+    BT_LIFECYCLE_ACTIVE,
+    BT_LIFECYCLE_STOPPING,
+    BT_LIFECYCLE_CLEANUP_FAILED
+};
+
 struct AudioDiagnostics {
     AudioSource source;
     PlaybackState state;
     AudioCodec codec;
+    BluetoothLifecycleState bluetoothLifecycle;
+    bool bluetoothRestartable;
     char streamURL[512];
     UBaseType_t taskStackHighWaterMark;
 };
@@ -70,8 +80,8 @@ public:
     bool getDiagnostics(AudioDiagnostics& diagnostics);
 
     // Bluetooth control
-    void enableBluetooth();
-    void disableBluetooth();
+    bool enableBluetooth();
+    bool disableBluetooth();
     bool isBluetoothConnected(); // queries the real A2DP connection state
                                   // live, rather than a cached member that
                                   // was previously declared but never
@@ -154,6 +164,7 @@ private:
 
     // Bluetooth
     bool btEnabled;
+    BluetoothLifecycleState bluetoothLifecycle;
     bool bluetoothPlaybackPaused = false;
     char bluetoothTitle[128];
     char bluetoothArtist[128];

@@ -435,11 +435,15 @@ void handleStationSelectInput(InputEvent event) {
             break;
             
         case EVENT_LONG_PRESS:
-            currentMode = MODE_BLUETOOTH;
-            audioPlayer.enableBluetooth();
-            lastKnownBluetoothConnected = false;
-            display.showBluetooth(BT_DEVICE_NAME, false);
-            Serial.println("[MAIN] Switched to Bluetooth mode");
+            if (audioPlayer.enableBluetooth()) {
+                currentMode = MODE_BLUETOOTH;
+                lastKnownBluetoothConnected = false;
+                display.showBluetooth(BT_DEVICE_NAME, false);
+                Serial.println("[MAIN] Switched to Bluetooth mode");
+            } else {
+                display.showError("Bluetooth start failed");
+                Serial.println("[MAIN] Bluetooth mode entry rejected");
+            }
             break;
             
         default:
@@ -527,10 +531,14 @@ void handlePlayingInput(InputEvent event) {
 void handleBluetoothInput(InputEvent event) {
     switch (event) {
         case EVENT_LONG_PRESS:
-            currentMode = MODE_STATION_SELECT;
-            audioPlayer.disableBluetooth();
-            refreshStationListDisplay();
-            Serial.println("[MAIN] Switched back to station select");
+            if (audioPlayer.disableBluetooth()) {
+                currentMode = MODE_STATION_SELECT;
+                refreshStationListDisplay();
+                Serial.println("[MAIN] Switched back to station select");
+            } else {
+                display.showError("BT cleanup failed; reboot");
+                Serial.println("[MAIN] Radio mode blocked because Bluetooth cleanup was incomplete");
+            }
             break;
         case EVENT_ENCODER_CLICK:
         case EVENT_PLAY_PAUSE:

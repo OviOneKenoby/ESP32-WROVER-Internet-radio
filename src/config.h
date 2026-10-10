@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define FIRMWARE_VERSION "1.1.0"
+#define FIRMWARE_VERSION "1.1.1"
 
 // ============================================
 // DISPLAY CONFIGURATION (WeAct 1.54" E-paper)
@@ -50,9 +50,9 @@
 // ============================================
 // BUTTON CONFIGURATION
 // ============================================
-#define BUTTON_PLAY_PIN     34   // GPIO34 (Input only)
-#define BUTTON_NEXT_PIN     35   // GPIO35 (Input only)
-#define BUTTON_PREV_PIN     39   // GPIO39 (Input only)
+#define BUTTON_PLAY_PIN     34   // Input-only; external pull-up required
+#define BUTTON_NEXT_PIN     35   // Input-only; external pull-up required
+#define BUTTON_PREV_PIN     39   // Input-only; external pull-up required
 
 #define BUTTON_DEBOUNCE_MS  50
 

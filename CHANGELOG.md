@@ -1,5 +1,36 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-10 — Bluetooth lifecycle and hardware-validation corrections (1.1.1)
+
+Withdrawn the prior general PASS for repeated Radio/Bluetooth cycles: the
+captured `re-start not supported after end(true)` line proves those re-entry
+attempts were rejected even though the application changed its mode and logged
+success. The pinned ESP32-A2DP library and ESP-IDF headers confirm that
+`end(true)` irreversibly releases Classic Bluetooth controller memory until
+reboot. Bluetooth exit now uses the restartable `end(false)` profile/task/I2S
+teardown, with checked I2S and stack postconditions. Mode transitions and
+success logs occur only after a verified start/stop; partial cleanup is
+reported and quarantined instead of allowing an unsafe radio handoff.
+
+Corrected the active-low Bounce2 configuration for Play/Next/Previous and the
+encoder switch. A Play input already low at boot must be released before long
+press is armed. GPIO34/35/39 are now truthfully configured as plain inputs,
+because classic ESP32 input-only pins have no internal pull-ups; external
+hardware pull-ups and sound contacts remain mandatory and separately tested.
+
+The web root now declares UTF-8 in both HTML and HTTP Content-Type and uses
+HTML entities for the affected ellipsis/middle-dot glyphs. Diagnostics now
+state that ESP-IDF's heap minimum is a sum of the low-water marks of currently
+registered matching heap regions, not a single immutable process-wide
+minimum, and expose Bluetooth lifecycle/restartability.
+
+Firmware is promoted from 1.1.0 to 1.1.1. Dependency pins, target, partition
+layout, GPIO assignments and established MP3/catalog/web/AVRCP behavior are
+unchanged. AAC and menu latency remain known issues. Build verification and
+the mandatory owner-assisted test are recorded under
+`artifacts/HARDWARE_VALIDATION_1.1.1/`; physical status remains PENDING until
+three cycles include actual audible phone and MP3 playback.
+
 ## 2026-10-08 — Integrate bounded guards and prepare identified regression artifact
 
 Firmware PR #2 was reviewed at `8fac1da6ccd749a47843d99dc746fc3d6e4bf19b`
