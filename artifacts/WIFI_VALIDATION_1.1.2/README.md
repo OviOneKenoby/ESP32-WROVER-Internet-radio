@@ -1,7 +1,7 @@
 # TUNER//01 firmware 1.1.2 Wi-Fi validation report
 
-Status: **software implementation under verification; new physical regression
-PENDING**. The original uncontrolled connectivity incident remains **OPEN**.
+Status: **software verification complete; new physical regression PENDING**.
+The original uncontrolled connectivity incident remains **OPEN**.
 
 ## Baseline verified before modification
 
