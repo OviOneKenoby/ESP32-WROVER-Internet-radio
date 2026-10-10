@@ -57,6 +57,8 @@ private:
     uint32_t lastButtonPressTime;
 
     bool isLongPressing;
+    bool playLongPressArmed;
+    bool playPressInProgress;
     static const uint32_t LONG_PRESS_TIME = 1500;
 };
 

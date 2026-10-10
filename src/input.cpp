@@ -119,7 +119,9 @@ InputControl::InputControl()
     : lastEvent(EVENT_NONE),
       lastEventTime(0),
       lastButtonPressTime(0),
-      isLongPressing(false) {
+      isLongPressing(false),
+      playLongPressArmed(false),
+      playPressInProgress(false) {
 }
 
 InputControl::~InputControl() {
@@ -134,9 +136,13 @@ InputControl::~InputControl() {
 bool InputControl::init() {
 
     // Buttons
-    pinMode(BUTTON_PLAY_PIN, INPUT_PULLUP);
-    pinMode(BUTTON_NEXT_PIN, INPUT_PULLUP);
-    pinMode(BUTTON_PREV_PIN, INPUT_PULLUP);
+    // GPIO34/35/39 are input-only pins without internal pull-up/down
+    // resistors on classic ESP32. The assembled buttons are active-low and
+    // therefore require their physical external pull-ups; INPUT_PULLUP would
+    // misleadingly request hardware these pins do not contain.
+    pinMode(BUTTON_PLAY_PIN, INPUT);
+    pinMode(BUTTON_NEXT_PIN, INPUT);
+    pinMode(BUTTON_PREV_PIN, INPUT);
 
     // EC11 encoder
     //
@@ -147,17 +153,26 @@ bool InputControl::init() {
     pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
 
     // Bounce2 buttons
-    buttonPlay.attach(BUTTON_PLAY_PIN, INPUT_PULLUP);
+    buttonPlay.setPressedState(LOW);
+    buttonPlay.attach(BUTTON_PLAY_PIN, INPUT);
     buttonPlay.interval(BUTTON_DEBOUNCE_MS);
 
-    buttonNext.attach(BUTTON_NEXT_PIN, INPUT_PULLUP);
+    buttonNext.setPressedState(LOW);
+    buttonNext.attach(BUTTON_NEXT_PIN, INPUT);
     buttonNext.interval(BUTTON_DEBOUNCE_MS);
 
-    buttonPrev.attach(BUTTON_PREV_PIN, INPUT_PULLUP);
+    buttonPrev.setPressedState(LOW);
+    buttonPrev.attach(BUTTON_PREV_PIN, INPUT);
     buttonPrev.interval(BUTTON_DEBOUNCE_MS);
 
+    encoderClick.setPressedState(LOW);
     encoderClick.attach(ENCODER_SW_PIN, INPUT_PULLUP);
     encoderClick.interval(BUTTON_DEBOUNCE_MS);
+
+    // A button held low (or a bad contact presenting low) during boot must
+    // first be released before it can generate a long-press command. This
+    // separates boot state acquisition from a deliberate press cycle.
+    playLongPressArmed = !buttonPlay.isPressed();
 
     // Synchronize the quadrature state machine with the encoder's
     // actual electrical state before enabling interrupts.
@@ -210,25 +225,27 @@ void InputControl::update() {
     // Buttons
     // ========================================
 
-    if (buttonPlay.fell()) {
-        lastEvent = EVENT_PLAY_PAUSE;
-        lastEventTime = now;
-        Serial.println("[INPUT] Play/Pause pressed");
+    if (buttonPlay.pressed()) {
+        // Defer the short-press event until release. Emitting it here would
+        // execute a menu action before the same physical press reaches the
+        // long-press threshold, so Bluetooth entry would be handled by the
+        // wrong screen.
+        playPressInProgress = playLongPressArmed;
     }
 
-    if (buttonNext.fell()) {
+    if (buttonNext.pressed()) {
         lastEvent = EVENT_NEXT;
         lastEventTime = now;
         Serial.println("[INPUT] Next pressed");
     }
 
-    if (buttonPrev.fell()) {
+    if (buttonPrev.pressed()) {
         lastEvent = EVENT_PREV;
         lastEventTime = now;
         Serial.println("[INPUT] Prev pressed");
     }
 
-    if (encoderClick.fell()) {
+    if (encoderClick.pressed()) {
         lastEvent = EVENT_ENCODER_CLICK;
         lastEventTime = now;
         Serial.println("[INPUT] Encoder clicked");
@@ -270,7 +287,8 @@ void InputControl::update() {
     // Play button long press
     // ========================================
 
-    if (buttonPlay.isPressed() && !isLongPressing) {
+    if (playLongPressArmed && playPressInProgress &&
+        buttonPlay.isPressed() && !isLongPressing) {
 
         const uint32_t pressDuration =
             buttonPlay.currentDuration();
@@ -279,12 +297,25 @@ void InputControl::update() {
             lastEvent = EVENT_LONG_PRESS;
             lastEventTime = now;
             isLongPressing = true;
+            playPressInProgress = false;
 
             Serial.println("[INPUT] Long press detected");
         }
     }
-    else if (!buttonPlay.isPressed()) {
+
+    if (buttonPlay.released()) {
+        if (playLongPressArmed && playPressInProgress && !isLongPressing) {
+            lastEvent = EVENT_PLAY_PAUSE;
+            lastEventTime = now;
+            Serial.println("[INPUT] Play/Pause pressed");
+        }
+        playPressInProgress = false;
         isLongPressing = false;
+        playLongPressArmed = true;
+    } else if (!buttonPlay.isPressed() && !playLongPressArmed) {
+        // Initial boot-low state: arm only after the first stable release,
+        // without turning that release into a short press.
+        playLongPressArmed = true;
     }
 }
 

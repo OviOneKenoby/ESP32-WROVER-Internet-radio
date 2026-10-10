@@ -50,6 +50,17 @@ const char* audioCodecName(AudioCodec codec) {
     }
 }
 
+const char* bluetoothLifecycleName(BluetoothLifecycleState state) {
+    switch (state) {
+        case BT_LIFECYCLE_STARTING: return "starting";
+        case BT_LIFECYCLE_ACTIVE: return "active";
+        case BT_LIFECYCLE_STOPPING: return "stopping";
+        case BT_LIFECYCLE_CLEANUP_FAILED: return "cleanup_failed";
+        case BT_LIFECYCLE_INACTIVE:
+        default: return "inactive";
+    }
+}
+
 void logBootInfo() {
     esp_reset_reason_t reason = esp_reset_reason();
     Serial.printf("[SYSTEM] Firmware %s, build %s\n", FIRMWARE_VERSION, BUILD_GIT_ID);

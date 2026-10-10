@@ -14,6 +14,7 @@ const char* resetReasonName(esp_reset_reason_t reason);
 const char* audioSourceName(AudioSource source);
 const char* playbackStateName(PlaybackState state);
 const char* audioCodecName(AudioCodec codec);
+const char* bluetoothLifecycleName(BluetoothLifecycleState state);
 void logBootInfo();
 }
 
