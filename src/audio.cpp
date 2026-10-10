@@ -123,7 +123,52 @@ public:
     }
 
     bool stopRestartableChecked() {
-        BluetoothA2DPSink::end(false);
+        if (is_start_disabled) {
+            Serial.println("[AUDIO] Bluetooth cleanup cannot restore memory released by end(true)");
+            return false;
+        }
+
+        // This is the pinned library's end(false) sequence with return values
+        // retained instead of discarded. It intentionally does not disable,
+        // deinitialize or release the controller/Bluedroid base stack.
+        is_autoreconnect_allowed = false;
+        clean_last_connection();
+
+        bool disconnectComplete = true;
+        if (is_connected()) {
+            disconnect();
+            int limit = A2DP_DISCONNECT_LIMIT;
+            while (get_connection_state() != ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
+                delay_ms(100);
+                if (limit-- < 0) {
+                    disconnectComplete = false;
+                    Serial.println("[AUDIO] Bluetooth disconnect timed out");
+                    break;
+                }
+            }
+        }
+
+        delay_ms(50);
+        const esp_err_t avrcControllerResult = esp_avrc_ct_deinit();
+        delay_ms(50);
+        const esp_err_t avrcTargetResult = esp_avrc_tg_deinit();
+        delay_ms(50);
+        const esp_err_t a2dpResult = esp_a2d_sink_deinit();
+        delay_ms(50);
+
+        const bool profilesExpected = stackEventCompleted;
+        const bool avrcControllerStopped =
+            deinitResultIsClean(avrcControllerResult, profilesExpected,
+                                "AVRCP controller");
+        const bool avrcTargetStopped =
+            deinitResultIsClean(avrcTargetResult, profilesExpected,
+                                "AVRCP target");
+        const bool a2dpStopped =
+            deinitResultIsClean(a2dpResult, profilesExpected, "A2DP sink");
+
+        app_task_shut_down();
+        delay_ms(50);
+        if (is_output) checkedOutput.end();
         is_i2s_active = checkedOutput.isActive();
 
         const bool taskStopped = app_task_queue == nullptr &&
@@ -134,19 +179,24 @@ public:
             esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED;
         const bool bluedroidRetained =
             esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED;
-        const bool stopped = taskStopped && i2sReleased &&
+        const bool profilesStopped = disconnectComplete &&
+                                     avrcControllerStopped &&
+                                     avrcTargetStopped && a2dpStopped;
+        const bool stopped = profilesStopped && taskStopped && i2sReleased &&
                              controllerRetained && bluedroidRetained &&
                              !is_start_disabled;
 
         if (!stopped) {
             Serial.printf(
-                "[AUDIO] Bluetooth cleanup incomplete: task=%s, i2s=%s, controller=%s, bluedroid=%s, restart-disabled=%s\n",
+                "[AUDIO] Bluetooth cleanup incomplete: profiles=%s, task=%s, i2s=%s, controller=%s, bluedroid=%s, restart-disabled=%s\n",
+                profilesStopped ? "stopped" : "error",
                 taskStopped ? "stopped" : "present",
                 i2sReleased ? "released" : "not-released",
                 controllerRetained ? "enabled" : "not-enabled",
                 bluedroidRetained ? "enabled" : "not-enabled",
                 is_start_disabled ? "true" : "false");
         }
+        stackEventCompleted = false;
         return stopped;
     }
 
@@ -175,6 +225,17 @@ protected:
     }
 
 private:
+    static bool deinitResultIsClean(esp_err_t result, bool wasInitialized,
+                                    const char* component) {
+        const bool clean = result == ESP_OK ||
+                           (!wasInitialized && result == ESP_ERR_INVALID_STATE);
+        if (!clean) {
+            Serial.printf("[AUDIO] %s deinit failed: %s (%d)\n",
+                          component, esp_err_to_name(result), (int)result);
+        }
+        return clean;
+    }
+
     CheckedBluetoothOutput& checkedOutput;
     bool bluetoothInitSucceeded = false;
     bool i2sInitSucceeded = false;
