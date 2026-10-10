@@ -31,6 +31,14 @@ uncontrolled loss of router visibility, web/DNS and Radio connectivity remains
 OPEN with unknown cause. Firmware 1.1.2 remains a validation candidate pending
 new AP off/on tests in Radio and Bluetooth.
 
+The identified clean `esp32-dev` build from firmware source commit
+`7cf087f8c68606b9de6fc38ea400c9bf54b1b5d5` passed with 83,288 bytes of linked
+RAM (25.4%) and 2,004,813 bytes of flash (63.7%). Its 2,011,392-byte binary
+embeds `build_git_id` `7cf087f8c686` and has SHA-256
+`847C9FE99256F6A63EB19C27543399A1BAC46979D4658951E806D56B15E094EA`.
+The host suite passed 264 deterministic checks. Hardware testing of this 1.1.2
+candidate remains PENDING.
+
 ## 2026-10-10 — Bluetooth lifecycle and hardware-validation corrections (1.1.1)
 
 Withdrawn the prior general PASS for repeated Radio/Bluetooth cycles: the
@@ -59,8 +67,9 @@ Firmware is promoted from 1.1.0 to 1.1.1. Dependency pins, target, partition
 layout, GPIO assignments and established MP3/catalog/web/AVRCP behavior are
 unchanged. AAC and menu latency remain known issues. Build verification and
 the mandatory owner-assisted test are recorded under
-`artifacts/HARDWARE_VALIDATION_1.1.1/`; physical status remains PENDING until
-three cycles include actual audible phone and MP3 playback.
+`artifacts/HARDWARE_VALIDATION_1.1.1/`. Those three audible cycles were later
+reported PASS by the owner on 2026-10-11; the separate uncontrolled Wi-Fi
+incident remains OPEN.
 
 The clean `esp32-dev` build from firmware source commit
 `76bdcd13d6628d81e4f96c42534ff781faf8e9db` passed with 83,160 bytes of linked

@@ -66,9 +66,22 @@ PENDING**. The original uncontrolled connectivity incident remains **OPEN**.
 
 ### Software verification for 1.1.2
 
-To be finalized after the identified clean build. Host transition tests cover
-start, association without IP, GOT_IP, LOST_IP, disconnect reason/counters,
-recovery and framework reconciliation without invented event counts.
+The clean `esp32-dev` build from firmware source commit
+`7cf087f8c68606b9de6fc38ea400c9bf54b1b5d5` passed. It links 83,288 bytes of
+static RAM (25.4%) and 2,004,813 bytes of flash (63.7%). The resulting
+2,011,392-byte `firmware-1.1.2-7cf087f8c686.bin` embeds build ID
+`7cf087f8c686` and has SHA-256
+`847C9FE99256F6A63EB19C27543399A1BAC46979D4658951E806D56B15E094EA`.
+The uploaded prerelease was downloaded again and matched both byte count and
+SHA-256.
+
+The host suite passed all 264 deterministic checks with `-Wall -Wextra
+-Werror`. Transition tests cover start, association without IP, GOT_IP,
+LOST_IP, disconnect reason/counters, recovery and framework reconciliation
+without invented event counts. Static inspection confirmed that no new
+`SetReconnect()`, `setAutoReconnect()`, periodic `WiFi.begin()` or Wi-Fi sleep
+change was introduced. Full artifact details are in `BUILD_MANIFEST.md` and
+`SHA256SUMS.txt`.
 
 ### New hardware tests
 
