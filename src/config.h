@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define FIRMWARE_VERSION "1.1.1"
+#define FIRMWARE_VERSION "1.1.2"
 
 // ============================================
 // DISPLAY CONFIGURATION (WeAct 1.54" E-paper)

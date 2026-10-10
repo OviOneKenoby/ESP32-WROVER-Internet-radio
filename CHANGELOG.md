@@ -1,5 +1,36 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 — Wi-Fi state synchronization and connectivity diagnostics (1.1.2)
+
+Replaced the cached-only Wi-Fi status with framework reconciliation plus a
+bounded cross-task event queue. Arduino Wi-Fi callbacks now capture only the
+event type, timestamp and disconnect reason; the application loop performs
+all logging and state changes before serving web requests. A disconnected
+station immediately reports `0.0.0.0` rather than a cached IP. The callback
+does not connect, write flash or touch the UI.
+
+`/api/diagnostics` now reports the actual framework status, current IP, RSSI,
+auto-reconnect setting, disconnect/GOT_IP/LOST_IP counters and timestamps,
+last disconnect reason, state duration and event-queue drops. Logs are emitted
+only for events or real state transitions. No password is exposed.
+
+Arduino-ESP32 2.0.17 was verified to default `_autoReconnect` to true and to
+retry only its defined reconnectable reasons. No application retry,
+`SetReconnect()`, periodic `WiFi.begin()`, Wi-Fi sleep change or dependency
+change was added. The ICY/HTTPS stream sources still use zero reconnect tries,
+and automatic station resume remains explicitly outside this patch.
+
+Owner hardware results for firmware 1.1.1 are recorded separately from this
+software change: normal Radio boot PASS; three audible Radio MP3 ↔ Bluetooth
+SBC cycles with web refresh in Bluetooth PASS; and approximately 2 h 46 min
+of later MP3 playback PASS observationally (free heap 13,036 → 13,028 bytes,
+largest block 10,228 → 10,740 bytes, PSRAM unchanged). A controlled AP off/on
+test recovered connectivity and allowed West City to start manually without a
+restart; automatic station resume did not occur, as expected. The earlier
+uncontrolled loss of router visibility, web/DNS and Radio connectivity remains
+OPEN with unknown cause. Firmware 1.1.2 remains a validation candidate pending
+new AP off/on tests in Radio and Bluetooth.
+
 ## 2026-10-10 — Bluetooth lifecycle and hardware-validation corrections (1.1.1)
 
 Withdrawn the prior general PASS for repeated Radio/Bluetooth cycles: the
