@@ -1,7 +1,8 @@
 # TUNER//01 firmware 1.1.1 validation report
 
-Status: **software verification complete; owner later reported the three-cycle
-physical regression PASS; separate uncontrolled Wi-Fi incident OPEN**.
+Status: **software verification complete; tested Bluetooth lifecycle/audio/web
+paths PASS by owner report; incomplete checklist items remain NOT TESTED and
+the separate Wi-Fi incident remains OPEN**.
 
 This report corrects the Bluetooth-cycle conclusion from the earlier 1.1.0
 hardware session. The observed `re-start not supported after end(true)` line
@@ -9,28 +10,40 @@ proves that the later Bluetooth entries in that session did not start. A mode
 screen change is not evidence of an active A2DP sink. The general Bluetooth
 Radio-to-Bluetooth cycle PASS is therefore withdrawn.
 
-## Owner hardware follow-up reported 2026-10-11
+## Owner hardware results reported 2026-10-11
 
-These are results obtained on firmware 1.1.1, build ID `76bdcd13d662`; they
-are not results for the later Wi-Fi-observability patch:
+The owner identified the tested image as firmware 1.1.1 with `build_git_id`
+`76bdcd13d662`:
 
-- Normal boot into Radio: **PASS**.
-- Three complete Radio MP3 ↔ Bluetooth SBC cycles, with audible phone/radio
-  audio and web access plus refresh while in Bluetooth: **PASS**.
-- Subsequent MP3 playback for approximately 2 h 46 min: **PASS
-  observationally**. Free internal heap changed 13,036 → 13,028 bytes, largest
-  block 10,228 → 10,740 bytes, and PSRAM was unchanged.
-- One earlier, uncontrolled connectivity loss remains **OPEN / cause
-  unknown**: the tuner disappeared from the router client list, web and
-  diagnostics became inaccessible, DNS failed and Radio did not start, while
-  the encoder still responded. Restart restored operation.
-- A later controlled AP interruption recovered connectivity without a reboot;
-  West City then started manually. The station was not resumed automatically,
-  which was not implemented in 1.1.1.
+- Boot with no controls pressed stayed in Radio without automatic Bluetooth:
+  **PASS**.
+- Three complete audible Radio MP3 → Bluetooth SBC from the phone → Radio MP3
+  cycles, without reboot: **PASS**.
+- Web page access and refresh during audible Bluetooth playback, with no audio
+  problem reported: **PASS**. Exact UTF-8 symbol rendering was not explicitly
+  checked and remains **NOT TESTED**.
+- West City MP3 continued for approximately 2 h 46 min after the cycles:
+  **PASS observationally**.
+- Free internal heap after cycles / after extended playback: 13,036 / 13,028
+  bytes. Largest block: 10,228 / 10,740 bytes. Free PSRAM: 4,144,135 bytes in
+  both captures. These two Radio-session observations do not replace the
+  checklist's unrecorded same-state Bluetooth samples.
+- A controlled AP interruption recovered connectivity without reboot and West
+  City started manually: **PASS for that controlled scenario**. Automatic
+  station playback did not resume and was not part of this firmware.
 
-The successful controlled recovery does not close the uncontrolled incident.
-The Wi-Fi state/diagnostics follow-up is tracked separately under
-`artifacts/WIFI_VALIDATION_1.1.2/`.
+AVRCP operation on 1.1.1, boot with Play deliberately held, exact UTF-8 glyph
+rendering, and the remaining unreported smoke-test rows are **NOT TESTED / no
+evidence supplied**.
+
+The first session's connectivity incident remains **OPEN / cause unknown**.
+During cycle 3 Bluetooth audio continued, but the tuner disappeared from the
+router's active clients; web and diagnostics stopped responding; returning to
+Radio produced DNS/play failures; the encoder still responded; and reboot
+restored operation. The successful retest does not close this incident.
+
+The later Wi-Fi state/diagnostics candidate is tracked separately under
+`artifacts/WIFI_VALIDATION_1.1.2/` and does not alter these 1.1.1 results.
 
 ## Verified baseline
 
@@ -81,10 +94,9 @@ on success. A partial start is cleaned; an incomplete cleanup is quarantined
 as `cleanup_failed`, blocks radio-mode handoff, and asks for reboot instead of
 claiming success.
 
-At publication this was software verification only and three audible cycles
-were still required. The owner subsequently reported those cycles PASS as
-recorded above. Retaining the base Bluetooth stack changes the post-exit heap
-budget compared with irreversible `end(true)`.
+The three audible cycles were later performed successfully as recorded above.
+Retaining the base Bluetooth stack changes the post-exit heap budget compared
+with irreversible `end(true)`.
 
 ### 2. Uncommanded Bluetooth entry at boot
 
@@ -159,6 +171,5 @@ AVRCP controller/target and A2DP sink deinitialization results before allowing
 the Radio handoff. Full details are in `BUILD_MANIFEST.md` and
 `SHA256SUMS.txt`.
 
-Compilation itself was not a hardware PASS. The later owner result is recorded
-separately above; see `OWNER_TEST_CHECKLIST.md` for the original evidence
-rules.
+Compilation itself is not a hardware PASS. The owner results and explicitly
+untested rows are recorded above and in `OWNER_TEST_CHECKLIST.md`.

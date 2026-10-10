@@ -78,6 +78,25 @@ embeds `build_git_id` `76bdcd13d662`; its SHA-256 is
 `A7BDCA919E426EBD1F6777385AFF64E7886E009F31B6B5D9BB636E198BC1D59A`.
 The existing 249-check host suite and targeted static assertions passed.
 
+Owner hardware follow-up reported on 2026-10-11 identified the installed
+firmware as 1.1.1 with `build_git_id` `76bdcd13d662`. Boot with no controls
+pressed stayed in Radio. Three complete audible Radio MP3 → Bluetooth SBC →
+Radio MP3 cycles completed without reboot, and the web page plus refresh
+worked during Bluetooth playback. West City then played for approximately
+2 h 46 min. Free internal heap was 13,036 bytes after the cycles and 13,028
+bytes after extended playback; largest block was 10,228 then 10,740 bytes;
+free PSRAM remained 4,144,135 bytes. These observations pass the tested
+Bluetooth lifecycle/audio/web paths, but do not supply evidence for AVRCP,
+boot with Play held, exact UTF-8 glyph rendering, or every original checklist
+row.
+
+A controlled AP off/on test recovered connectivity without reboot and West
+City could be started manually; automatic station resume did not occur. The
+earlier uncontrolled incident remains OPEN: during cycle 3 Bluetooth audio
+continued but the tuner disappeared from the router clients, web/diagnostics
+were unreachable, Radio attempts produced DNS/play failures, and only a reboot
+restored connectivity. Its cause is not demonstrated by the successful retest.
+
 ## 2026-10-08 — Integrate bounded guards and prepare identified regression artifact
 
 Firmware PR #2 was reviewed at `8fac1da6ccd749a47843d99dc746fc3d6e4bf19b`
