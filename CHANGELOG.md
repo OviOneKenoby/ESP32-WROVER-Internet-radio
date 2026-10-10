@@ -31,6 +31,13 @@ the mandatory owner-assisted test are recorded under
 `artifacts/HARDWARE_VALIDATION_1.1.1/`; physical status remains PENDING until
 three cycles include actual audible phone and MP3 playback.
 
+The clean `esp32-dev` build from firmware source commit
+`9f021696cfb76d05e293ae6ca2f70545178653de` passed with 83,160 bytes of linked
+RAM (25.4%) and 1,997,081 bytes of flash (63.5%). The 2,003,664-byte binary
+embeds `build_git_id` `9f021696cfb7`; its SHA-256 is
+`AC323E354801857AE0E15F55CF09B3AC7D2DEBE1A48291D1F752EEF2B8DFF84E`.
+The existing 249-check host suite and targeted static assertions passed.
+
 ## 2026-10-08 — Integrate bounded guards and prepare identified regression artifact
 
 Firmware PR #2 was reviewed at `8fac1da6ccd749a47843d99dc746fc3d6e4bf19b`

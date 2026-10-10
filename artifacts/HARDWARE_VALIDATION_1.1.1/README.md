@@ -120,7 +120,15 @@ playback remain known issues and were not expanded into this repair.
 
 ## Software verification
 
-The final clean-build identity, linked RAM/flash use, binary byte count and
-SHA-256 are recorded in `SHA256SUMS.txt` after the source commit is built.
+The clean `esp32-dev` build from source commit
+`9f021696cfb76d05e293ae6ca2f70545178653de` passed. It links 83,160 bytes of
+static RAM (25.4%) and 1,997,081 bytes of flash (63.5%). The resulting
+2,003,664-byte `firmware-1.1.1-9f021696cfb7.bin` embeds build ID
+`9f021696cfb7` and has SHA-256
+`AC323E354801857AE0E15F55CF09B3AC7D2DEBE1A48291D1F752EEF2B8DFF84E`.
+The existing host suite passed all 249 deterministic checks; targeted static
+assertions for this repair also passed. Full details are in `BUILD_MANIFEST.md`
+and `SHA256SUMS.txt`.
+
 Compilation is not a hardware PASS. See `OWNER_TEST_CHECKLIST.md` for the
 mandatory physical regression and evidence rules.
