@@ -126,6 +126,8 @@ static RAM (25.4%) and 1,997,081 bytes of flash (63.5%). The resulting
 2,003,664-byte `firmware-1.1.1-9f021696cfb7.bin` embeds build ID
 `9f021696cfb7` and has SHA-256
 `AC323E354801857AE0E15F55CF09B3AC7D2DEBE1A48291D1F752EEF2B8DFF84E`.
+It is published as a non-production
+[hardware-validation prerelease](https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.1-validation-9f02169).
 The existing host suite passed all 249 deterministic checks; targeted static
 assertions for this repair also passed. Full details are in `BUILD_MANIFEST.md`
 and `SHA256SUMS.txt`.

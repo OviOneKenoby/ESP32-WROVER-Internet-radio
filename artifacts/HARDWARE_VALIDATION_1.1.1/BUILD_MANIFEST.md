@@ -17,6 +17,10 @@
 - Binary bytes: 2,003,664
 - Binary SHA-256:
   `AC323E354801857AE0E15F55CF09B3AC7D2DEBE1A48291D1F752EEF2B8DFF84E`
+- Validation prerelease:
+  https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.1-validation-9f02169
+- Binary download:
+  https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/download/tuner-1.1.1-validation-9f02169/firmware-1.1.1-9f021696cfb7.bin
 - ELF string inspection found the embedded build ID exactly once.
 - Existing deterministic host suite: PASS, 249 checks (`-Wall -Wextra
   -Werror`).
