@@ -42,6 +42,9 @@ router's active clients; web and diagnostics stopped responding; returning to
 Radio produced DNS/play failures; the encoder still responded; and reboot
 restored operation. The successful retest does not close this incident.
 
+The later Wi-Fi state/diagnostics candidate is tracked separately under
+`artifacts/WIFI_VALIDATION_1.1.2/` and does not alter these 1.1.1 results.
+
 ## Verified baseline
 
 - Reported failing firmware source: `8fac1da6ccd749a47843d99dc746fc3d6e4bf19b`.

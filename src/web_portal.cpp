@@ -78,6 +78,8 @@ void WebPortal::handleStatus() {
 void WebPortal::handleDiagnostics() {
     AudioDiagnostics audio{};
     bool haveAudioSnapshot = audioPlayer.getDiagnostics(audio);
+    WiFiDiagnostics wifi{};
+    wifiManager.getDiagnostics(wifi);
 
     JsonDocument doc;
     doc["firmware_version"] = FIRMWARE_VERSION;
@@ -97,8 +99,48 @@ void WebPortal::handleDiagnostics() {
         "sum_of_current_region_low_watermarks";
     doc["total_psram"] = ESP.getPsramSize();
     doc["free_psram"] = ESP.getFreePsram();
-    if (WiFi.status() == WL_CONNECTED) doc["wifi_rssi_dbm"] = WiFi.RSSI();
+    doc["wifi_connected"] = wifi.connected;
+    doc["wifi_state"] = WiFiManager::stateName(wifi.state);
+    doc["wifi_framework_status"] =
+        WiFiManager::frameworkStatusName(wifi.frameworkStatus);
+    doc["wifi_framework_status_code"] = wifi.frameworkStatus;
+    doc["wifi_ssid"] = wifi.ssid;
+    doc["wifi_ip"] = wifi.ip;
+    doc["wifi_auto_reconnect"] = wifi.autoReconnect;
+    if (wifi.connected) doc["wifi_rssi_dbm"] = wifi.rssi;
     else doc["wifi_rssi_dbm"] = nullptr;
+    doc["wifi_disconnect_count"] = wifi.disconnectCount;
+    doc["wifi_got_ip_count"] = wifi.gotIpCount;
+    doc["wifi_lost_ip_count"] = wifi.lostIpCount;
+    doc["wifi_processed_event_count"] = wifi.processedEventCount;
+    doc["wifi_dropped_event_count"] = wifi.droppedEventCount;
+    if (wifi.hasDisconnected) {
+        doc["wifi_last_disconnect_reason"] = wifi.lastDisconnectReason;
+        doc["wifi_last_disconnect_reason_name"] =
+            wifi.lastDisconnectReasonName;
+        doc["wifi_last_disconnect_ms"] = wifi.lastDisconnectMs;
+        doc["wifi_last_disconnect_age_ms"] =
+            (uint32_t)(millis() - wifi.lastDisconnectMs);
+    } else {
+        doc["wifi_last_disconnect_reason"] = nullptr;
+        doc["wifi_last_disconnect_reason_name"] = "none";
+        doc["wifi_last_disconnect_ms"] = nullptr;
+        doc["wifi_last_disconnect_age_ms"] = nullptr;
+    }
+    doc["wifi_state_since_ms"] = wifi.stateSinceMs;
+    doc["wifi_state_age_ms"] = (uint32_t)(millis() - wifi.stateSinceMs);
+    if (wifi.hasConnectedSince) {
+        doc["wifi_connected_since_ms"] = wifi.connectedSinceMs;
+        doc["wifi_connected_duration_ms"] =
+            (uint32_t)(millis() - wifi.connectedSinceMs);
+    } else {
+        doc["wifi_connected_since_ms"] = nullptr;
+        doc["wifi_connected_duration_ms"] = nullptr;
+    }
+    if (wifi.hasGotIp) doc["wifi_last_got_ip_ms"] = wifi.lastGotIpMs;
+    else doc["wifi_last_got_ip_ms"] = nullptr;
+    if (wifi.hasLostIp) doc["wifi_last_lost_ip_ms"] = wifi.lastLostIpMs;
+    else doc["wifi_last_lost_ip_ms"] = nullptr;
 
     if (haveAudioSnapshot) {
         doc["audio_source"] = SystemInfo::audioSourceName(audio.source);

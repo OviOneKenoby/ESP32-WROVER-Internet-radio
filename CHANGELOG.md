@@ -1,5 +1,44 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 — Wi-Fi state synchronization and connectivity diagnostics (1.1.2)
+
+Replaced the cached-only Wi-Fi status with framework reconciliation plus a
+bounded cross-task event queue. Arduino Wi-Fi callbacks now capture only the
+event type, timestamp and disconnect reason; the application loop performs
+all logging and state changes before serving web requests. A disconnected
+station immediately reports `0.0.0.0` rather than a cached IP. The callback
+does not connect, write flash or touch the UI.
+
+`/api/diagnostics` now reports the actual framework status, current IP, RSSI,
+auto-reconnect setting, disconnect/GOT_IP/LOST_IP counters and timestamps,
+last disconnect reason, state duration and event-queue drops. Logs are emitted
+only for events or real state transitions. No password is exposed.
+
+Arduino-ESP32 2.0.17 was verified to default `_autoReconnect` to true and to
+retry only its defined reconnectable reasons. No application retry,
+`SetReconnect()`, periodic `WiFi.begin()`, Wi-Fi sleep change or dependency
+change was added. The ICY/HTTPS stream sources still use zero reconnect tries,
+and automatic station resume remains explicitly outside this patch.
+
+Owner hardware results for firmware 1.1.1 are recorded separately from this
+software change: normal Radio boot PASS; three audible Radio MP3 ↔ Bluetooth
+SBC cycles with web refresh in Bluetooth PASS; and approximately 2 h 46 min
+of later MP3 playback PASS observationally (free heap 13,036 → 13,028 bytes,
+largest block 10,228 → 10,740 bytes, PSRAM unchanged). A controlled AP off/on
+test recovered connectivity and allowed West City to start manually without a
+restart; automatic station resume did not occur, as expected. The earlier
+uncontrolled loss of router visibility, web/DNS and Radio connectivity remains
+OPEN with unknown cause. Firmware 1.1.2 remains a validation candidate pending
+new AP off/on tests in Radio and Bluetooth.
+
+The identified clean `esp32-dev` build from firmware source commit
+`7cf087f8c68606b9de6fc38ea400c9bf54b1b5d5` passed with 83,288 bytes of linked
+RAM (25.4%) and 2,004,813 bytes of flash (63.7%). Its 2,011,392-byte binary
+embeds `build_git_id` `7cf087f8c686` and has SHA-256
+`847C9FE99256F6A63EB19C27543399A1BAC46979D4658951E806D56B15E094EA`.
+The host suite passed 264 deterministic checks. Hardware testing of this 1.1.2
+candidate remains PENDING.
+
 ## 2026-10-10 — Bluetooth lifecycle and hardware-validation corrections (1.1.1)
 
 Withdrawn the prior general PASS for repeated Radio/Bluetooth cycles: the
@@ -28,8 +67,9 @@ Firmware is promoted from 1.1.0 to 1.1.1. Dependency pins, target, partition
 layout, GPIO assignments and established MP3/catalog/web/AVRCP behavior are
 unchanged. AAC and menu latency remain known issues. Build verification and
 the mandatory owner-assisted test are recorded under
-`artifacts/HARDWARE_VALIDATION_1.1.1/`; physical status remains PENDING until
-three cycles include actual audible phone and MP3 playback.
+`artifacts/HARDWARE_VALIDATION_1.1.1/`. Those three audible cycles were later
+reported PASS by the owner on 2026-10-11; the separate uncontrolled Wi-Fi
+incident remains OPEN.
 
 The clean `esp32-dev` build from firmware source commit
 `76bdcd13d6628d81e4f96c42534ff781faf8e9db` passed with 83,160 bytes of linked

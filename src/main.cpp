@@ -197,6 +197,9 @@ void setup() {
     
     // Load WiFi configuration
     Serial.println("[MAIN] Loading WiFi configuration...");
+    if (!wifiManager.begin()) {
+        Serial.println("[MAIN] WiFi event tracking unavailable; framework status polling remains active");
+    }
     wifiManager.loadConfig();
     timeService.loadTimezone();
     
@@ -233,6 +236,9 @@ void setup() {
 // Main Loop
 // ============================================
 void loop() {
+    // Drain framework events on the application task before serving web
+    // requests, so status/IP diagnostics cannot expose stale connection data.
+    wifiManager.update();
     webPortal.handle();
     timeService.update();
 

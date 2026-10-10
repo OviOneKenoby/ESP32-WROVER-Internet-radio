@@ -8,6 +8,7 @@
 #include "correctness_guards.h"
 #include "current_station_context.h"
 #include "station_codec.h"
+#include "wifi_connectivity_model.h"
 
 namespace {
 
@@ -115,6 +116,69 @@ void testFavoriteCodecPropagation() {
            "legacy .aac URL upgrade failed");
 }
 
+void testWiFiConnectivityTransitions() {
+    WiFiConnectivityModel model;
+    auto snapshot = model.get();
+    expect(snapshot.state == WiFiObservedState::DOWN,
+           "Wi-Fi model did not start down");
+
+    model.apply(WiFiObservedEvent::STA_STARTED, 0, 10);
+    expect(model.get().state == WiFiObservedState::CONNECTING,
+           "STA_START did not enter connecting");
+    model.apply(WiFiObservedEvent::STA_ASSOCIATED, 0, 20);
+    expect(model.get().state == WiFiObservedState::CONNECTING,
+           "association incorrectly implied an IP connection");
+
+    model.apply(WiFiObservedEvent::STA_GOT_IP, 0, 30);
+    snapshot = model.get();
+    expect(snapshot.state == WiFiObservedState::CONNECTED,
+           "GOT_IP did not enter connected");
+    expect(snapshot.gotIpCount == 1 && snapshot.lastGotIpMs == 30,
+           "GOT_IP metrics mismatch");
+    expect(snapshot.hasConnectedSince && snapshot.connectedSinceMs == 30,
+           "connected-since timestamp mismatch");
+
+    model.apply(WiFiObservedEvent::STA_LOST_IP, 0, 40);
+    snapshot = model.get();
+    expect(snapshot.state == WiFiObservedState::CONNECTING,
+           "LOST_IP left stale connected state");
+    expect(!snapshot.hasConnectedSince && snapshot.lostIpCount == 1 &&
+               snapshot.lastLostIpMs == 40,
+           "LOST_IP metrics mismatch");
+
+    model.apply(WiFiObservedEvent::STA_DISCONNECTED, 201, 50);
+    snapshot = model.get();
+    expect(snapshot.state == WiFiObservedState::DOWN,
+           "disconnect did not enter down state");
+    expect(snapshot.disconnectCount == 1 &&
+               snapshot.lastDisconnectReason == 201 &&
+               snapshot.lastDisconnectMs == 50,
+           "disconnect metrics mismatch");
+
+    model.apply(WiFiObservedEvent::STA_GOT_IP, 0, 80);
+    expect(model.get().gotIpCount == 2 &&
+               model.get().state == WiFiObservedState::CONNECTED,
+           "recovery GOT_IP was not recorded");
+
+    const uint32_t disconnectsBeforeReconcile = model.get().disconnectCount;
+    const uint32_t gotIpBeforeReconcile = model.get().gotIpCount;
+    model.reconcile(WiFiObservedState::DOWN, 90);
+    expect(model.get().state == WiFiObservedState::DOWN,
+           "framework reconciliation did not correct stale connected state");
+    expect(model.get().disconnectCount == disconnectsBeforeReconcile &&
+               model.get().gotIpCount == gotIpBeforeReconcile,
+           "framework reconciliation invented event counters");
+
+    model.reconcile(WiFiObservedState::CONNECTED, 100);
+    snapshot = model.get();
+    expect(snapshot.state == WiFiObservedState::CONNECTED &&
+               snapshot.hasConnectedSince &&
+               snapshot.connectedSinceMs == 100,
+           "framework recovery reconciliation mismatch");
+    expect(snapshot.processedEventCount == 6,
+           "processed Wi-Fi event count mismatch");
+}
+
 } // namespace
 
 int main() {
@@ -122,6 +186,7 @@ int main() {
     testTraversal();
     testVolume();
     testFavoriteCodecPropagation();
+    testWiFiConnectivityTransitions();
     std::cout << "PASS: " << checks << " deterministic correctness checks\n";
     return 0;
 }
