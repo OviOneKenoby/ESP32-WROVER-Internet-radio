@@ -1,8 +1,9 @@
 # TUNER//01 owner-assisted Bluetooth regression
 
-Status at publication: **PENDING / NOT RUN**. Do not mark a row PASS from a
-successful build, a screen change, pairing alone, or a serial success message.
-The executor did not flash or operate the hardware.
+Status updated from the owner's 2026-10-11 report: **tested Bluetooth
+lifecycle/audio/web paths PASS; full checklist PARTIAL**. The executor did not
+flash or operate the hardware. Rows without explicit evidence remain NOT
+TESTED rather than inferred from the successful cycles.
 
 ## Preconditions
 
@@ -43,9 +44,9 @@ Perform all steps three times in the same boot:
 
 | Cycle | MP3 before | BT audible | AVRCP | clean/restartable exit | MP3 after | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
-| 2 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
-| 3 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| 1 | PASS | PASS | NOT TESTED | PASS functional | PASS | Owner report: complete audible cycle, no reboot |
+| 2 | PASS | PASS | NOT TESTED | PASS functional | PASS | Owner report: complete audible cycle, no reboot |
+| 3 | PASS | PASS | NOT TESTED | PASS functional | PASS | Owner report: complete audible cycle, no reboot |
 
 Any `re-start not supported after end(true)`, false success message, missing
 audio, deinitialization error, panic or reboot is FAIL for the affected cycle.
@@ -76,6 +77,17 @@ During actual audible Bluetooth playback in one of the cycles:
 | BT audible + web, cycle 3 | PENDING | PENDING | PENDING | PENDING | PENDING |
 | radio stopped, after cycle 3 | PENDING | PENDING | PENDING | PENDING | PENDING |
 
+Separate reported Radio observations after the cycles:
+
+| Radio observation | Free internal | Largest block | Free PSRAM | Result/evidence |
+| --- | ---: | ---: | ---: | --- |
+| after three cycles | 13,036 | 10,228 | 4,144,135 | Owner capture |
+| after ~2 h 46 min West City MP3 | 13,028 | 10,740 | 4,144,135 | PASS observationally; owner capture |
+
+Web access and refresh during Bluetooth playback: **PASS**. Exact ellipsis and
+middle-dot rendering: **NOT TESTED / no explicit evidence**. The detailed
+same-state rows above remain PENDING because their values were not supplied.
+
 ## D. Preserved-function smoke test
 
 After the cycles, check one successful path each for MP3, Browse Countries and
@@ -88,13 +100,22 @@ their scope.
 
 | Field | Owner result |
 | --- | --- |
-| Test local/UTC date | PENDING |
-| Tester | PENDING |
-| Binary bytes/SHA-256 | PENDING |
-| Diagnostics build ID | PENDING |
-| Boot untouched | PENDING |
-| Three audible cycles | PENDING |
-| Web in Bluetooth | PENDING |
-| Same-state memory comparison | PENDING |
-| Preserved-function smoke test | PENDING |
-| Overall hardware result | PENDING |
+| Test local/UTC date | Reported 2026-10-11; exact test time not supplied |
+| Tester | Owner |
+| Binary bytes/SHA-256 | Artifact is documented; no device-side hash evidence supplied |
+| Diagnostics build ID | PASS — owner identified `76bdcd13d662` |
+| Boot untouched | PASS |
+| Boot with Play held | NOT TESTED |
+| Three audible cycles | PASS |
+| AVRCP on 1.1.1 | NOT TESTED |
+| Web in Bluetooth | PASS — access and refresh |
+| Exact UTF-8 symbols | NOT TESTED |
+| Same-state memory comparison | PARTIAL — only the two Radio observations above |
+| Preserved-function smoke test | PARTIAL — extended West City MP3 proven; other rows not supplied |
+| Controlled AP off/on | PASS — connectivity returned; manual MP3 start worked |
+| Automatic station resume after AP return | NOT IMPLEMENTED / did not resume |
+| Overall hardware result | PASS for tested Bluetooth lifecycle/audio/web paths; full checklist PARTIAL |
+
+Open incident: the initial cycle-3 loss of router visibility, web/diagnostics
+and Radio connectivity remains **OPEN / cause unknown**. The successful retest
+does not close it.
