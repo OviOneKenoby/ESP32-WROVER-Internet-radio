@@ -54,8 +54,9 @@ audio, deinitialization error, panic or reboot is FAIL for the affected cycle.
 
 During actual audible Bluetooth playback in one of the cycles:
 
-1. Open the root page. Confirm `Loading…`, `Choose a common region…`, and the
-   middle-dot separator render correctly (not `â€¦` or `Â·`).
+1. Open the root page. Confirm the ellipsis in `Loading...` and
+   `Choose a common region...`, plus the middle-dot separator, render as their
+   intended single glyphs rather than mojibake byte sequences.
 2. Load `/api/diagnostics` and save the response. Confirm source `bluetooth`,
    codec `SBC`, lifecycle `active`, and `bluetooth_restartable: true`.
 3. Record `free_internal_heap`, `largest_internal_heap_block`,

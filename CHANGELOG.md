@@ -32,10 +32,10 @@ the mandatory owner-assisted test are recorded under
 three cycles include actual audible phone and MP3 playback.
 
 The clean `esp32-dev` build from firmware source commit
-`9f021696cfb76d05e293ae6ca2f70545178653de` passed with 83,160 bytes of linked
-RAM (25.4%) and 1,997,081 bytes of flash (63.5%). The 2,003,664-byte binary
-embeds `build_git_id` `9f021696cfb7`; its SHA-256 is
-`AC323E354801857AE0E15F55CF09B3AC7D2DEBE1A48291D1F752EEF2B8DFF84E`.
+`76bdcd13d6628d81e4f96c42534ff781faf8e9db` passed with 83,160 bytes of linked
+RAM (25.4%) and 1,997,689 bytes of flash (63.5%). The 2,004,272-byte binary
+embeds `build_git_id` `76bdcd13d662`; its SHA-256 is
+`A7BDCA919E426EBD1F6777385AFF64E7886E009F31B6B5D9BB636E198BC1D59A`.
 The existing 249-check host suite and targeted static assertions passed.
 
 ## 2026-10-08 — Integrate bounded guards and prepare identified regression artifact

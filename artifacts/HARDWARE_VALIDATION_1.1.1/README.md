@@ -121,16 +121,18 @@ playback remain known issues and were not expanded into this repair.
 ## Software verification
 
 The clean `esp32-dev` build from source commit
-`9f021696cfb76d05e293ae6ca2f70545178653de` passed. It links 83,160 bytes of
-static RAM (25.4%) and 1,997,081 bytes of flash (63.5%). The resulting
-2,003,664-byte `firmware-1.1.1-9f021696cfb7.bin` embeds build ID
-`9f021696cfb7` and has SHA-256
-`AC323E354801857AE0E15F55CF09B3AC7D2DEBE1A48291D1F752EEF2B8DFF84E`.
+`76bdcd13d6628d81e4f96c42534ff781faf8e9db` passed. It links 83,160 bytes of
+static RAM (25.4%) and 1,997,689 bytes of flash (63.5%). The resulting
+2,004,272-byte `firmware-1.1.1-76bdcd13d662.bin` embeds build ID
+`76bdcd13d662` and has SHA-256
+`A7BDCA919E426EBD1F6777385AFF64E7886E009F31B6B5D9BB636E198BC1D59A`.
 It is published as a non-production
-[hardware-validation prerelease](https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.1-validation-9f02169).
+[hardware-validation prerelease](https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.1-validation-76bdcd1).
 The existing host suite passed all 249 deterministic checks; targeted static
-assertions for this repair also passed. Full details are in `BUILD_MANIFEST.md`
-and `SHA256SUMS.txt`.
+assertions for this repair also passed. The final teardown directly checks the
+AVRCP controller/target and A2DP sink deinitialization results before allowing
+the Radio handoff. Full details are in `BUILD_MANIFEST.md` and
+`SHA256SUMS.txt`.
 
 Compilation is not a hardware PASS. See `OWNER_TEST_CHECKLIST.md` for the
 mandatory physical regression and evidence rules.
