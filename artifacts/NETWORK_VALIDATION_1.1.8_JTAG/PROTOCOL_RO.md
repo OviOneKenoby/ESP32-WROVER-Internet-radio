@@ -2,7 +2,8 @@
 
 **Neexecutabil pe echipamentul disponibil: proprietarul are numai CH340/UART,
 fără adaptor JTAG.** Alternativa software și protocolul UART sunt în
-[NETWORK_VALIDATION_1.1.9_UART](../NETWORK_VALIDATION_1.1.9_UART/PROTOCOL_RO.md).
+[NETWORK_VALIDATION_1.1.10_UART](../NETWORK_VALIDATION_1.1.10_UART/PROTOCOL_RO.md).
+Prima etapă este numai B0/B1, fără HTTP; protocolul1.1.9 este suspendat.
 Protocolul de mai jos rămâne arhivat, nu este următorul test cerut aici.
 
 **Candidat în repository, nu release. Incident OPEN. Fără merge sau flash executat de

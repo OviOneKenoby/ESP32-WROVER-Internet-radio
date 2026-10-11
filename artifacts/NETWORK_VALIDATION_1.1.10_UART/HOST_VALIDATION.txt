@@ -1,0 +1,5 @@
+﻿PASS PowerShell protocol syntax: four blocks parsed, none executed.
+PASS embedded binary version 1.1.10-uart-validation and ID a7a31ef9afc7.
+PASS source src/main.cpp unchanged from 06011be; executable sources match a7a31ef9afc7.
+PASS main remains 112d68a49a053d302a87fc5658d497617eedda88.
+Hardware/flash/UART NOT RUN by agent.

@@ -1,0 +1,1 @@
+﻿PASS 20 ELF verifier checks: candidate accepted; historic ELF and all 18 operand mutations rejected

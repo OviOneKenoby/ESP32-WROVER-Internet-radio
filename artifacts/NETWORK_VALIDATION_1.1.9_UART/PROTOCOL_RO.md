@@ -6,6 +6,9 @@ unlock; controlul original nu este PASS. Vezi
 [analiza discrepanței](BASELINE_DISCREPANCY_RO.md). Instrucțiunile de mai jos
 rămân istorice până la corectarea și verificarea predicatului final.
 
+Candidatul corectat și prima etapă **numai B0/B1, fără HTTP** sunt în
+[NETWORK_VALIDATION_1.1.10_UART](../NETWORK_VALIDATION_1.1.10_UART/PROTOCOL_RO.md).
+
 **1.1.9-uart-validation / fe228ca737b9. Candidat de diagnostic, incident OPEN.**
 Necesită numai CH340/COM5. Fără JTAG, recablare sau dezactivarea encoderului.
 Nu este un fix: TX dynamic32/cache4, retry, payload root și comportamentul

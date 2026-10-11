@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 
 elf, reference, tool = map(Path, sys.argv[1:4])
+subprocess.run([sys.executable, str(Path(__file__).with_name("verify_tx_classification_elf.py")),
+                str(elf), str(tool)], check=True)
 assert hashlib.sha256(reference.read_bytes()).hexdigest() == "22d30785e7c25f3587a04ecfbe73610a438d7d78ab843d1773de167ebc75d999"
 
 def load(path):
