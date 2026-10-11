@@ -1,0 +1,34 @@
+﻿PASS final load/add operands site=0 effective=0x4024160e
+PASS final load/add operands site=1 effective=0x4023d68f
+PASS final load/add operands site=2 effective=0x4023d748
+PASS final load/add operands site=3 effective=0x4023d866
+PASS final load/add operands site=4 effective=0x40240e80
+PASS final load/add operands site=5 effective=0x40240fb0
+PASS final load/add operands site=6 effective=0x4023d6f7
+PASS final load/add operands site=7 effective=0x4023d6e9
+PASS final load/add operands site=8 effective=0x40240eb0
+PASS six site predicates, normal/WAPI agreement between unlock and malloc, malloc-site predicate
+PASS explicitly rejects historical normal offset +0xa2; static evaluation only, not hardware unwind coverage
+PASS unchanged normalized private instructions: wifi_osi_funcs_register
+PASS unchanged normalized private instructions: ieee80211_output_do
+PASS unchanged normalized private instructions: esf_buf_alloc_dynamic
+PASS unchanged normalized private instructions: esf_buf_alloc
+PASS unchanged normalized private instructions: ieee80211_alloc_tx_buf
+PASS unchanged normalized private instructions: ieee80211_output_process
+PASS OSI _mutex_unlock site esf_buf_alloc+0x7a return=0x4024160e
+PASS OSI _mutex_unlock site ieee80211_output_process+0x4f return=0x4023d68f
+PASS OSI _mutex_unlock site ieee80211_output_process+0x108 return=0x4023d748
+PASS OSI _mutex_unlock site ieee80211_output_process+0x226 return=0x4023d866
+PASS OSI _mutex_unlock site esf_buf_alloc_dynamic+0x78 return=0x40240e80
+PASS OSI _mutex_unlock site esf_buf_alloc_dynamic+0x1a8 return=0x40240fb0
+PASS allocation uses the registered declared OSI table
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_16unlockEPv
+PASS IRAM callback without allocator/logger/heap queries: _ZN12_GLOBAL__N_16unlockEPv
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_114internalMallocEj
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_114internalMallocEj
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_110wifiMallocEj
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_110wifiMallocEj
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_113observeMallocEjPv
+PASS declared allocation callback return site 0x40240eb0
+PASS all serial printf fragments fit the stack buffer at UINT32_MAX
+STATIC ONLY: runtime positive control, scope and unwind coverage still required

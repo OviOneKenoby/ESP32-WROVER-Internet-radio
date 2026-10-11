@@ -1,0 +1,592 @@
+19:52:22.165 > _Update_Full : 1654996
+19:52:23.858 > _Update_Full : 1654000
+19:52:23.895 > [MAIN] Initializing input controls...
+19:52:23.898 > [INPUT] Initialized: Buttons + EC11 Encoder (state=1)
+19:52:23.900 > [MAIN] Initializing audio system...
+19:52:23.906 > [AUDIO] Initialization complete
+19:52:23.909 > [MAIN] Loading radio stations...
+19:52:23.911 > [STATION] Loaded 0 saved stations
+19:52:23.919 > [STATION] Loaded 5 recent, 3 favorites from flash
+19:52:23.922 > [MAIN] Loading WiFi configuration...
+19:52:23.925 > [WIFI] Event tracking ready; framework autoReconnect=true
+19:52:23.931 > [WIFI] Loaded config: The Originals
+19:52:23.934 > [TIME] Timezone: EET-2EEST,M3.5.0/3,M10.5.0/4
+19:52:25.630 > _Update_Full : 1654000
+19:52:29.363 > _Update_Full : 1654000
+19:52:29.401 > [MAIN] Attempting to reconnect to: The Originals
+19:52:29.404 > [WIFI] Attempting to reconnect to: The Originals
+19:52:29.409 > [WIFI] Connecting to: The Originals
+19:52:30.015 > [WIFI] Event STA_START at 10200 ms
+19:52:30.018 > [WIFI] Event STA_CONNECTED at 10296 ms; awaiting IP
+19:52:30.021 > ....[WIFI] Event STA_GOT_IP at 12406 ms
+19:52:32.018 > .
+19:52:32.018 > [WIFI] Connected!
+19:52:32.018 > [WIFI] IP: 192.168.1.129
+19:52:32.020 > [WIFI] Signal: -47 dBm
+19:52:32.023 > [WIFI] Config saved: The Originals
+19:52:32.381 > _Update_Part : 345000
+19:52:32.397 > [WEB] Ready: http://192.168.1.129/
+19:52:34.768 > _Update_Part : 345000
+19:52:34.806 > [MAIN] Setup complete!
+19:52:34.806 > 
+19:52:34.806 > === Remote control via serial monitor ===
+19:52:34.812 >   u / d   = encoder up / down (scroll stations, volume)
+19:52:34.814 >   k       = encoder click (select / confirm / back)
+19:52:34.819 >   space   = play / pause
+19:52:34.822 >   n / p   = next/prev station (fixed list); n = add to Favorites when playing a discovered station
+19:52:34.831 >   l       = long-press (Bluetooth mode from main list; Back everywhere in Browse/Favorites/Recent)
+19:52:34.839 >   s       = print current screen contents as text
+19:52:34.846 >   x       = read-only network/audio/runtime diagnostic snapshot
+19:52:34.851 > ==========================================
+19:52:34.853 > 
+19:52:34.853 > [TIME] NTP synchronization requested
+19:52:38.285 > [SERIAL] Simulating input: l
+19:52:38.717 > [AUDIO] Bluetooth A2DP sink started - discoverable as 'ESP32-Radio'
+19:52:40.415 > _Update_Full : 1654000
+19:52:40.452 > [MAIN] Switched to Bluetooth mode
+19:52:40.807 > _Update_Part : 344998
+19:53:02.324 > [BT] Metadata: Easy Lover
+19:53:02.324 > [BT] Metadata: Imagine Blues Rock - Easy Lover
+19:53:04.202 > _Update_Full : 1654000
+19:53:04.594 > _Update_Part : 345000
+19:53:04.956 > _Update_Part : 345000
+19:53:06.331 > _Update_Part : 345000
+19:53:08.344 > _Update_Part : 344998
+19:53:10.356 > _Update_Part : 345000
+19:53:12.368 > _Update_Part : 345000
+19:53:14.370 > _Update_Part : 345000
+19:53:16.373 > _Update_Part : 345000
+19:53:18.386 > _Update_Part : 345000
+19:53:20.388 > _Update_Part : 345000
+19:53:22.401 > _Update_Part : 345000
+19:53:24.406 > _Update_Part : 345000
+19:53:26.416 > _Update_Part : 345000
+19:53:28.428 > _Update_Part : 345000
+19:53:30.430 > _Update_Part : 345000
+19:53:32.444 > _Update_Part : 344996
+19:53:34.457 > _Update_Part : 344995
+19:53:36.460 > _Update_Part : 345000
+19:53:38.472 > _Update_Part : 345000
+19:53:40.484 > _Update_Part : 345002
+19:53:42.488 > _Update_Part : 344994
+19:53:44.495 > _Update_Part : 345005
+19:53:46.497 > _Update_Part : 345002
+19:53:47.267 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+19:53:47.270 > [SNAPSHOT] firmware=1.1.11-psram-validation build_git_id=124e84801b06 uptime_ms=87967
+19:53:47.276 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+19:53:47.282 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+19:53:47.290 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+19:53:47.298 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-48
+19:53:47.305 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+19:53:47.315 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+19:53:47.321 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12406 age_ms=75561
+19:53:47.326 > [SNAPSHOT] wifi_last_disconnect=none
+19:53:47.329 > [SNAPSHOT] heap_internal_free=7188 largest_block=2932 allocator_region_minimum=3556 psram_free=4177447
+19:53:47.340 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+19:53:47.351 > [SNAPSHOT] loop_count=5435 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2542 last_completed_age_ms=1 main_task_stack_hwm=4396
+19:53:47.362 > [SNAPSHOT] web_handle_count=5435 last_handle_ms=1 max_handle_ms=2 last_handle_age_ms=0
+19:53:47.370 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+19:53:47.382 > [SNAPSHOT] web_response_count=0 route=none build_ms=0 header_ms=0 body_ms=0 body_expected=0 body_sent=0 header_sent=0 socket_calls=0 retry_waits=0 socket_error=0 failed=no json_overflow=no
+19:53:47.395 > [SNAPSHOT] web_heap_start=0/0 built=0/0 end=0/0 alloc_fail_start_built_end=0/0/0
+19:53:47.405 > [SW_TX] ready=1 skipped=0
+19:53:47.406 > [SW_TX] scope_overflow=0
+19:53:47.410 > [SW_TX] paired=0 unpaired=0
+19:53:47.410 > [SW_TX] unexpected=0
+19:53:47.412 > [SW_CONVERT] quota_passed=45
+19:53:47.415 > [SW_CONVERT] preheap_null=0
+19:53:47.418 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+19:53:47.421 > [SW_MALLOC] calls=45 ok=45 null=0
+19:53:47.424 > [SW_SITE] k=0 n=0 tick=0
+19:53:47.426 > [SW_SITE] k=1 n=45 tick=88014
+19:53:47.429 > [SW_SITE] k=2 n=0 tick=0
+19:53:47.432 > [SW_SITE] k=3 n=90 tick=88016
+19:53:47.434 > [SW_SITE] k=4 n=420 tick=88031
+19:53:47.438 > [SW_SITE] k=5 n=0 tick=0
+19:53:47.441 > [SW_TRACE] total=0 retained_max=8
+19:53:47.443 > [LWIP_MEMORY] threshold=512 calls=954
+19:53:47.446 > [LWIP_MEMORY] psram=0 bytes=0
+19:53:47.448 > [LWIP_MEMORY] original=954 fallback=0
+19:53:47.451 > [NET_PROGRESS] tx_calls=43 accepted=43 nomem=0 other_error=0 last_result=0 tx_last_tick=88015 refs=43 frees=43 free_last_tick=88014 rx_calls=245 rx_accepted=245 rx_last_tick=88009 tick_unavailable=0
+19:53:47.467 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+19:53:47.478 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=30 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+19:53:47.488 > [SNAPSHOT] dma_heap_free=7644 largest=5876 web_dma_start=0/0 built=0/0 end=0/0
+19:53:47.496 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+19:53:47.501 > === END DIAGNOSTIC SNAPSHOT ===
+19:53:48.511 > _Update_Part : 345000
+19:53:50.522 > _Update_Part : 344995
+19:53:52.534 > _Update_Part : 345002
+19:53:54.537 > _Update_Part : 345000
+19:53:56.539 > _Update_Part : 345000
+19:53:58.551 > _Update_Part : 345000
+19:54:00.564 > _Update_Part : 345001
+19:54:02.576 > _Update_Part : 344995
+19:54:04.578 > _Update_Part : 344998
+19:54:06.590 > _Update_Part : 344998
+19:54:08.602 > _Update_Part : 345000
+19:54:10.616 > _Update_Part : 344995
+19:54:12.629 > _Update_Part : 344998
+19:54:14.640 > _Update_Part : 345004
+19:54:16.643 > _Update_Part : 345003
+19:54:18.658 > _Update_Part : 345000
+19:54:20.671 > _Update_Part : 345000
+19:54:22.685 > _Update_Part : 344997
+19:54:24.698 > _Update_Part : 344993
+19:54:26.711 > _Update_Part : 345000
+19:54:28.714 > _Update_Part : 345000
+19:54:30.717 > _Update_Part : 345021
+19:54:32.730 > _Update_Part : 345000
+19:54:34.733 > _Update_Part : 345000
+19:54:36.745 > _Update_Part : 344999
+19:54:38.748 > _Update_Part : 345005
+19:54:40.752 > _Update_Part : 345002
+19:54:42.754 > _Update_Part : 345000
+19:54:44.767 > _Update_Part : 345001
+19:54:46.785 > _Update_Part : 345002
+19:54:48.788 > _Update_Part : 345000
+19:54:50.800 > _Update_Part : 345006
+19:54:52.812 > _Update_Part : 345000
+19:54:54.825 > _Update_Part : 345002
+19:54:56.829 > _Update_Part : 345000
+19:54:58.842 > _Update_Part : 345002
+19:55:00.855 > _Update_Part : 344998
+19:55:02.867 > _Update_Part : 345000
+19:55:04.880 > _Update_Part : 345002
+19:55:06.892 > _Update_Part : 344998
+19:55:08.905 > _Update_Part : 345000
+19:55:10.919 > _Update_Part : 344987
+19:55:12.922 > _Update_Part : 345000
+19:55:14.935 > _Update_Part : 344998
+19:55:16.950 > _Update_Part : 344998
+19:55:18.963 > _Update_Part : 345000
+19:55:20.975 > _Update_Part : 344996
+19:55:22.978 > _Update_Part : 345000
+19:55:24.982 > _Update_Part : 345000
+19:55:26.995 > _Update_Part : 344992
+19:55:29.008 > _Update_Part : 344995
+19:55:31.020 > _Update_Part : 345000
+19:55:33.033 > _Update_Part : 344998
+19:55:35.048 > _Update_Part : 345000
+19:55:37.052 > _Update_Part : 345001
+19:55:39.057 > _Update_Part : 345000
+19:55:41.060 > _Update_Part : 344985
+19:55:43.064 > _Update_Part : 345003
+19:55:45.076 > _Update_Part : 345000
+19:55:47.079 > _Update_Part : 345000
+19:55:49.091 > _Update_Part : 344998
+19:55:51.093 > _Update_Part : 345001
+19:55:53.105 > _Update_Part : 344997
+19:55:55.118 > _Update_Part : 345000
+19:55:57.120 > _Update_Part : 345000
+19:55:59.125 > _Update_Part : 344995
+19:56:01.138 > _Update_Part : 344996
+19:56:03.150 > _Update_Part : 344998
+19:56:05.162 > _Update_Part : 345002
+19:56:07.175 > _Update_Part : 345002
+19:56:09.190 > _Update_Part : 345000
+19:56:11.195 > _Update_Part : 344998
+19:56:13.208 > _Update_Part : 345000
+19:56:15.220 > _Update_Part : 345002
+19:56:17.225 > _Update_Part : 345000
+19:56:19.227 > _Update_Part : 344998
+19:56:21.242 > _Update_Part : 345003
+19:56:23.254 > _Update_Part : 345003
+19:56:25.268 > _Update_Part : 345000
+19:56:27.273 > _Update_Part : 345002
+19:56:27.986 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+19:56:27.990 > [SNAPSHOT] firmware=1.1.11-psram-validation build_git_id=124e84801b06 uptime_ms=248689
+19:56:27.997 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+19:56:28.000 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+19:56:28.009 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+19:56:28.017 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-47
+19:56:28.022 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+19:56:28.034 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+19:56:28.039 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12406 age_ms=236283
+19:56:28.045 > [SNAPSHOT] wifi_last_disconnect=none
+19:56:28.048 > [SNAPSHOT] heap_internal_free=8432 largest_block=2932 allocator_region_minimum=3228 psram_free=4177447
+19:56:28.058 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+19:56:28.070 > [SNAPSHOT] loop_count=17382 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2542 last_completed_age_ms=1 main_task_stack_hwm=3760
+19:56:28.081 > [SNAPSHOT] web_handle_count=17382 last_handle_ms=1 max_handle_ms=2 last_handle_age_ms=0
+19:56:28.089 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+19:56:28.101 > [SNAPSHOT] web_response_count=0 route=none build_ms=0 header_ms=0 body_ms=0 body_expected=0 body_sent=0 header_sent=0 socket_calls=0 retry_waits=0 socket_error=0 failed=no json_overflow=no
+19:56:28.117 > [SNAPSHOT] web_heap_start=0/0 built=0/0 end=0/0 alloc_fail_start_built_end=0/0/0
+19:56:28.123 > [SW_TX] ready=1 skipped=0
+19:56:28.126 > [SW_TX] scope_overflow=0
+19:56:28.129 > [SW_TX] paired=0 unpaired=0
+19:56:28.131 > [SW_TX] unexpected=0
+19:56:28.131 > [SW_CONVERT] quota_passed=208
+19:56:28.134 > [SW_CONVERT] preheap_null=0
+19:56:28.137 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+19:56:28.139 > [SW_MALLOC] calls=208 ok=208 null=0
+19:56:28.145 > [SW_SITE] k=0 n=0 tick=0
+19:56:28.145 > [SW_SITE] k=1 n=208 tick=248475
+19:56:28.148 > [SW_SITE] k=2 n=0 tick=0
+19:56:28.151 > [SW_SITE] k=3 n=416 tick=248479
+19:56:28.154 > [SW_SITE] k=4 n=1843 tick=248601
+19:56:28.156 > [SW_SITE] k=5 n=0 tick=0
+19:56:28.159 > [SW_TRACE] total=0 retained_max=8
+19:56:28.161 > [LWIP_MEMORY] threshold=512 calls=2855
+19:56:28.164 > [LWIP_MEMORY] psram=0 bytes=0
+19:56:28.167 > [LWIP_MEMORY] original=2855 fallback=0
+19:56:28.170 > [NET_PROGRESS] tx_calls=206 accepted=206 nomem=0 other_error=0 last_result=0 tx_last_tick=248476 refs=206 frees=206 free_last_tick=248475 rx_calls=776 rx_accepted=776 rx_last_tick=248602 tick_unavailable=0
+19:56:28.189 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+19:56:28.197 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=185 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+19:56:28.209 > [SNAPSHOT] dma_heap_free=9456 largest=4596 web_dma_start=0/0 built=0/0 end=0/0
+19:56:28.214 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+19:56:28.222 > === END DIAGNOSTIC SNAPSHOT ===
+19:56:29.285 > _Update_Part : 345000
+19:56:31.297 > _Update_Part : 344995
+19:56:33.310 > _Update_Part : 345004
+19:56:35.322 > _Update_Part : 344990
+19:56:37.324 > _Update_Part : 345000
+19:56:39.337 > _Update_Part : 345000
+19:56:41.348 > _Update_Part : 345000
+19:56:43.361 > _Update_Part : 345003
+19:56:45.372 > _Update_Part : 345002
+19:56:47.384 > _Update_Part : 345000
+19:56:49.388 > _Update_Part : 345002
+19:56:51.401 > _Update_Part : 345000
+19:56:53.413 > _Update_Part : 345015
+19:56:55.427 > _Update_Part : 344998
+19:56:57.428 > _Update_Part : 345000
+19:56:59.440 > _Update_Part : 344999
+19:57:01.444 > _Update_Part : 345006
+19:57:03.459 > _Update_Part : 345000
+19:57:05.471 > _Update_Part : 345000
+19:57:07.474 > _Update_Part : 345004
+19:57:09.487 > _Update_Part : 344998
+19:57:11.501 > _Update_Part : 345000
+19:57:13.504 > _Update_Part : 344996
+19:57:15.520 > _Update_Part : 345005
+19:57:17.532 > _Update_Part : 345002
+19:57:19.544 > _Update_Part : 345000
+19:57:21.556 > _Update_Part : 345000
+19:57:23.569 > _Update_Part : 345002
+19:57:25.580 > _Update_Part : 345000
+19:57:27.586 > _Update_Part : 345002
+19:57:28.649 > [WEB_RESPONSE] count=1 route=stations build_ms=1 header_ms=2 body_ms=1 expected=293 sent=293 header_sent=91 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=6104/4852 heap_built=4380/3700 heap_end=6596/3316 alloc_fail=0/0/0
+19:57:28.674 > [309381][E][WebServer.cpp:638] _handleRequest(): request handler not found
+19:57:28.688 > [WEB_RESPONSE] count=2 route=other build_ms=0 header_ms=2 body_ms=1 expected=21 sent=21 header_sent=97 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=5700/2548 heap_built=4756/2548 heap_end=5472/2548 alloc_fail=0/0/0
+19:57:29.603 > _Update_Part : 345003
+19:57:30.806 > [WEB_RESPONSE] count=3 route=root build_ms=1 header_ms=2 body_ms=3 expected=3617 sent=3617 header_sent=100 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=6320/2932 heap_built=6176/2932 heap_end=3092/1396 alloc_fail=0/0/0
+19:57:31.108 > [WEB_RESPONSE] count=4 route=status build_ms=1 header_ms=1 body_ms=2 expected=116 sent=116 header_sent=91 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=5932/3956 heap_built=4772/2804 heap_end=6832/3956 alloc_fail=0/0/0
+19:57:31.223 > [WEB_RESPONSE] count=5 route=stations build_ms=1 header_ms=3 body_ms=1 expected=293 sent=293 header_sent=91 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=5784/3188 heap_built=4316/2164 heap_end=6440/1588 alloc_fail=0/0/0
+19:57:31.621 > _Update_Part : 344998
+19:57:33.624 > _Update_Part : 345002
+19:57:35.625 > _Update_Part : 345000
+19:57:37.640 > _Update_Part : 344998
+19:57:38.696 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+19:57:38.700 > [SNAPSHOT] firmware=1.1.11-psram-validation build_git_id=124e84801b06 uptime_ms=319401
+19:57:38.707 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+19:57:38.710 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+19:57:38.719 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+19:57:38.727 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-49
+19:57:38.733 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+19:57:38.744 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+19:57:38.749 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12406 age_ms=306995
+19:57:38.755 > [SNAPSHOT] wifi_last_disconnect=none
+19:57:38.758 > [SNAPSHOT] heap_internal_free=7620 largest_block=2932 allocator_region_minimum=1284 psram_free=4176447
+19:57:38.769 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+19:57:38.780 > [SNAPSHOT] loop_count=22622 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2542 last_completed_age_ms=1 main_task_stack_hwm=3760
+19:57:38.791 > [SNAPSHOT] web_handle_count=22622 last_handle_ms=1 max_handle_ms=29 last_handle_age_ms=0
+19:57:38.799 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+19:57:38.810 > [SNAPSHOT] web_response_count=5 route=stations build_ms=1 header_ms=3 body_ms=1 body_expected=293 body_sent=293 header_sent=91 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+19:57:38.827 > [SNAPSHOT] web_heap_start=5784/3188 built=4316/2164 end=6440/1588 alloc_fail_start_built_end=0/0/0
+19:57:38.835 > [SW_TX] ready=1 skipped=0
+19:57:38.838 > [SW_TX] scope_overflow=0
+19:57:38.842 > [SW_TX] paired=0 unpaired=0
+19:57:38.842 > [SW_TX] unexpected=0
+19:57:38.844 > [SW_CONVERT] quota_passed=312
+19:57:38.846 > [SW_CONVERT] preheap_null=0
+19:57:38.849 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+19:57:38.852 > [SW_MALLOC] calls=312 ok=312 null=0
+19:57:38.855 > [SW_SITE] k=0 n=0 tick=0
+19:57:38.858 > [SW_SITE] k=1 n=312 tick=319030
+19:57:38.860 > [SW_SITE] k=2 n=0 tick=0
+19:57:38.863 > [SW_SITE] k=3 n=611 tick=319034
+19:57:38.866 > [SW_SITE] k=4 n=2543 tick=319154
+19:57:38.868 > [SW_SITE] k=5 n=0 tick=0
+19:57:38.871 > [SW_TRACE] total=0 retained_max=8
+19:57:38.875 > [LWIP_MEMORY] threshold=512 calls=3843
+19:57:38.877 > [LWIP_MEMORY] psram=12 bytes=18432
+19:57:38.879 > [LWIP_MEMORY] original=3831 fallback=0
+19:57:38.882 > [NET_PROGRESS] tx_calls=310 accepted=310 nomem=0 other_error=0 last_result=0 tx_last_tick=319031 refs=310 frees=310 free_last_tick=319030 rx_calls=1026 rx_accepted=1026 rx_last_tick=319029 tick_unavailable=0
+19:57:38.901 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+19:57:38.911 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=255 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+19:57:38.921 > [SNAPSHOT] dma_heap_free=7620 largest=3188 web_dma_start=5784/3188 built=3996/2164 end=6440/1588
+19:57:38.930 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+19:57:38.935 > === END DIAGNOSTIC SNAPSHOT ===
+19:57:39.652 > _Update_Part : 345005
+19:57:41.664 > _Update_Part : 344998
+19:57:43.680 > _Update_Part : 345000
+19:57:45.684 > _Update_Part : 345000
+19:57:47.697 > _Update_Part : 344988
+19:57:49.711 > _Update_Part : 344998
+19:57:51.722 > _Update_Part : 345000
+19:57:51.743 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+19:57:51.747 > [SNAPSHOT] firmware=1.1.11-psram-validation build_git_id=124e84801b06 uptime_ms=332448
+19:57:51.754 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+19:57:51.758 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+19:57:51.766 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+19:57:51.774 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-48
+19:57:51.780 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+19:57:51.791 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+19:57:51.796 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12406 age_ms=320042
+19:57:51.802 > [SNAPSHOT] wifi_last_disconnect=none
+19:57:51.805 > [SNAPSHOT] heap_internal_free=6996 largest_block=1780 allocator_region_minimum=1284 psram_free=4177447
+19:57:51.816 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+19:57:51.827 > [SNAPSHOT] loop_count=23555 current_loop_elapsed_ms=1 last_loop_ms=373 max_loop_ms=2542 last_completed_age_ms=1 main_task_stack_hwm=3760
+19:57:51.838 > [SNAPSHOT] web_handle_count=23555 last_handle_ms=1 max_handle_ms=29 last_handle_age_ms=0
+19:57:51.846 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+19:57:51.857 > [SNAPSHOT] web_response_count=5 route=stations build_ms=1 header_ms=3 body_ms=1 body_expected=293 body_sent=293 header_sent=91 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+19:57:51.874 > [SNAPSHOT] web_heap_start=5784/3188 built=4316/2164 end=6440/1588 alloc_fail_start_built_end=0/0/0
+19:57:51.884 > [SW_TX] ready=1 skipped=0
+19:57:51.885 > [SW_TX] scope_overflow=0
+19:57:51.889 > [SW_TX] paired=0 unpaired=0
+19:57:51.890 > [SW_TX] unexpected=0
+19:57:51.891 > [SW_CONVERT] quota_passed=331
+19:57:51.893 > [SW_CONVERT] preheap_null=0
+19:57:51.896 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+19:57:51.901 > [SW_MALLOC] calls=331 ok=331 null=0
+19:57:51.901 > [SW_SITE] k=0 n=0 tick=0
+19:57:51.905 > [SW_SITE] k=1 n=331 tick=332142
+19:57:51.907 > [SW_SITE] k=2 n=0 tick=0
+19:57:51.910 > [SW_SITE] k=3 n=649 tick=332143
+19:57:51.913 > [SW_SITE] k=4 n=2680 tick=332547
+19:57:51.916 > [SW_SITE] k=5 n=0 tick=0
+19:57:51.918 > [SW_TRACE] total=0 retained_max=8
+19:57:51.921 > [LWIP_MEMORY] threshold=512 calls=4058
+19:57:51.923 > [LWIP_MEMORY] psram=12 bytes=18432
+19:57:51.926 > [LWIP_MEMORY] original=4046 fallback=0
+19:57:51.929 > [NET_PROGRESS] tx_calls=329 accepted=329 nomem=0 other_error=0 last_result=0 tx_last_tick=332143 refs=329 frees=329 free_last_tick=332142 rx_calls=1074 rx_accepted=1074 rx_last_tick=332548 tick_unavailable=0
+19:57:51.949 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+19:57:51.957 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=268 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+19:57:51.969 > [SNAPSHOT] dma_heap_free=5968 largest=1972 web_dma_start=5784/3188 built=3996/2164 end=6440/1588
+19:57:51.977 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+19:57:51.983 > === END DIAGNOSTIC SNAPSHOT ===
+19:57:53.735 > _Update_Part : 345000
+19:57:55.749 > _Update_Part : 344998
+19:57:57.756 > _Update_Part : 345000
+19:57:59.758 > _Update_Part : 345005
+19:58:01.771 > _Update_Part : 345000
+19:58:03.784 > _Update_Part : 345000
+19:58:05.796 > _Update_Part : 345011
+19:58:07.808 > _Update_Part : 344999
+19:58:09.239 > [BT] Metadata: Imagine Blues Rock - SULTANS OF SWING - DIRE STRAITS | High Energy Blues Rock Cover | Dirty Amp Blues Sessions
+19:58:09.249 > [BT] Metadata: Dirty Amp Blues - SULTANS OF SWING - DIRE STRAITS | High Energy Blues Rock Cover | Dirty Amp Blues Sessions
+19:58:09.823 > _Update_Part : 345002
+19:58:10.188 > _Update_Part : 345000
+19:58:11.829 > _Update_Part : 345000
+19:58:13.834 > _Update_Part : 345000
+19:58:13.853 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+19:58:13.856 > [SNAPSHOT] firmware=1.1.11-psram-validation build_git_id=124e84801b06 uptime_ms=354559
+19:58:13.865 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+19:58:13.869 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+19:58:13.876 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+19:58:13.885 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-49
+19:58:13.890 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+19:58:13.902 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+19:58:13.906 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12406 age_ms=342153
+19:58:13.912 > [SNAPSHOT] wifi_last_disconnect=none
+19:58:13.916 > [SNAPSHOT] heap_internal_free=6932 largest_block=1972 allocator_region_minimum=1284 psram_free=4177447
+19:58:13.925 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+19:58:13.938 > [SNAPSHOT] loop_count=25146 current_loop_elapsed_ms=1 last_loop_ms=375 max_loop_ms=2542 last_completed_age_ms=1 main_task_stack_hwm=3760
+19:58:13.950 > [SNAPSHOT] web_handle_count=25146 last_handle_ms=0 max_handle_ms=29 last_handle_age_ms=0
+19:58:13.956 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+19:58:13.968 > [SNAPSHOT] web_response_count=5 route=stations build_ms=1 header_ms=3 body_ms=1 body_expected=293 body_sent=293 header_sent=91 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+19:58:13.984 > [SNAPSHOT] web_heap_start=5784/3188 built=4316/2164 end=6440/1588 alloc_fail_start_built_end=0/0/0
+19:58:13.992 > [SW_TX] ready=1 skipped=0
+19:58:13.995 > [SW_TX] scope_overflow=0
+19:58:13.998 > [SW_TX] paired=0 unpaired=0
+19:58:14.001 > [SW_TX] unexpected=0
+19:58:14.001 > [SW_CONVERT] quota_passed=354
+19:58:14.003 > [SW_CONVERT] preheap_null=0
+19:58:14.006 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+19:58:14.009 > [SW_MALLOC] calls=354 ok=354 null=0
+19:58:14.011 > [SW_SITE] k=0 n=0 tick=0
+19:58:14.014 > [SW_SITE] k=1 n=354 tick=354257
+19:58:14.018 > [SW_SITE] k=2 n=0 tick=0
+19:58:14.020 > [SW_SITE] k=3 n=695 tick=354261
+19:58:14.023 > [SW_SITE] k=4 n=2891 tick=354664
+19:58:14.026 > [SW_SITE] k=5 n=0 tick=0
+19:58:14.028 > [SW_TRACE] total=0 retained_max=8
+19:58:14.032 > [LWIP_MEMORY] threshold=512 calls=4426
+19:58:14.035 > [LWIP_MEMORY] psram=12 bytes=18432
+19:58:14.037 > [LWIP_MEMORY] original=4414 fallback=0
+19:58:14.039 > [NET_PROGRESS] tx_calls=352 accepted=352 nomem=0 other_error=0 last_result=0 tx_last_tick=354258 refs=352 frees=352 free_last_tick=354257 rx_calls=1158 rx_accepted=1158 rx_last_tick=354664 tick_unavailable=0
+19:58:14.059 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+19:58:14.067 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=290 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+19:58:14.078 > [SNAPSHOT] dma_heap_free=7900 largest=2932 web_dma_start=5784/3188 built=3996/2164 end=6440/1588
+19:58:14.087 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+19:58:14.092 > === END DIAGNOSTIC SNAPSHOT ===
+19:58:15.847 > _Update_Part : 344991
+19:58:17.852 > _Update_Part : 345002
+19:58:19.856 > _Update_Part : 345000
+19:58:21.859 > _Update_Part : 345000
+19:58:23.864 > _Update_Part : 345000
+19:58:25.867 > _Update_Part : 345000
+19:58:27.871 > _Update_Part : 345000
+19:58:29.874 > _Update_Part : 345000
+19:58:31.277 > [BT] Metadata: Dirty Amp Blues - SULTANS OF SWING - DIRE STRAITS | High Energy Blues Rock Cover | Dirty Amp Blues Sessions
+19:58:31.286 > [BT] Metadata: Dirty Amp Blues - SULTANS OF SWING - DIRE STRAITS | High Energy Blues Rock Cover | Dirty Amp Blues Sessions
+19:58:31.886 > _Update_Part : 345001
+19:58:33.892 > _Update_Part : 345000
+19:58:35.896 > _Update_Part : 345000
+19:58:37.900 > _Update_Part : 345000
+19:58:39.905 > _Update_Part : 344998
+19:58:41.909 > _Update_Part : 345004
+19:58:43.913 > _Update_Part : 344995
+19:58:45.917 > _Update_Part : 345000
+19:58:47.702 > [BT] Metadata: Dirty Amp Blues - SULTANS OF SWING - DIRE STRAITS | High Energy Blues Rock Cover | Dirty Amp Blues Sessions
+19:58:47.711 > [BT] Metadata: Dirty Amp Blues - SULTANS OF SWING - DIRE STRAITS | High Energy Blues Rock Cover | Dirty Amp Blues Sessions
+19:58:47.920 > _Update_Part : 345003
+19:58:49.923 > _Update_Part : 344999
+19:58:51.927 > _Update_Part : 345002
+19:58:53.930 > _Update_Part : 345002
+19:58:55.935 > _Update_Part : 344995
+19:58:57.941 > _Update_Part : 345003
+19:58:59.946 > _Update_Part : 345000
+19:59:01.949 > _Update_Part : 345005
+19:59:03.952 > _Update_Part : 345004
+19:59:05.955 > _Update_Part : 344992
+19:59:07.958 > _Update_Part : 345000
+19:59:09.620 > [WEB_RESPONSE] count=6 route=root build_ms=1 header_ms=2 body_ms=4 expected=3617 sent=3617 header_sent=100 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=5908/2932 heap_built=5780/2932 heap_end=2696/1396 alloc_fail=0/0/0
+19:59:09.987 > _Update_Part : 345004
+19:59:10.023 > [WEB_RESPONSE] count=7 route=status build_ms=1 header_ms=2 body_ms=3 expected=116 sent=116 header_sent=91 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=4616/1780 heap_built=3320/980 heap_end=7216/2932 alloc_fail=0/0/0
+19:59:10.140 > [WEB_RESPONSE] count=8 route=stations build_ms=1 header_ms=2 body_ms=1 expected=293 sent=293 header_sent=91 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=5476/2164 heap_built=3976/2164 heap_end=6068/2420 alloc_fail=0/0/0
+19:59:11.993 > _Update_Part : 345002
+19:59:13.998 > _Update_Part : 345004
+19:59:16.002 > _Update_Part : 345005
+19:59:17.345 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+19:59:17.348 > [SNAPSHOT] firmware=1.1.11-psram-validation build_git_id=124e84801b06 uptime_ms=418052
+19:59:17.356 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+19:59:17.359 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+19:59:17.368 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+19:59:17.376 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-52
+19:59:17.382 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+19:59:17.393 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+19:59:17.398 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12406 age_ms=405646
+19:59:17.404 > [SNAPSHOT] wifi_last_disconnect=none
+19:59:17.406 > [SNAPSHOT] heap_internal_free=6832 largest_block=2932 allocator_region_minimum=880 psram_free=4159447
+19:59:17.417 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+19:59:17.429 > [SNAPSHOT] loop_count=29859 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2542 last_completed_age_ms=1 main_task_stack_hwm=3760
+19:59:17.440 > [SNAPSHOT] web_handle_count=29859 last_handle_ms=1 max_handle_ms=29 last_handle_age_ms=0
+19:59:17.449 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+19:59:17.461 > [SNAPSHOT] web_response_count=8 route=stations build_ms=1 header_ms=2 body_ms=1 body_expected=293 body_sent=293 header_sent=91 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+19:59:17.476 > [SNAPSHOT] web_heap_start=5476/2164 built=3976/2164 end=6068/2420 alloc_fail_start_built_end=0/0/0
+19:59:17.484 > [SW_TX] ready=1 skipped=0
+19:59:17.487 > [SW_TX] scope_overflow=0
+19:59:17.490 > [SW_TX] paired=0 unpaired=0
+19:59:17.490 > [SW_TX] unexpected=0
+19:59:17.493 > [SW_CONVERT] quota_passed=438
+19:59:17.496 > [SW_CONVERT] preheap_null=0
+19:59:17.498 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+19:59:17.501 > [SW_MALLOC] calls=438 ok=438 null=0
+19:59:17.503 > [SW_SITE] k=0 n=0 tick=0
+19:59:17.506 > [SW_SITE] k=1 n=438 tick=417644
+19:59:17.509 > [SW_SITE] k=2 n=0 tick=0
+19:59:17.513 > [SW_SITE] k=3 n=857 tick=417648
+19:59:17.515 > [SW_SITE] k=4 n=3527 tick=417768
+19:59:17.517 > [SW_SITE] k=5 n=0 tick=0
+19:59:17.520 > [SW_TRACE] total=0 retained_max=8
+19:59:17.523 > [LWIP_MEMORY] threshold=512 calls=5499
+19:59:17.526 > [LWIP_MEMORY] psram=20 bytes=30720
+19:59:17.530 > [LWIP_MEMORY] original=5479 fallback=0
+19:59:17.532 > [NET_PROGRESS] tx_calls=436 accepted=436 nomem=0 other_error=0 last_result=0 tx_last_tick=417650 refs=436 frees=436 free_last_tick=417644 rx_calls=1380 rx_accepted=1380 rx_last_tick=417643 tick_unavailable=0
+19:59:17.551 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+19:59:17.560 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=353 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+19:59:17.570 > [SNAPSHOT] dma_heap_free=4784 largest=1396 web_dma_start=5452/2164 built=4000/2164 end=6068/2420
+19:59:17.579 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+19:59:17.584 > === END DIAGNOSTIC SNAPSHOT ===
+19:59:18.017 > _Update_Part : 345004
+19:59:20.022 > _Update_Part : 345000
+19:59:22.026 > _Update_Part : 345002
+19:59:22.059 > [WEB_RESPONSE] count=9 route=root build_ms=1 header_ms=2 body_ms=3 expected=3617 sent=3617 header_sent=100 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=5224/1844 heap_built=5096/1844 heap_end=3344/1396 alloc_fail=0/0/3
+19:59:22.217 > [WEB_RESPONSE] count=10 route=status build_ms=1 header_ms=2 body_ms=7 expected=116 sent=116 header_sent=91 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=5032/1396 heap_built=3580/980 heap_end=4368/1012 alloc_fail=3/3/3
+19:59:22.324 > [WEB_RESPONSE] count=11 route=stations build_ms=1 header_ms=1 body_ms=1 expected=293 sent=293 header_sent=91 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=3364/980 heap_built=2936/980 heap_end=3960/1396 alloc_fail=3/3/3
+19:59:24.034 > _Update_Part : 344998
+19:59:26.038 > _Update_Part : 345002
+19:59:26.763 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+19:59:26.766 > [SNAPSHOT] firmware=1.1.11-psram-validation build_git_id=124e84801b06 uptime_ms=427470
+19:59:26.774 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+19:59:26.777 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+19:59:26.785 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+19:59:26.794 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-47
+19:59:26.799 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+19:59:26.810 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+19:59:26.816 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12406 age_ms=415064
+19:59:26.823 > [SNAPSHOT] wifi_last_disconnect=none
+19:59:26.824 > [SNAPSHOT] heap_internal_free=5276 largest_block=1396 allocator_region_minimum=880 psram_free=4165447
+19:59:26.835 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+19:59:26.847 > [SNAPSHOT] loop_count=30521 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2542 last_completed_age_ms=1 main_task_stack_hwm=3760
+19:59:26.858 > [SNAPSHOT] web_handle_count=30521 last_handle_ms=1 max_handle_ms=29 last_handle_age_ms=0
+19:59:26.866 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=3 internal_cap_failures=3 last_size=1622 last_caps=0x0000080c largest_failed_size=1622
+19:59:26.877 > [SNAPSHOT] web_response_count=11 route=stations build_ms=1 header_ms=1 body_ms=1 body_expected=293 body_sent=293 header_sent=91 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+19:59:26.894 > [SNAPSHOT] web_heap_start=3364/980 built=2936/980 end=3960/1396 alloc_fail_start_built_end=3/3/3
+19:59:26.902 > [SW_TX] ready=1 skipped=0
+19:59:26.905 > [SW_TX] scope_overflow=0
+19:59:26.908 > [SW_TX] paired=0 unpaired=0
+19:59:26.910 > [SW_TX] unexpected=0
+19:59:26.910 > [SW_CONVERT] quota_passed=468
+19:59:26.914 > [SW_CONVERT] preheap_null=0
+19:59:26.916 > [SW_CONVERT] after_malloc_null=3 unpaired=0
+19:59:26.919 > [SW_MALLOC] calls=468 ok=465 null=3
+19:59:26.926 > [SW_SITE] k=0 n=0 tick=0
+19:59:26.926 > [SW_SITE] k=1 n=468 tick=426758
+19:59:26.927 > [SW_SITE] k=2 n=3 tick=422742
+19:59:26.930 > [SW_SITE] k=3 n=902 tick=426764
+19:59:26.933 > [SW_SITE] k=4 n=3658 tick=426984
+19:59:26.935 > [SW_SITE] k=5 n=3 tick=422742
+19:59:26.938 > [SW_TRACE] seq=1 kind=5 tick=422740
+19:59:26.942 > [SW_TRACE] task=0x3ffdcd1c site=0x40241090 frames=5
+19:59:26.947 > [SW_PC] seq=1 frame=0 pc=0x4024108d
+19:59:26.949 > [SW_PC] seq=1 frame=1 pc=0x40241758
+19:59:26.952 > [SW_PC] seq=1 frame=2 pc=0x4020cad1
+19:59:26.955 > [SW_PC] seq=1 frame=3 pc=0x4023d7d7
+19:59:26.960 > [SW_PC] seq=1 frame=4 pc=0x4023f139
+19:59:26.964 > [SW_TRACE] seq=2 kind=2 tick=422740
+19:59:26.966 > [SW_TRACE] task=0x3ffdcd1c site=0x4023d828 frames=2
+19:59:26.969 > [SW_PC] seq=2 frame=0 pc=0x4023d825
+19:59:26.974 > [SW_PC] seq=2 frame=1 pc=0x4023f139
+19:59:26.977 > [SW_TRACE] seq=3 kind=5 tick=422741
+19:59:26.980 > [SW_TRACE] task=0x3ffdcd1c site=0x40241090 frames=5
+19:59:26.983 > [SW_PC] seq=3 frame=0 pc=0x4024108d
+19:59:26.988 > [SW_PC] seq=3 frame=1 pc=0x40241758
+19:59:26.993 > [SW_PC] seq=3 frame=2 pc=0x4020cad1
+19:59:26.994 > [SW_PC] seq=3 frame=3 pc=0x4023d7d7
+19:59:26.997 > [SW_PC] seq=3 frame=4 pc=0x4023f139
+19:59:26.999 > [SW_TRACE] seq=4 kind=2 tick=422741
+19:59:27.002 > [SW_TRACE] task=0x3ffdcd1c site=0x4023d828 frames=2
+19:59:27.009 > [SW_PC] seq=4 frame=0 pc=0x4023d825
+19:59:27.010 > [SW_PC] seq=4 frame=1 pc=0x4023f139
+19:59:27.014 > [SW_TRACE] seq=5 kind=5 tick=422742
+19:59:27.016 > [SW_TRACE] task=0x3ffdcd1c site=0x40241090 frames=5
+19:59:27.022 > [SW_PC] seq=5 frame=0 pc=0x4024108d
+19:59:27.025 > [SW_PC] seq=5 frame=1 pc=0x40241758
+19:59:27.027 > [SW_PC] seq=5 frame=2 pc=0x4020cad1
+19:59:27.030 > [SW_PC] seq=5 frame=3 pc=0x4023d7d7
+19:59:27.033 > [SW_PC] seq=5 frame=4 pc=0x4023f139
+19:59:27.035 > [SW_TRACE] seq=6 kind=2 tick=422742
+19:59:27.041 > [SW_TRACE] task=0x3ffdcd1c site=0x4023d828 frames=2
+19:59:27.043 > [SW_PC] seq=6 frame=0 pc=0x4023d825
+19:59:27.047 > [SW_PC] seq=6 frame=1 pc=0x4023f139
+19:59:27.049 > [SW_TRACE] total=6 retained_max=8
+19:59:27.052 > [LWIP_MEMORY] threshold=512 calls=5733
+19:59:27.058 > [LWIP_MEMORY] psram=28 bytes=43008
+19:59:27.060 > [LWIP_MEMORY] original=5705 fallback=0
+19:59:27.063 > [NET_PROGRESS] tx_calls=463 accepted=463 nomem=0 other_error=0 last_result=0 tx_last_tick=426759 refs=463 frees=463 free_last_tick=426758 rx_calls=1429 rx_accepted=1429 rx_last_tick=426858 tick_unavailable=0
+19:59:27.080 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+19:59:27.092 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=362 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+19:59:27.102 > [SNAPSHOT] dma_heap_free=5140 largest=1396 web_dma_start=3364/980 built=2936/980 end=3960/1396
+19:59:27.110 > [ALLOC_FAILURE] sequence=1 size=1622 caps=0x0000080c tick=422740 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd1c frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240f8d,0x40241758,0x4020cad1,0x4023d7d7,0x4023f139
+19:59:27.133 > [ALLOC_FAILURE] sequence=2 size=1622 caps=0x0000080c tick=422741 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd1c frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240f8d,0x40241758,0x4020cad1,0x4023d7d7,0x4023f139
+19:59:27.155 > [ALLOC_FAILURE] sequence=3 size=1622 caps=0x0000080c tick=422742 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd1c frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240f8d,0x40241758,0x4020cad1,0x4023d7d7,0x4023f139
+19:59:27.177 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+19:59:27.183 > === END DIAGNOSTIC SNAPSHOT ===
+19:59:28.052 > _Update_Part : 344998
+19:59:30.061 > _Update_Part : 344996
+19:59:32.069 > _Update_Part : 344997
+19:59:34.076 > _Update_Part : 345000
+19:59:36.079 > _Update_Part : 344990
+19:59:38.081 > _Update_Part : 345001
+19:59:40.084 > _Update_Part : 345002
+19:59:42.088 > _Update_Part : 345003

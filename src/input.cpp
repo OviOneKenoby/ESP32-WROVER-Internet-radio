@@ -125,8 +125,10 @@ InputControl::InputControl()
 }
 
 InputControl::~InputControl() {
+#ifndef TUNER_JTAG_DIAGNOSTIC
     detachInterrupt(digitalPinToInterrupt(ENCODER_CLK_PIN));
     detachInterrupt(digitalPinToInterrupt(ENCODER_DT_PIN));
+#endif
 }
 
 // ============================================
@@ -148,9 +150,11 @@ bool InputControl::init() {
     //
     // GPIO13 and GPIO32 both support internal pull-ups.
     // The encoder module is powered from 3.3 V.
+#ifndef TUNER_JTAG_DIAGNOSTIC
     pinMode(ENCODER_CLK_PIN, INPUT_PULLUP);
     pinMode(ENCODER_DT_PIN, INPUT_PULLUP);
     pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
+#endif
 
     // Bounce2 buttons
     buttonPlay.setPressedState(LOW);
@@ -165,9 +169,11 @@ bool InputControl::init() {
     buttonPrev.attach(BUTTON_PREV_PIN, INPUT);
     buttonPrev.interval(BUTTON_DEBOUNCE_MS);
 
+#ifndef TUNER_JTAG_DIAGNOSTIC
     encoderClick.setPressedState(LOW);
     encoderClick.attach(ENCODER_SW_PIN, INPUT_PULLUP);
     encoderClick.interval(BUTTON_DEBOUNCE_MS);
+#endif
 
     // A button held low (or a bad contact presenting low) during boot must
     // first be released before it can generate a long-press command. This
@@ -176,6 +182,7 @@ bool InputControl::init() {
 
     // Synchronize the quadrature state machine with the encoder's
     // actual electrical state before enabling interrupts.
+#ifndef TUNER_JTAG_DIAGNOSTIC
     encoderLastState =
         (digitalRead(ENCODER_CLK_PIN) ? 0x02 : 0x00) |
         (digitalRead(ENCODER_DT_PIN)  ? 0x01 : 0x00);
@@ -200,6 +207,9 @@ bool InputControl::init() {
         "[INPUT] Initialized: Buttons + EC11 Encoder (state=%u)\n",
         encoderLastState
     );
+#else
+    Serial.println("[INPUT] JTAG diagnostic: encoder disabled; GPIO13/14 mux untouched");
+#endif
 
     return true;
 }
@@ -213,7 +223,9 @@ void InputControl::update() {
     buttonPlay.update();
     buttonNext.update();
     buttonPrev.update();
+#ifndef TUNER_JTAG_DIAGNOSTIC
     encoderClick.update();
+#endif
 
     const uint32_t now = millis();
 
@@ -245,6 +257,7 @@ void InputControl::update() {
         Serial.println("[INPUT] Prev pressed");
     }
 
+#ifndef TUNER_JTAG_DIAGNOSTIC
     if (encoderClick.pressed()) {
         lastEvent = EVENT_ENCODER_CLICK;
         lastEventTime = now;
@@ -282,6 +295,7 @@ void InputControl::update() {
 
         Serial.println("[INPUT] Encoder DOWN");
     }
+#endif
 
     // ========================================
     // Play button long press

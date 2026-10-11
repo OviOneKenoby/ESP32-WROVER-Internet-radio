@@ -1,0 +1,13 @@
+﻿EXPECTED REJECTION, exit code 1 python.exe : Traceback (most recent call last):
+At line:2 char:19
++ ... iveOutput = & 'C:\Users\Dell\.platformio\penv\Scripts\python.exe' too ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File
+"C:\Users\Dell\Downloads\TUNER01_Arduino_builder\TUNER01_Arduino\investigation\tools\verify_tx_classification_elf.py",
+line 47, in <module>
+    assert actual == expected, (f"REJECT fe228ca737b9 unlock normal comparison: "
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: REJECT fe228ca737b9 unlock normal comparison: actual=0x4023d6e2, expected=0x4023d6f7

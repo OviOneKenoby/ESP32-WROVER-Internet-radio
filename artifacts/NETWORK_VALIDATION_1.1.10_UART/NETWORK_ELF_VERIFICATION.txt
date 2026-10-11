@@ -1,0 +1,9 @@
+﻿PASS __wrap_esp_wifi_internal_tx_by_ref: IRAM, exactly one original call
+PASS __wrap_esp_netif_netstack_buf_ref: IRAM, exactly one original call
+PASS __wrap_esp_netif_netstack_buf_free: IRAM, exactly one original call
+PASS __wrap_esp_netif_receive: IRAM, exactly one original call
+PASS __wrap_esp_wifi_init: IRAM, exactly one original call
+PASS wifi_transmit_wrap routes to wrapper
+PASS wifi_start registers wrapped ref/free and RX callbacks
+PASS wifiLowLevelInit routes unchanged config through init wrapper
+PASS final ELF boundary routing verified (not hardware TX delivery)

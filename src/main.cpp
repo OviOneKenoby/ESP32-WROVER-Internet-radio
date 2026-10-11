@@ -11,6 +11,8 @@
 #include "correctness_guards.h"
 #include "current_station_context.h"
 #include "system_info.h"
+#include "network_progress.h"
+#include <esp_heap_caps.h>
 
 // ============================================
 // Global State
@@ -43,6 +45,11 @@ uint32_t volumeDisplayUntil = 0; // 0 = not currently showing volume overlay
 char lastBluetoothMetadata[256] = "";
 uint32_t lastUserInteraction = 0;
 char lastIdleClockMinute[6] = "";
+uint32_t loopIterationCount = 0;
+uint32_t currentLoopStartedMs = 0;
+uint32_t lastLoopCompletedMs = 0;
+uint32_t lastLoopDurationMs = 0;
+uint32_t maxLoopDurationMs = 0;
 
 // Shared cursor for all the browse-mode list screens (country/tag/results/
 // favorites/recent) - these are always mutually exclusive (only one such
@@ -105,6 +112,7 @@ void handleErrorInput(InputEvent event);
 void refreshStationListDisplay();
 void checkSerialCommands();
 void printCurrentScreen();
+void printDiagnosticSnapshot();
 void showVolumeOverlay();
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
@@ -150,6 +158,7 @@ void setup() {
     delay(500);
 
     SystemInfo::logBootInfo();
+    SystemInfo::beginAllocationDiagnostics();
     
     Serial.println("\n\n");
     Serial.println("=====================================");
@@ -197,6 +206,9 @@ void setup() {
     
     // Load WiFi configuration
     Serial.println("[MAIN] Loading WiFi configuration...");
+    if (!wifiManager.begin()) {
+        Serial.println("[MAIN] WiFi event tracking unavailable; framework status polling remains active");
+    }
     wifiManager.loadConfig();
     timeService.loadTimezone();
     
@@ -225,6 +237,7 @@ void setup() {
     Serial.println("  n / p   = next/prev station (fixed list); n = add to Favorites when playing a discovered station");
     Serial.println("  l       = long-press (Bluetooth mode from main list; Back everywhere in Browse/Favorites/Recent)");
     Serial.println("  s       = print current screen contents as text");
+    Serial.println("  x       = read-only network/audio/runtime diagnostic snapshot");
     Serial.println("==========================================");
     Serial.println();
 }
@@ -233,6 +246,11 @@ void setup() {
 // Main Loop
 // ============================================
 void loop() {
+    currentLoopStartedMs = millis();
+    loopIterationCount++;
+    // Drain framework events on the application task before serving web
+    // requests, so status/IP diagnostics cannot expose stale connection data.
+    wifiManager.update();
     webPortal.handle();
     timeService.update();
 
@@ -288,6 +306,11 @@ void loop() {
     
     // Small delay to prevent watchdog issues
     delay(10);
+    lastLoopDurationMs = millis() - currentLoopStartedMs;
+    if (lastLoopDurationMs > maxLoopDurationMs) {
+        maxLoopDurationMs = lastLoopDurationMs;
+    }
+    lastLoopCompletedMs = millis();
 }
 
 // ============================================
@@ -1262,6 +1285,9 @@ void checkSerialCommands() {
         case 's': case 'S':
             printCurrentScreen();
             return;
+        case 'x': case 'X':
+            printDiagnosticSnapshot();
+            return;
         case '\r': case '\n':
             return; // ignore bare line endings from the monitor
         default:
@@ -1277,6 +1303,169 @@ void checkSerialCommands() {
     } else {
         handleInput(event);
     }
+}
+
+void printDiagnosticSnapshot() {
+    const uint32_t now = millis();
+    const esp_reset_reason_t resetReason = esp_reset_reason();
+    WiFiDiagnostics wifi{};
+    wifiManager.getDiagnostics(wifi);
+    AudioDiagnostics audio{};
+    const bool haveAudio = audioPlayer.getDiagnostics(audio);
+    WebPortalDiagnostics web{};
+    webPortal.getDiagnostics(web);
+
+    Serial.println("=== DIAGNOSTIC SNAPSHOT (read-only) ===");
+    Serial.printf("[SNAPSHOT] firmware=%s build_git_id=%s uptime_ms=%lu\n",
+                  FIRMWARE_VERSION, BUILD_GIT_ID, (unsigned long)now);
+    Serial.printf("[SNAPSHOT] reset_reason_raw=%d reset_reason=%s\n",
+                  (int)resetReason, SystemInfo::resetReasonName(resetReason));
+    Serial.printf(
+        "[SNAPSHOT] wifi_cached_state=%s framework_status=%s(%u) connected=%s auto_reconnect=%s\n",
+        WiFiManager::stateName(wifiManager.getState()),
+        WiFiManager::frameworkStatusName(wifi.frameworkStatus),
+        wifi.frameworkStatus, wifi.connected ? "yes" : "no",
+        wifi.autoReconnect ? "yes" : "no");
+    Serial.printf("[SNAPSHOT] wifi_configured_ssid=%s association_info=%s result=%ld\n",
+                  wifi.configuredSsid,
+                  wifi.associationInfoAvailable ? "available" : "unavailable",
+                  (long)wifi.associationInfoResult);
+    Serial.printf("[SNAPSHOT] wifi_ssid=%s bssid=%s channel=%u rssi_dbm=",
+                  wifi.ssid, wifi.bssid, wifi.channel);
+    if (wifi.associationInfoAvailable) Serial.printf("%d\n", wifi.rssi);
+    else Serial.println("unavailable");
+    Serial.printf("[SNAPSHOT] ip=%s gateway=%s subnet=%s dns1=%s dns2=%s\n",
+                  wifi.ip, wifi.gateway, wifi.subnet, wifi.dns1, wifi.dns2);
+    Serial.printf(
+        "[SNAPSHOT] wifi_events processed=%lu dropped=%lu queued=%lu disconnects=%lu got_ip=%lu lost_ip=%lu\n",
+        (unsigned long)wifi.processedEventCount,
+        (unsigned long)wifi.droppedEventCount,
+        (unsigned long)wifi.queuedEventCount,
+        (unsigned long)wifi.disconnectCount,
+        (unsigned long)wifi.gotIpCount,
+        (unsigned long)wifi.lostIpCount);
+    if (wifi.hasLastEvent) {
+        Serial.printf("[SNAPSHOT] wifi_last_event=%s at_ms=%lu age_ms=%lu\n",
+                      wifi.lastEventName, (unsigned long)wifi.lastEventMs,
+                      (unsigned long)(now - wifi.lastEventMs));
+    } else {
+        Serial.println("[SNAPSHOT] wifi_last_event=none at_ms=unavailable age_ms=unavailable");
+    }
+    if (wifi.hasDisconnected) {
+        Serial.printf(
+            "[SNAPSHOT] wifi_last_disconnect reason=%u(%s) at_ms=%lu age_ms=%lu\n",
+            wifi.lastDisconnectReason, wifi.lastDisconnectReasonName,
+            (unsigned long)wifi.lastDisconnectMs,
+            (unsigned long)(now - wifi.lastDisconnectMs));
+    } else {
+        Serial.println("[SNAPSHOT] wifi_last_disconnect=none");
+    }
+    Serial.printf(
+        "[SNAPSHOT] heap_internal_free=%u largest_block=%u allocator_region_minimum=%u psram_free=%u\n",
+        heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+        heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+        heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+        ESP.getFreePsram());
+    if (haveAudio) {
+        Serial.printf(
+            "[SNAPSHOT] audio_source=%s playback=%s codec=%s bluetooth_lifecycle=%s restartable=%s audio_task_stack_hwm=%u\n",
+            SystemInfo::audioSourceName(audio.source),
+            SystemInfo::playbackStateName(audio.state),
+            SystemInfo::audioCodecName(audio.codec),
+            SystemInfo::bluetoothLifecycleName(audio.bluetoothLifecycle),
+            audio.bluetoothRestartable ? "yes" : "no",
+            (unsigned)audio.taskStackHighWaterMark);
+    } else {
+        Serial.println("[SNAPSHOT] audio=unavailable (mutex busy for 50ms)");
+    }
+    Serial.printf(
+        "[SNAPSHOT] loop_count=%lu current_loop_elapsed_ms=%lu last_loop_ms=%lu max_loop_ms=%lu last_completed_age_ms=%lu main_task_stack_hwm=%u\n",
+        (unsigned long)loopIterationCount,
+        (unsigned long)(now - currentLoopStartedMs),
+        (unsigned long)lastLoopDurationMs,
+        (unsigned long)maxLoopDurationMs,
+        lastLoopCompletedMs ? (unsigned long)(now - lastLoopCompletedMs) : 0UL,
+        (unsigned)uxTaskGetStackHighWaterMark(nullptr));
+    Serial.printf(
+        "[SNAPSHOT] web_handle_count=%lu last_handle_ms=%lu max_handle_ms=%lu last_handle_age_ms=%lu\n",
+        (unsigned long)web.handleCount,
+        (unsigned long)web.lastHandleDurationMs,
+        (unsigned long)web.maxHandleDurationMs,
+        web.lastHandleCompletedMs
+            ? (unsigned long)(now - web.lastHandleCompletedMs)
+            : 0UL);
+    const auto allocation = SystemInfo::allocationFailures();
+    Serial.printf("[SNAPSHOT] alloc_hook_result=%d alloc_failures=%lu internal_cap_failures=%lu last_size=%lu last_caps=0x%08lx largest_failed_size=%lu\n",
+        allocation.registrationResult, (unsigned long)allocation.count,
+        (unsigned long)allocation.internalCount, (unsigned long)allocation.lastSize,
+        (unsigned long)allocation.lastCaps, (unsigned long)allocation.largestSize);
+    const auto& response = web.response;
+    Serial.printf("[SNAPSHOT] web_response_count=%lu route=%s build_ms=%lu header_ms=%lu body_ms=%lu body_expected=%u body_sent=%u header_sent=%u socket_calls=%lu retry_waits=%lu socket_error=%d failed=%s json_overflow=%s\n",
+        (unsigned long)response.responses, response.route,
+        (unsigned long)response.buildMs, (unsigned long)response.headerMs,
+        (unsigned long)response.bodyMs, (unsigned)response.expectedBody,
+        (unsigned)response.sentBody, (unsigned)response.sentHeader,
+        (unsigned long)response.writeCalls, (unsigned long)response.retryWaits,
+        response.socketError, response.failed ? "yes" : "no",
+        response.jsonOverflow ? "yes" : "no");
+    Serial.printf("[SNAPSHOT] web_heap_start=%u/%u built=%u/%u end=%u/%u alloc_fail_start_built_end=%lu/%lu/%lu\n",
+        (unsigned)response.freeStart, (unsigned)response.largestStart,
+        (unsigned)response.freeBuilt, (unsigned)response.largestBuilt,
+        (unsigned)response.freeEnd, (unsigned)response.largestEnd,
+        (unsigned long)response.allocStart, (unsigned long)response.allocBuilt,
+        (unsigned long)response.allocEnd);
+    const auto network = NetworkProgress::snapshot();
+    Serial.printf("[NET_PROGRESS] tx_calls=%lu accepted=%lu nomem=%lu other_error=%lu last_result=%ld tx_last_tick=%lu refs=%lu frees=%lu free_last_tick=%lu rx_calls=%lu rx_accepted=%lu rx_last_tick=%lu tick_unavailable=%lu\n",
+        (unsigned long)network.txCalls, (unsigned long)network.txAccepted,
+        (unsigned long)network.txNoMem, (unsigned long)network.txOtherError,
+        (long)network.txLastResult, (unsigned long)network.txLastTick,
+        (unsigned long)network.refs, (unsigned long)network.frees,
+        (unsigned long)network.freeLastTick, (unsigned long)network.rxCalls,
+        (unsigned long)network.rxAccepted, (unsigned long)network.rxLastTick,
+        (unsigned long)network.ticksUnavailable);
+    const auto refusal = NetworkProgress::refusalEvidence();
+    Serial.printf("[TX_CONFIG] captured=%u init_calls=%lu result=%ld type=%ld dynamic=%ld cache=%ld static=%ld features=0x%08lx%08lx\n",
+        refusal.configCaptured, (unsigned long)refusal.initCalls, (long)refusal.initResult,
+        (long)refusal.txType, (long)refusal.dynamicTx, (long)refusal.cacheTx,
+        (long)refusal.staticTx, (unsigned long)refusal.featureHigh, (unsigned long)refusal.featureLow);
+    Serial.printf("[TX_REFUSAL_SUMMARY] count=%lu rx_echo_request=%lu refused_echo_reply=%lu refused_tcp80=%lu ledger_overflow=%lu unmatched_free=%lu\n",
+        (unsigned long)refusal.refusals, (unsigned long)refusal.rxEchoRequests,
+        (unsigned long)refusal.refusedEchoReplies, (unsigned long)refusal.refusedTcp80,
+        (unsigned long)refusal.ledger.overflow, (unsigned long)refusal.ledger.unmatchedFree);
+    for (const auto& entry : refusal.ledger.entries) if (entry.refs)
+        Serial.printf("[TX_RETAINED_REF] pbuf=0x%08lx refs=%lu first_tick=%lu\n",
+            (unsigned long)entry.handle, (unsigned long)entry.refs, (unsigned long)entry.firstTick);
+    for (unsigned i = 0; i < 5; ++i) {
+        const auto& record = i < 4 ? refusal.first[i] : refusal.last;
+        if (!record.sequence || (i == 4 && refusal.refusals <= 4)) continue;
+        Serial.printf("[TX_NO_MEM] sequence=%lu tick=%lu ifx=%u len=%lu buffer=%u pbuf=0x%08lx kind=%u alloc_before=%lu alloc_after=%lu\n",
+            (unsigned long)record.sequence, (unsigned long)record.tick, record.ifx,
+            (unsigned long)record.length, record.hasBuffer, (unsigned long)record.pbufHandle,
+            unsigned(record.kind), (unsigned long)record.failuresBefore, (unsigned long)record.failuresAfter);
+    }
+    const auto records = SystemInfo::allocationFailureRecords();
+    Serial.printf("[SNAPSHOT] dma_heap_free=%u largest=%u web_dma_start=%u/%u built=%u/%u end=%u/%u\n",
+        heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT),
+        heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT),
+        (unsigned)response.dmaFreeStart, (unsigned)response.dmaLargestStart,
+        (unsigned)response.dmaFreeBuilt, (unsigned)response.dmaLargestBuilt,
+        (unsigned)response.dmaFreeEnd, (unsigned)response.dmaLargestEnd);
+    for (unsigned index = 0; index < 5; ++index) {
+        const auto& record = index < 4 ? records.first[index] : records.last;
+        if (!record.sequence || (index == 4 && records.total <= 4)) continue;
+        Serial.printf("[ALLOC_FAILURE] sequence=%lu size=%lu caps=0x%08lx tick=%lu core=%u isr=%u cache=%u allocator=%s task=%s task_handle=0x%08lx frames=%u pcs=",
+            (unsigned long)record.sequence, (unsigned long)record.size,
+            (unsigned long)record.caps, (unsigned long)record.tick,
+            record.core, record.isr, record.cacheEnabled, record.allocator,
+            record.task, (unsigned long)record.taskHandle, record.frameCount);
+        for (unsigned pc = 0; pc < record.frameCount; ++pc)
+            Serial.printf("0x%08lx%s", (unsigned long)record.pcs[pc],
+                pc + 1 < record.frameCount ? "," : "");
+        Serial.println();
+    }
+    Serial.printf("[SNAPSHOT] alloc_detail_omitted=%lu (first_four_and_latest_retained)\n",
+        records.total > 5 ? (unsigned long)(records.total - 5) : 0UL);
+    Serial.println("=== END DIAGNOSTIC SNAPSHOT ===");
 }
 
 // Text summary of whatever the e-paper is currently showing - reads the

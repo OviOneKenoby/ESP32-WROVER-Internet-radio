@@ -1,0 +1,2 @@
+ping-B0-B1.log -text -diff
+logs/device-monitor-261011-151012.log -text -diff

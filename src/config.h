@@ -1,7 +1,15 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define FIRMWARE_VERSION "1.1.1"
+#ifdef TUNER_LWIP_PSRAM_TX
+#define FIRMWARE_VERSION "1.1.11-psram-validation"
+#elif defined(TUNER_UART_TX_PROBE)
+#define FIRMWARE_VERSION "1.1.10-uart-validation"
+#elif defined(TUNER_JTAG_DIAGNOSTIC)
+#define FIRMWARE_VERSION "1.1.8-jtag-validation"
+#else
+#define FIRMWARE_VERSION "1.1.7-validation"
+#endif
 
 // ============================================
 // DISPLAY CONFIGURATION (WeAct 1.54" E-paper)

@@ -1,0 +1,288 @@
+﻿Exact ELF SHA256: 2495FC047B66DE639B25440744A0920F5B7FB91984441D1DDDDE5E1EB4A51406
+
+artifacts/NETWORK_VALIDATION_1.1.9_UART/firmware-1.1.9-uart-fe228ca737b9.elf:     file format elf32-xtensa-le
+
+Contents of section .iram0.text:
+ 400804d0 e2d62340                             ..#@
+
+artifacts/NETWORK_VALIDATION_1.1.9_UART/firmware-1.1.9-uart-fe228ca737b9.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .iram0.text:
+
+40081e55 <_ZN12_GLOBAL__N_16unlockEPv+0x131>:
+40081e55:	441b      	addi.n	a4, a4, 1
+40081e57:	744040        	extui	a4, a4, 0, 8
+40081e5a:	f99dc1        	l32r	a12, 400804d0 <_iram_text_start+0xcc>
+40081e5d:	4789      	s32i.n	a8, a7, 16
+40081e5f:	029c87        	bne	a12, a8, 40081e65 <_ZN12_GLOBAL__N_16unlockEPv+0x141>
+40081e62:	0026c6        	j	40081f01 <_ZN12_GLOBAL__N_16unlockEPv+0x1dd>
+40081e65:	a9a0b2        	movi	a11, 169
+40081e68:	f98dc1        	l32r	a12, 4008049c <_iram_text_start+0x98>
+40081e6b:	bcba      	add.n	a11, a12, a11
+40081e6d:	c08b80        	sub	a8, a11, a8
+40081e70:	839a80        	moveqz	a9, a10, a8
+
+artifacts/NETWORK_VALIDATION_1.1.9_UART/firmware-1.1.9-uart-fe228ca737b9.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .iram0.text:
+
+4008206c <_ZN12_GLOBAL__N_113observeMallocEjPv+0x54>:
+4008206c:	f90c81        	l32r	a8, 4008049c <_iram_text_start+0x98>
+4008206f:	b7a022        	movi	a2, 183
+40082072:	c60c      	movi.n	a6, 12
+40082074:	282a      	add.n	a2, a8, a2
+
+artifacts/NETWORK_VALIDATION_1.1.9_UART/firmware-1.1.9-uart-fe228ca737b9.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .iram0.text:
+
+400820a7 <_ZN12_GLOBAL__N_113observeMallocEjPv+0x8f>:
+400820a7:	671727        	beq	a7, a2, 40082112 <_ZN12_GLOBAL__N_113observeMallocEjPv+0xfa>
+400820aa:	f8fc91        	l32r	a9, 4008049c <_iram_text_start+0x98>
+400820ad:	a9a082        	movi	a8, 169
+400820b0:	898a      	add.n	a8, a9, a8
+400820b2:	c07870        	sub	a7, a8, a7
+400820b5:	834a70        	moveqz	a4, a10, a7
+
+artifacts/NETWORK_VALIDATION_1.1.9_UART/firmware-1.1.9-uart-fe228ca737b9.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .flash.text:
+
+4023d6e9 <ieee80211_output_process+0xa9>:
+4023d6e9:	c11765        	call8	401fe860 <ieee80211_wapi_alloc_tx_buf>
+4023d6ec:	000286        	j	4023d6fa <ieee80211_output_process+0xba>
+4023d6ef:	00          	.byte 00
+4023d6f0:	0128a2        	l32i	a10, a8, 4
+4023d6f3:	cbca      	add.n	a12, a11, a12
+4023d6f5:	1b0c      	movi.n	a11, 1
+4023d6f7:	cf2f25        	call8	4020c9e8 <ic_ebuf_alloc>
+
+artifacts/NETWORK_VALIDATION_1.1.9_UART/firmware-1.1.9-uart-fe228ca737b9.elf:     file format elf32-xtensa-le
+
+
+Disassembly of section .iram0.vectors:
+
+Disassembly of section .iram0.text:
+
+Disassembly of section .flash.text:
+
+40240e08 <esf_buf_alloc_dynamic>:
+40240e08:	006136        	entry	a1, 48
+40240e0b:	081252        	l16ui	a5, a2, 16
+40240e0e:	080262        	l8ui	a6, a2, 8
+40240e11:	0c0272        	l8ui	a7, a2, 12
+40240e14:	068516        	beqz	a5, 40240e80 <esf_buf_alloc_dynamic+0x78>
+40240e17:	f201c1        	l32r	a12, 4023d61c <ieee80211_encap_esfbuf+0x4cc>
+40240e1a:	f201b1        	l32r	a11, 4023d620 <ieee80211_encap_esfbuf+0x4d0>
+40240e1d:	0c58      	l32i.n	a5, a12, 0
+40240e1f:	0ba8      	l32i.n	a10, a11, 0
+40240e21:	152552        	l32i	a5, a5, 84
+40240e24:	0161b2        	s32i	a11, a1, 4
+40240e27:	0061c2        	s32i	a12, a1, 0
+40240e2a:	0020c0        	memw
+40240e2d:	0005e0        	callx8	a5
+40240e30:	1186f0        	slli	a8, a6, 1
+40240e33:	071292        	l16ui	a9, a2, 14
+40240e36:	0812a2        	l16ui	a10, a2, 16
+40240e39:	311a51        	l32r	a5, 4020d2a4 <lmacEndRetryAMPDUFail+0x6c>
+40240e3c:	11b8      	l32i.n	a11, a1, 4
+40240e3e:	01c8      	l32i.n	a12, a1, 0
+40240e40:	1c39a7        	bltu	a9, a10, 40240e60 <esf_buf_alloc_dynamic+0x58>
+40240e43:	686a      	add.n	a6, a8, a6
+40240e45:	a06650        	addx4	a6, a6, a5
+40240e48:	051622        	l16ui	a2, a6, 10
+40240e4b:	221b      	addi.n	a2, a2, 1
+40240e4d:	055622        	s16i	a2, a6, 10
+40240e50:	0020c0        	memw
+40240e53:	0c28      	l32i.n	a2, a12, 0
+40240e55:	0ba8      	l32i.n	a10, a11, 0
+40240e57:	162222        	l32i	a2, a2, 88
+40240e5a:	0020c0        	memw
+40240e5d:	005246        	j	40240faa <esf_buf_alloc_dynamic+0x1a2>
+40240e60:	886a      	add.n	a8, a8, a6
+40240e62:	a05850        	addx4	a5, a8, a5
+40240e65:	0588      	l32i.n	a8, a5, 0
+40240e67:	991b      	addi.n	a9, a9, 1
+40240e69:	881b      	addi.n	a8, a8, 1
+40240e6b:	075292        	s16i	a9, a2, 14
+40240e6e:	0020c0        	memw
+40240e71:	0589      	s32i.n	a8, a5, 0
+40240e73:	0c58      	l32i.n	a5, a12, 0
+40240e75:	0ba8      	l32i.n	a10, a11, 0
+40240e77:	162552        	l32i	a5, a5, 88
+40240e7a:	0020c0        	memw
+40240e7d:	0005e0        	callx8	a5
+40240e80:	16bc      	beqz.n	a6, 40240eb5 <esf_buf_alloc_dynamic+0xad>
+40240e82:	0a56b6        	bltui	a6, 5, 40240e90 <esf_buf_alloc_dynamic+0x88>
+40240e85:	f9c652        	addi	a5, a6, -7
+40240e88:	280c      	movi.n	a8, 2
+40240e8a:	12b857        	bgeu	a8, a5, 40240ea0 <esf_buf_alloc_dynamic+0x98>
+40240e8d:	000906        	j	40240eb5 <esf_buf_alloc_dynamic+0xad>
+40240e90:	f1e351        	l32r	a5, 4023d61c <ieee80211_encap_esfbuf+0x4cc>
+40240e93:	60c7a2        	addi	a10, a7, 96
+40240e96:	0558      	l32i.n	a5, a5, 0
+40240e98:	572552        	l32i	a5, a5, 0x15c
+40240e9b:	000306        	j	40240eab <esf_buf_alloc_dynamic+0xa3>
+40240e9e:	00          	.byte 00
+40240e9f:	00          	.byte 00
+40240ea0:	f1df51        	l32r	a5, 4023d61c <ieee80211_encap_esfbuf+0x4cc>
+40240ea3:	60c7a2        	addi	a10, a7, 96
+40240ea6:	0558      	l32i.n	a5, a5, 0
+40240ea8:	5b2552        	l32i	a5, a5, 0x16c
+40240eab:	aa3a      	add.n	a10, a10, a3
+40240ead:	0005e0        	callx8	a5
+40240eb0:	0001c6        	j	40240ebb <esf_buf_alloc_dynamic+0xb3>
+40240eb3:	00          	.byte 00
+40240eb4:	00          	.byte 00
+40240eb5:	20a660        	or	a10, a6, a6
+40240eb8:	cb66e5        	call8	4020c528 <esf_buf_alloc_dynamic_default_handler>
+40240ebb:	205aa0        	or	a5, a10, a10
+40240ebe:	09aa16        	beqz	a10, 40240f5c <esf_buf_alloc_dynamic+0x154>
+40240ec1:	5ca0c2        	movi	a12, 92
+40240ec4:	0b0c      	movi.n	a11, 0
+40240ec6:	513181        	l32r	a8, 4021538c <TOUCH_v2_free_glob+0x880>
+40240ec9:	0008e0        	callx8	a8
+40240ecc:	3cc582        	addi	a8, a5, 60
+40240ecf:	30c592        	addi	a9, a5, 48
+40240ed2:	b589      	s32i.n	a8, a5, 44
+40240ed4:	5cc582        	addi	a8, a5, 92
+40240ed7:	1228      	l32i.n	a2, a2, 4
+40240ed9:	1599      	s32i.n	a9, a5, 4
+40240edb:	2599      	s32i.n	a9, a5, 8
+40240edd:	190c      	movi.n	a9, 1
+40240edf:	065592        	s16i	a9, a5, 12
+40240ee2:	0020c0        	memw
+40240ee5:	102592        	l32i	a9, a5, 64
+40240ee8:	f529      	s32i.n	a2, a5, 60
+40240eea:	f20c      	movi.n	a2, 15
+40240eec:	202920        	or	a2, a9, a2
+40240eef:	106522        	s32i	a2, a5, 64
+40240ef2:	287a      	add.n	a2, a8, a7
+40240ef4:	773a      	add.n	a7, a7, a3
+40240ef6:	d529      	s32i.n	a2, a5, 52
+40240ef8:	ffc221        	l32r	a2, 40240e00 <esp_wifi_internal_update_mac_time+0x14>
+40240efb:	4589      	s32i.n	a8, a5, 16
+40240efd:	1bb277        	bgeu	a2, a7, 40240f1c <esf_buf_alloc_dynamic+0x114>
+40240f00:	0020c0        	memw
+40240f03:	c578      	l32i.n	a7, a5, 48
+40240f05:	f55b21        	l32r	a2, 4023e474 <ppMapTxQueue+0x178>
+40240f08:	107720        	and	a7, a7, a2
+40240f0b:	ffbe21        	l32r	a2, 40240e04 <esp_wifi_internal_update_mac_time+0x18>
+40240f0e:	202720        	or	a2, a7, a2
+40240f11:	0020c0        	memw
+40240f14:	c529      	s32i.n	a2, a5, 48
+40240f16:	0020c0        	memw
+40240f19:	000706        	j	40240f39 <esf_buf_alloc_dynamic+0x131>
+40240f1c:	46ba21        	l32r	a2, 40212a04 <wDev_Rxbuf_Deinit+0x80>
+40240f1f:	887a      	add.n	a8, a8, a7
+40240f21:	b47070        	extui	a7, a7, 0, 12
+40240f24:	0829      	s32i.n	a2, a8, 0
+40240f26:	0020c0        	memw
+40240f29:	c588      	l32i.n	a8, a5, 48
+40240f2b:	f55221        	l32r	a2, 4023e474 <ppMapTxQueue+0x178>
+40240f2e:	102820        	and	a2, a8, a2
+40240f31:	207270        	or	a7, a2, a7
+40240f34:	0020c0        	memw
+40240f37:	c579      	s32i.n	a7, a5, 48
+40240f39:	0b5532        	s16i	a3, a5, 22
+40240f3c:	1a4562        	s8i	a6, a5, 26
+40240f3f:	0020c0        	memw
+40240f42:	06c416        	beqz	a4, 40240fb2 <esf_buf_alloc_dynamic+0x1aa>
+40240f45:	03cd      	mov.n	a12, a3
+40240f47:	04bd      	mov.n	a11, a4
+40240f49:	012522        	l32i	a2, a5, 4
+40240f4c:	0122a2        	l32i	a10, a2, 4
+40240f4f:	0020c0        	memw
+40240f52:	50f581        	l32r	a8, 40215328 <TOUCH_v2_free_glob+0x81c>
+40240f55:	0008e0        	callx8	a8
+40240f58:	001586        	j	40240fb2 <esf_buf_alloc_dynamic+0x1aa>
+40240f5b:	00          	.byte 00
+40240f5c:	081232        	l16ui	a3, a2, 16
+40240f5f:	050c      	movi.n	a5, 0
+40240f61:	4d1357        	beq	a3, a5, 40240fb2 <esf_buf_alloc_dynamic+0x1aa>
+40240f64:	f1ae41        	l32r	a4, 4023d61c <ieee80211_encap_esfbuf+0x4cc>
+40240f67:	f1ae31        	l32r	a3, 4023d620 <ieee80211_encap_esfbuf+0x4d0>
+40240f6a:	0458      	l32i.n	a5, a4, 0
+40240f6c:	03a8      	l32i.n	a10, a3, 0
+40240f6e:	152552        	l32i	a5, a5, 84
+40240f71:	0005e0        	callx8	a5
+40240f74:	1186f0        	slli	a8, a6, 1
+40240f77:	071252        	l16ui	a5, a2, 14
+40240f7a:	30ca71        	l32r	a7, 4020d2a4 <lmacEndRetryAMPDUFail+0x6c>
+40240f7d:	159c      	beqz.n	a5, 40240f92 <esf_buf_alloc_dynamic+0x18a>
+40240f7f:	550b      	addi.n	a5, a5, -1
+40240f81:	075252        	s16i	a5, a2, 14
+40240f84:	0020c0        	memw
+40240f87:	286a      	add.n	a2, a8, a6
+40240f89:	a02270        	addx4	a2, a2, a7
+40240f8c:	0258      	l32i.n	a5, a2, 0
+40240f8e:	551b      	addi.n	a5, a5, 1
+40240f90:	0259      	s32i.n	a5, a2, 0
+40240f92:	686a      	add.n	a6, a8, a6
+40240f94:	a06670        	addx4	a6, a6, a7
+40240f97:	041622        	l16ui	a2, a6, 8
+40240f9a:	221b      	addi.n	a2, a2, 1
+40240f9c:	045622        	s16i	a2, a6, 8
+40240f9f:	0020c0        	memw
+40240fa2:	002422        	l32i	a2, a4, 0
+40240fa5:	03a8      	l32i.n	a10, a3, 0
+40240fa7:	162222        	l32i	a2, a2, 88
+40240faa:	0020c0        	memw
+40240fad:	0002e0        	callx8	a2
+40240fb0:	050c      	movi.n	a5, 0
+40240fb2:	052d      	mov.n	a2, a5
+40240fb4:	f01d      	retw.n
+
+Disassembly of section .phyiram.0:
+
+Disassembly of section .phyiram.1:
+
+Disassembly of section .phyiram.2:
+
+Disassembly of section .phyiram.3:
+
+Disassembly of section .phyiram.6:
+
+Disassembly of section .phyiram.4:
+
+Disassembly of section .phyiram.7:
+
+Disassembly of section .phyiram.8:
+
+Disassembly of section .phyiram.9:
+
+Disassembly of section .phyiram.10:
+
+Disassembly of section .phyiram.13:
+
+Disassembly of section .phyiram.15:
+
+Disassembly of section .phyiram.14:
+
+Disassembly of section .phyiram.16:
+
+Disassembly of section .phyiram.18:
+
+Disassembly of section .phyiram.12:
+
+Disassembly of section .phyiram.17:
+
+Disassembly of section .phyiram.24:
+
+Disassembly of section .phyiram.25:
+
+Disassembly of section .phyiram.26:
+
+Disassembly of section .phyiram.27:
+
+Disassembly of section .phyiram.22:
+
+Disassembly of section .phyiram.20:
+
+Disassembly of section .phyiram.21:
+
+Disassembly of section .phyiram.19:

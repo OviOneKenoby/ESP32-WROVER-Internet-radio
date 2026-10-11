@@ -1,5 +1,162 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 - PSRAM lwIP policy accepted after hardware recovery tests
+
+Added an explicit `esp32-lwip-psram` build profile that prefers PSRAM for lwIP
+`mem_malloc` requests of at least512 bytes, with one fallback to the original
+allocator. Wi-Fi TX dynamic32/cache4, driver retry behavior and HTTP payloads
+remain unchanged. Exact-ELF checks verify wrapper routing and the effective
+size/capability operands.
+
+Two independent hardware boots of 1.1.11 / 124e84801b06 kept root,
+diagnostics, ping and Bluetooth audio available. Each observed three transient
+1622-byte Wi-Fi conversion failures followed by requeue, resumed conversion and
+balanced TX ref/free progress; neither reproduced cache headNULL, NO_MEM or
+persistent references. The owner accepted this as a functional PASS and
+authorized integration. The strict zero-allocation-failure criterion did not
+pass, and the second run covered about3m44s rather than the planned30 minutes.
+The corrective profile remains explicit; default_envs remains esp32-dev.
+
+## 2026-10-11 - TX refusal discriminator (1.1.7 validation)
+
+Saved 1.1.6 evidence shows NO_MEM continuing without new failed-allocation
+callbacks, after DMA heap recovery; private descriptor exhaustion or a leak
+is not yet proven. 1.1.7 records initialization configuration, bounded refusal
+metadata, ICMP direction and a shadow ledger of pbuf ref/free events. Dynamic
+TX32/cache4 and original TX arguments/results/policy remain unchanged.
+No verified private descriptor inventory ABI exists in the pinned SDK, so
+direct private-branch instrumentation is not added to the firmware. An optional
+exact-ELF hardware JTAG breakpoint script provides a separate branch experiment;
+halt-induced timing changes must be recorded. Hardware NOT RUN; incident OPEN;
+no merge, automatic flash/reconnect/reboot or gzip fix claim.
+
+## 2026-10-11 - Observe network progress (1.1.6 validation)
+
+1.1.5 hardware now demonstrates five Wi-Fi ESF DMA failures at the first root
+request after a zero-HTTP Bluetooth baseline. Exact decoding and candidate
+queue failure paths are recorded; persistence remains unverified.
+1.1.6 extends bounded traces to 12 frames and observes TX acceptance, netif RX
+and existing pbuf ref/free callbacks through verified linker wrappers. It does
+not count private conversion successes or radio ACKs. No TX policy/retry change,
+callback replacement, gzip fix claim or reconnect/reboot. Incident OPEN;
+hardware candidate test NOT RUN. See the 1.1.6 manifest and short test protocol.
+
+## 2026-10-11 - Root-refresh DMA failure attribution (1.1.5 validation)
+
+Owner 1.1.4 evidence now reproduces ping loss at main-page refresh with five
+internal-capability allocation failures; last/largest request is 1622 bytes,
+last caps 0x80c (INTERNAL|DMA|8BIT). Root output was fast, fully accepted by
+the local socket and had no retries, so a long output stall does not explain
+this observation. Four failures fall in root's sampled interval, which also
+includes concurrent tasks and cleanup. Requester and causal mechanism remain
+unproven. Seven earlier HTTP responses exclude a complete no-HTTP baseline.
+
+1.1.5 adds bounded fixed-storage allocator/task/caller records and matching
+DMA-arena heap samples. Callback is in IRAM, storage in DRAM; task/stack capture
+is skipped in ISR/cache-off contexts. Logging is deferred to serial `x`.
+The proposed mitigation is static gzip root output to reduce TCP queue memory;
+it is not mixed into this attribution candidate. No reconnect/reboot is added.
+See the 1.1.4 allocation analysis and 1.1.5 manifest; incident remains OPEN.
+
+## 2026-10-11 - Bounded web responses and allocation diagnostics (1.1.4 validation)
+
+Updated the 1.1.3 owner report: boot and serial worked, radio opened a stream,
+Bluetooth reported SBC playing, then HTTP and tuner ping became unavailable
+while association and the loop remained active. Bluetooth exit recovered heap
+but not ping. Subsequent owner confirmation records correct audio throughout
+and manual BT re-entry (audio PASS observationally); controlled
+Bluetooth AP/router testing was not run. Incident remains OPEN.
+
+The pinned source streams root HTML directly from flash, but retains header,
+parser, JSON document and TCP allocations. JSON serialization to WiFiClient
+can issue byte writes with independent ten-second retry windows. 1.1.4 batches
+JSON into fixed 512-byte storage and applies a shared 2-second application
+write-retry budget to headers and bodies, closing only a failed HTTP client.
+JSON document overflow returns 503. A scalar-only failed-allocation hook,
+response phase heap/failure samples, route/byte/timing/errno diagnostics and
+serial `x` extensions make the next hardware experiment observable. These
+changes do not establish the cause of the persistent IP outage.
+
+See `artifacts/NETWORK_VALIDATION_1.1.4/` for source findings, build identity
+and the staged hardware test. No reconnect loop, sleep/reboot/auto-resume,
+dependency, partition, GPIO, AAC, menu, REMOTE or BT teardown change was made.
+
+## 2026-10-11 - Bluetooth-network incident instrumentation (1.1.3 validation)
+
+Recorded the complete 1.1.2 owner evidence without conflating the scenarios:
+Radio recovered after a router restart in a topology where same-SSID
+extenders remained available; Bluetooth networking failed persistently in two
+sessions; one intermediate Bluetooth reconnect completed in 3,537 ms; the
+persistent outage survived Bluetooth exit; and the planned controlled router
+restart during Bluetooth was not tested. Overall validation remains PARTIAL
+and both the current incident and similar 1.1.1 incident remain OPEN.
+
+Added read-only serial command `x` for a bounded diagnostic snapshot when HTTP
+is unavailable. It reports firmware/build identity, raw and named reset
+reason, cached and framework Wi-Fi states, current association identity
+(SSID/BSSID/channel/RSSI), IP/gateway/subnet/DNS, auto-reconnect, event queue
+counters and timestamps, internal heap/PSRAM, Bluetooth/audio state, and
+main-loop/web/audio-task health. Association fields explicitly report
+unavailable rather than reusing stale data. The command does not scan, resolve
+DNS, reconnect, write flash or mutate UI.
+
+The web JSON paths now serialize directly to the connected client with an
+exact content length instead of allocating a second complete output `String`.
+This removes one avoidable contiguous internal-heap allocation supported by
+the measured 2-6 KB largest-block values in Bluetooth. Audio diagnostics use
+a bounded 50 ms mutex wait. These are allocation/observability corrections,
+not proof that the underlying Wi-Fi outage is fixed. No competing reconnect
+loop, sleep change, reboot, buffer/stack adjustment or station auto-resume was
+added. Dependencies, partitions and GPIO remain unchanged.
+
+The clean identified build from source commit
+`603c4b12a56b83cae712e891c5b1f41b4c158ca9` passed with 83,336 bytes of
+linked RAM (25.4%) and 2,009,881 bytes of flash (63.9%). Its 2,016,464-byte
+binary embeds `build_git_id` `603c4b12a56b` and has SHA-256
+`BDB7CA191AEA282A6F7F27D0FF5B12EF04A6422547AFDC1B4514006F9BDE716F`.
+The host suite passed 266 deterministic checks. Subsequent owner hardware
+validation is PARTIAL, with network access FAIL and incident OPEN; the
+candidate is not a stable release. See the dated 1.1.3 owner report.
+
+## 2026-10-11 — Wi-Fi state synchronization and connectivity diagnostics (1.1.2)
+
+Replaced the cached-only Wi-Fi status with framework reconciliation plus a
+bounded cross-task event queue. Arduino Wi-Fi callbacks now capture only the
+event type, timestamp and disconnect reason; the application loop performs
+all logging and state changes before serving web requests. A disconnected
+station immediately reports `0.0.0.0` rather than a cached IP. The callback
+does not connect, write flash or touch the UI.
+
+`/api/diagnostics` now reports the actual framework status, current IP, RSSI,
+auto-reconnect setting, disconnect/GOT_IP/LOST_IP counters and timestamps,
+last disconnect reason, state duration and event-queue drops. Logs are emitted
+only for events or real state transitions. No password is exposed.
+
+Arduino-ESP32 2.0.17 was verified to default `_autoReconnect` to true and to
+retry only its defined reconnectable reasons. No application retry,
+`SetReconnect()`, periodic `WiFi.begin()`, Wi-Fi sleep change or dependency
+change was added. The ICY/HTTPS stream sources still use zero reconnect tries,
+and automatic station resume remains explicitly outside this patch.
+
+Owner hardware results for firmware 1.1.1 are recorded separately from this
+software change: normal Radio boot PASS; three audible Radio MP3 ↔ Bluetooth
+SBC cycles with web refresh in Bluetooth PASS; and approximately 2 h 46 min
+of later MP3 playback PASS observationally (free heap 13,036 → 13,028 bytes,
+largest block 10,228 → 10,740 bytes, PSRAM unchanged). A controlled AP off/on
+test recovered connectivity and allowed West City to start manually without a
+restart; automatic station resume did not occur, as expected. The earlier
+uncontrolled loss of router visibility, web/DNS and Radio connectivity remains
+OPEN with unknown cause. Firmware 1.1.2 remains a validation candidate pending
+new AP off/on tests in Radio and Bluetooth.
+
+The identified clean `esp32-dev` build from firmware source commit
+`7cf087f8c68606b9de6fc38ea400c9bf54b1b5d5` passed with 83,288 bytes of linked
+RAM (25.4%) and 2,004,813 bytes of flash (63.7%). Its 2,011,392-byte binary
+embeds `build_git_id` `7cf087f8c686` and has SHA-256
+`847C9FE99256F6A63EB19C27543399A1BAC46979D4658951E806D56B15E094EA`.
+The host suite passed 264 deterministic checks. Hardware testing of this 1.1.2
+candidate remains PENDING.
+
 ## 2026-10-10 — Bluetooth lifecycle and hardware-validation corrections (1.1.1)
 
 Withdrawn the prior general PASS for repeated Radio/Bluetooth cycles: the
@@ -28,8 +185,9 @@ Firmware is promoted from 1.1.0 to 1.1.1. Dependency pins, target, partition
 layout, GPIO assignments and established MP3/catalog/web/AVRCP behavior are
 unchanged. AAC and menu latency remain known issues. Build verification and
 the mandatory owner-assisted test are recorded under
-`artifacts/HARDWARE_VALIDATION_1.1.1/`; physical status remains PENDING until
-three cycles include actual audible phone and MP3 playback.
+`artifacts/HARDWARE_VALIDATION_1.1.1/`. Those three audible cycles were later
+reported PASS by the owner on 2026-10-11; the separate uncontrolled Wi-Fi
+incident remains OPEN.
 
 The clean `esp32-dev` build from firmware source commit
 `76bdcd13d6628d81e4f96c42534ff781faf8e9db` passed with 83,160 bytes of linked

@@ -31,14 +31,15 @@ station.onsubmit=async e=>{e.preventDefault();try{await api('/api/stations',{met
 </script>)HTML";
 
 void WebPortal::registerRoutes() {
-    server.on("/", HTTP_GET, [this] { handleRoot(); });
-    server.on("/api/status", HTTP_GET, [this] { handleStatus(); });
-    server.on("/api/diagnostics", HTTP_GET, [this] { handleDiagnostics(); });
-    server.on("/api/stations", HTTP_GET, [this] { handleStations(); });
-    server.on("/api/stations", HTTP_POST, [this] { handleAddStation(); });
-    server.on("/api/wifi", HTTP_POST, [this] { handleWiFiSave(); });
-    server.on("/api/timezone", HTTP_POST, [this] { handleTimezoneSave(); });
+    server.on("/", HTTP_GET, [this] { server.beginResponse("root"); handleRoot(); });
+    server.on("/api/status", HTTP_GET, [this] { server.beginResponse("status"); handleStatus(); });
+    server.on("/api/diagnostics", HTTP_GET, [this] { server.beginResponse("diagnostics"); handleDiagnostics(); });
+    server.on("/api/stations", HTTP_GET, [this] { server.beginResponse("stations"); handleStations(); });
+    server.on("/api/stations", HTTP_POST, [this] { server.beginResponse("add_station"); handleAddStation(); });
+    server.on("/api/wifi", HTTP_POST, [this] { server.beginResponse("wifi_save"); handleWiFiSave(); });
+    server.on("/api/timezone", HTTP_POST, [this] { server.beginResponse("timezone_save"); handleTimezoneSave(); });
     server.onNotFound([this] {
+        server.beginResponse("other");
         String uri = server.uri();
         if (server.method() == HTTP_DELETE && uri.startsWith("/api/station/")) { handleDeleteStation(); return; }
         if (server.method() == HTTP_DELETE && uri.startsWith("/api/favorite/")) { handleDeleteFavorite(); return; }
@@ -67,17 +68,80 @@ void WebPortal::beginConfigPortal() {
     Serial.printf("[WEB] Setup AP '%s', password '%s', portal http://192.168.4.1/\n", portalSSID, portalPassword);
 }
 
-void WebPortal::handle() { if (started) server.handleClient(); if (configPortalActive) dnsServer.processNextRequest(); }
-void WebPortal::sendJsonError(int code, const char* message) { server.send(code, "application/json", String("{\"error\":\"") + message + "\"}"); }
-void WebPortal::handleRoot() { server.send_P(200, "text/html; charset=utf-8", WEB_PAGE); }
+void WebPortal::handle() {
+    const uint32_t startedMs = millis();
+    if (started) server.handleClient();
+    if (server.diagnostics.responses != loggedResponseCount) {
+        server.finishResponse();
+        const auto& r = server.diagnostics;
+        Serial.printf("[WEB_RESPONSE] count=%lu route=%s build_ms=%lu header_ms=%lu body_ms=%lu expected=%u sent=%u header_sent=%u calls=%lu waits=%lu error=%d failed=%u overflow=%u heap_start=%u/%u heap_built=%u/%u heap_end=%u/%u alloc_fail=%lu/%lu/%lu\n",
+            (unsigned long)r.responses, r.route, (unsigned long)r.buildMs,
+            (unsigned long)r.headerMs, (unsigned long)r.bodyMs,
+            (unsigned)r.expectedBody, (unsigned)r.sentBody, (unsigned)r.sentHeader,
+            (unsigned long)r.writeCalls, (unsigned long)r.retryWaits,
+            r.socketError, r.failed, r.jsonOverflow,
+            (unsigned)r.freeStart, (unsigned)r.largestStart,
+            (unsigned)r.freeBuilt, (unsigned)r.largestBuilt,
+            (unsigned)r.freeEnd, (unsigned)r.largestEnd,
+            (unsigned long)r.allocStart, (unsigned long)r.allocBuilt,
+            (unsigned long)r.allocEnd);
+        loggedResponseCount = r.responses;
+    }
+    if (configPortalActive) dnsServer.processNextRequest();
+    lastHandleDurationMs = millis() - startedMs;
+    if (lastHandleDurationMs > maxHandleDurationMs) {
+        maxHandleDurationMs = lastHandleDurationMs;
+    }
+    handleCount++;
+    lastHandleCompletedMs = millis();
+}
+
+void WebPortal::getDiagnostics(WebPortalDiagnostics& diagnostics) const {
+    diagnostics.handleCount = handleCount;
+    diagnostics.lastHandleDurationMs = lastHandleDurationMs;
+    diagnostics.maxHandleDurationMs = maxHandleDurationMs;
+    diagnostics.lastHandleCompletedMs = lastHandleCompletedMs;
+    diagnostics.response = server.diagnostics;
+}
+
+void WebPortal::sendJson(int code, JsonDocument& document) {
+    server.diagnostics.jsonOverflow = document.overflowed();
+    if (document.overflowed()) {
+        sendJsonError(503, "JSON allocation failed");
+        return;
+    }
+    const size_t expectedBytes = measureJson(document);
+    server.diagnostics.expectedBody = expectedBytes;
+    server.setContentLength(expectedBytes);
+    server.send(code, "application/json", "");
+    BufferedWebWriter<ObservedWebServer> output(server);
+    serializeJson(document, output);
+    output.flush();
+    const size_t writtenBytes = server.diagnostics.sentBody;
+    if (writtenBytes != expectedBytes) {
+        Serial.printf("[WEB] JSON response truncated: expected=%u, written=%u\n",
+                      (unsigned)expectedBytes, (unsigned)writtenBytes);
+    }
+}
+void WebPortal::sendJsonError(int code, const char* message) {
+    String body = String("{\"error\":\"") + message + "\"}";
+    server.diagnostics.expectedBody = body.length();
+    server.send(code, "application/json", body);
+}
+void WebPortal::handleRoot() {
+    server.diagnostics.expectedBody = sizeof(WEB_PAGE) - 1;
+    server.send_P(200, "text/html; charset=utf-8", WEB_PAGE);
+}
 
 void WebPortal::handleStatus() {
     JsonDocument doc; doc["connected"] = wifiManager.isConnected(); doc["ssid"] = wifiManager.getSSID(); doc["ip"] = wifiManager.getIP(); doc["portal"] = configPortalActive ? portalSSID : ""; doc["timezone"] = timeService.getTimezone();
-    String out; serializeJson(doc, out); server.send(200, "application/json", out);
+    sendJson(200, doc);
 }
 void WebPortal::handleDiagnostics() {
     AudioDiagnostics audio{};
     bool haveAudioSnapshot = audioPlayer.getDiagnostics(audio);
+    WiFiDiagnostics wifi{};
+    wifiManager.getDiagnostics(wifi);
 
     JsonDocument doc;
     doc["firmware_version"] = FIRMWARE_VERSION;
@@ -97,8 +161,68 @@ void WebPortal::handleDiagnostics() {
         "sum_of_current_region_low_watermarks";
     doc["total_psram"] = ESP.getPsramSize();
     doc["free_psram"] = ESP.getFreePsram();
-    if (WiFi.status() == WL_CONNECTED) doc["wifi_rssi_dbm"] = WiFi.RSSI();
+    doc["wifi_connected"] = wifi.connected;
+    doc["wifi_state"] = WiFiManager::stateName(wifi.state);
+    doc["wifi_framework_status"] =
+        WiFiManager::frameworkStatusName(wifi.frameworkStatus);
+    doc["wifi_framework_status_code"] = wifi.frameworkStatus;
+    doc["wifi_configured_ssid"] = wifi.configuredSsid;
+    doc["wifi_ssid"] = wifi.ssid;
+    doc["wifi_bssid"] = wifi.bssid;
+    doc["wifi_ip"] = wifi.ip;
+    doc["wifi_gateway"] = wifi.gateway;
+    doc["wifi_subnet"] = wifi.subnet;
+    doc["wifi_dns_1"] = wifi.dns1;
+    doc["wifi_dns_2"] = wifi.dns2;
+    if (wifi.associationInfoAvailable) doc["wifi_channel"] = wifi.channel;
+    else doc["wifi_channel"] = nullptr;
+    doc["wifi_association_info_available"] = wifi.associationInfoAvailable;
+    doc["wifi_association_info_result"] = wifi.associationInfoResult;
+    doc["wifi_auto_reconnect"] = wifi.autoReconnect;
+    if (wifi.connected) doc["wifi_rssi_dbm"] = wifi.rssi;
     else doc["wifi_rssi_dbm"] = nullptr;
+    doc["wifi_disconnect_count"] = wifi.disconnectCount;
+    doc["wifi_got_ip_count"] = wifi.gotIpCount;
+    doc["wifi_lost_ip_count"] = wifi.lostIpCount;
+    doc["wifi_processed_event_count"] = wifi.processedEventCount;
+    doc["wifi_dropped_event_count"] = wifi.droppedEventCount;
+    doc["wifi_queued_event_count"] = wifi.queuedEventCount;
+    if (wifi.hasLastEvent) {
+        doc["wifi_last_event"] = wifi.lastEventName;
+        doc["wifi_last_event_ms"] = wifi.lastEventMs;
+        doc["wifi_last_event_age_ms"] = (uint32_t)(millis() - wifi.lastEventMs);
+    } else {
+        doc["wifi_last_event"] = "none";
+        doc["wifi_last_event_ms"] = nullptr;
+        doc["wifi_last_event_age_ms"] = nullptr;
+    }
+    if (wifi.hasDisconnected) {
+        doc["wifi_last_disconnect_reason"] = wifi.lastDisconnectReason;
+        doc["wifi_last_disconnect_reason_name"] =
+            wifi.lastDisconnectReasonName;
+        doc["wifi_last_disconnect_ms"] = wifi.lastDisconnectMs;
+        doc["wifi_last_disconnect_age_ms"] =
+            (uint32_t)(millis() - wifi.lastDisconnectMs);
+    } else {
+        doc["wifi_last_disconnect_reason"] = nullptr;
+        doc["wifi_last_disconnect_reason_name"] = "none";
+        doc["wifi_last_disconnect_ms"] = nullptr;
+        doc["wifi_last_disconnect_age_ms"] = nullptr;
+    }
+    doc["wifi_state_since_ms"] = wifi.stateSinceMs;
+    doc["wifi_state_age_ms"] = (uint32_t)(millis() - wifi.stateSinceMs);
+    if (wifi.hasConnectedSince) {
+        doc["wifi_connected_since_ms"] = wifi.connectedSinceMs;
+        doc["wifi_connected_duration_ms"] =
+            (uint32_t)(millis() - wifi.connectedSinceMs);
+    } else {
+        doc["wifi_connected_since_ms"] = nullptr;
+        doc["wifi_connected_duration_ms"] = nullptr;
+    }
+    if (wifi.hasGotIp) doc["wifi_last_got_ip_ms"] = wifi.lastGotIpMs;
+    else doc["wifi_last_got_ip_ms"] = nullptr;
+    if (wifi.hasLostIp) doc["wifi_last_lost_ip_ms"] = wifi.lastLostIpMs;
+    else doc["wifi_last_lost_ip_ms"] = nullptr;
 
     if (haveAudioSnapshot) {
         doc["audio_source"] = SystemInfo::audioSourceName(audio.source);
@@ -118,15 +242,13 @@ void WebPortal::handleDiagnostics() {
         doc["audio_task_stack_high_water_mark"] = 0;
     }
 
-    String out;
-    serializeJson(doc, out);
-    server.send(200, "application/json", out);
+    sendJson(200, doc);
 }
 void WebPortal::handleStations() {
     JsonDocument doc; JsonArray stations = doc["stations"].to<JsonArray>(); JsonArray favorites = doc["favorites"].to<JsonArray>();
     for (uint8_t i=0;i<stationManager.getStationCount();i++) { RadioStation* s=stationManager.getStation(i); JsonObject o=stations.add<JsonObject>(); o["name"]=s->name; o["url"]=s->url; o["codec"]=s->codec==STATION_CODEC_AAC?"AAC":"MP3"; }
     for (uint8_t i=0;i<stationManager.getFavoriteCount();i++) { RadioStation* s=stationManager.getFavorite(i); JsonObject o=favorites.add<JsonObject>(); o["name"]=s->name; o["url"]=s->url; o["codec"]=s->codec==STATION_CODEC_AAC?"AAC":"MP3"; }
-    String out; serializeJson(doc,out); server.send(200,"application/json",out);
+    sendJson(200, doc);
 }
 void WebPortal::handleAddStation() {
     String name=server.arg("name"), url=server.arg("url"), codec=server.arg("codec");

@@ -1,0 +1,551 @@
+﻿Processing esp32-lwip-psram (platform: espressif32@7.0.1; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+UART probe: fixed private driver archive hashes PASS
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (7.0.1) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES:
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b
+ - tool-esptoolpy @ 2.41100.0 (4.11.0)
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain+, Compatibility ~ soft
+Found 40 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- GxEPD2 @ 1.6.9
+|-- Adafruit GFX Library @ 1.12.6
+|-- Adafruit BusIO @ 1.17.4
+|-- Bounce2 @ 2.72.0
+|-- ArduinoJson @ 7.4.3
+|-- ESP32-A2DP @ 1.8.11+sha.3245602
+|-- ESP8266Audio @ 2.2.0+sha.058e131
+|-- HTTPClient @ 2.0.0
+|-- WiFi @ 2.0.0
+|-- WiFiClientSecure @ 2.0.0
+|-- Wire @ 2.0.0
+|-- SPI @ 2.0.0
+|-- WebServer @ 2.0.0
+|-- DNSServer @ 2.0.0
+|-- EEPROM @ 2.0.0
+|-- Preferences @ 2.0.0
+Building in release mode
+Compiling .pio\build\esp32-lwip-psram\src\AudioFileSourceHTTPSStream.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\AudioFileSourceICYSStream.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\audio.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\browser.cpp.o
+platformio.exe : In file included from src/audio.cpp:10:
+At line:2 char:98
++ ... ts prefix'; & 'C:\Users\Dell\.platformio\penv\Scripts\platformio.exe' ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (In file included from src/audio.cpp:10::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+.pio/libdeps/esp32-lwip-psram/ESP32-A2DP/src/BluetoothA2DPSink.h:26:2: warning: #warning "AudioTools library is not
+included first or installed" [-Wcpp]
+ #warning "AudioTools library is not included first or installed"
+  ^~~~~~~
+Compiling .pio\build\esp32-lwip-psram\src\display.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\input.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\lwip_psram_policy.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\main.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\net_manager.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\network_progress.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\software_tx_probe.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\stations.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\system_info.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\time_service.cpp.o
+Compiling .pio\build\esp32-lwip-psram\src\web_portal.cpp.o
+Building .pio\build\esp32-lwip-psram\bootloader.bin
+esptool.py v4.11.0
+Creating esp32 image...
+Merged 1 ELF section
+Successfully created esp32 image.
+Generating partitions .pio\build\esp32-lwip-psram\partitions.bin
+Compiling .pio\build\esp32-lwip-psram\lib4ae\Wire\Wire.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib9bf\SPI\SPI.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib489\Adafruit BusIO\Adafruit_BusIO_Register.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib4ae\libWire.a
+Compiling .pio\build\esp32-lwip-psram\lib489\Adafruit BusIO\Adafruit_GenericDevice.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib9bf\libSPI.a
+Compiling .pio\build\esp32-lwip-psram\lib489\Adafruit BusIO\Adafruit_I2CDevice.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib489\Adafruit BusIO\Adafruit_SPIDevice.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib097\Adafruit GFX Library\Adafruit_GFX.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib097\Adafruit GFX Library\Adafruit_GrayOLED.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib097\Adafruit GFX Library\Adafruit_SPITFT.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib489\libAdafruit BusIO.a
+Compiling .pio\build\esp32-lwip-psram\lib097\Adafruit GFX Library\glcdfont.c.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\GxEPD2_EPD.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib097\libAdafruit GFX Library.a
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_1248c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_154_Z90c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_154c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_213_Z19c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_213_Z98c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_213c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_266c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_270c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_290_C90c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_290_Z13c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_290c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_420c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_420c_Z21.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_583c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_583c_Z83.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_750c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_750c_GDEW075Z08.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_750c_Z08.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd3c\GxEPD2_750c_Z90.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_1160c_GDEY116F51.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_154c_GDEM0154F51H.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_213c_GDEY0213F51.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_266c_GDEY0266F51H.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_290c_GDEY029F51H.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_300c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_350c_GDEM035F51.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_397c_GDEM0397F81.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_420c_GDEY0420F51.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_437c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_579c_GDEY0579F51.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd4c\GxEPD2_750c_GDEM075F52.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd7c\GxEPD2_565c.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd7c\GxEPD2_565c_GDEP0565D90.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd7c\GxEPD2_730c_ACeP_730.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd7c\GxEPD2_730c_GDEP073E01.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd7c\GxEPD2_730c_GDEY073D46.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_102.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_1160_T91.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_1248.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_150_BN.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_154.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_154_D67.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_154_M09.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_154_M10.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_154_T8.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213_B72.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213_B73.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213_B74.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213_BN.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213_M21.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213_T5D.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_213_flex.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_260.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_260_M01.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_266_BN.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_270.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290_BS.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290_I6FD.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290_M06.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290_T5.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290_T5D.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290_T94.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_290_T94_V2.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_370_TC1.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_371.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_420.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_420_M01.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_583.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_583_T8.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_750.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\epd\GxEPD2_750_T7.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdeh\GxEPD2_576_GDEH0576T81.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdem3c\GxEPD2_1330c_GDEM133Z91.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdem\GxEPD2_1020_GDEM102T91.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdem\GxEPD2_1085_GDEM1085T51.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdem\GxEPD2_1330_GDEM133T91.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdem\GxEPD2_397_GDEM0397T81.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdeq3c\GxEPD2_583c_GDEQ0583Z31.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdeq\GxEPD2_310_GDEQ031T10.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdeq\GxEPD2_426_GDEQ0426T82.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdeq\GxEPD2_583_GDEQ0583T31.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey3c\GxEPD2_1160c_GDEY116Z91.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey3c\GxEPD2_420c_GDEY042Z98.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey3c\GxEPD2_579c_GDEY0579Z93.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey3c\GxEPD2_750c_GDEY075Z08.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_154_GDEY0154D67.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_213_GDEY0213B74.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_266_GDEY0266T90.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_270_GDEY027T91.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_290_GDEY029T71H.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_290_GDEY029T94.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_370_GDEY037T03.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_420_GDEY042T81.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_579_GDEY0579T93.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\gdey\GxEPD2_750_GDEY075T7.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\it8951\GxEPD2_it103_1872x1404.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\it8951\GxEPD2_it60.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\it8951\GxEPD2_it60_1448x1072.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\it8951\GxEPD2_it78_1872x1404.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\other\GxEPD2_420_GYE042A87.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib8b4\GxEPD2\other\GxEPD2_420_SE0420NQ04.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libbed\Bounce2\Bounce2.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib307\ESP32-A2DP\A2DPDecoder.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib307\ESP32-A2DP\BluetoothA2DPCommon.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib8b4\libGxEPD2.a
+Compiling .pio\build\esp32-lwip-psram\lib307\ESP32-A2DP\BluetoothA2DPOutput.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib307\ESP32-A2DP\BluetoothA2DPSink.cpp.o
+Archiving .pio\build\esp32-lwip-psram\libbed\libBounce2.a
+Compiling .pio\build\esp32-lwip-psram\lib307\ESP32-A2DP\BluetoothA2DPSinkQueued.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib307\ESP32-A2DP\BluetoothA2DPSource.cpp.o
+In file included from .pio/libdeps/esp32-lwip-psram/ESP32-A2DP/src/BluetoothA2DPSink.cpp:16:
+.pio/libdeps/esp32-lwip-psram/ESP32-A2DP/src/BluetoothA2DPSink.h:26:2: warning: #warning "AudioTools library is not
+included first or installed" [-Wcpp]
+ #warning "AudioTools library is not included first or installed"
+  ^~~~~~~
+In file included from .pio/libdeps/esp32-lwip-psram/ESP32-A2DP/src/BluetoothA2DPSinkQueued.h:3,
+                 from .pio/libdeps/esp32-lwip-psram/ESP32-A2DP/src/BluetoothA2DPSinkQueued.cpp:2:
+.pio/libdeps/esp32-lwip-psram/ESP32-A2DP/src/BluetoothA2DPSink.h:26:2: warning: #warning "AudioTools library is not
+included first or installed" [-Wcpp]
+ #warning "AudioTools library is not included first or installed"
+  ^~~~~~~
+Compiling .pio\build\esp32-lwip-psram\lib2b3\FS\FS.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib2b3\FS\vfs_api.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libac4\SPIFFS\SPIFFS.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib307\libESP32-A2DP.a
+Compiling .pio\build\esp32-lwip-psram\lib4f8\I2S\I2S.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFi.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib2b3\libFS.a
+Archiving .pio\build\esp32-lwip-psram\libac4\libSPIFFS.a
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiAP.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiClient.cpp.o
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src/I2S.cpp: In member function 'int
+I2SClass::_installDriver()':
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src/I2S.cpp:202:89: warning:
+'ADC_ATTEN_DB_11' is deprecated [-Wdeprecated-declarations]
+       esp_i2s::adc1_config_channel_atten((esp_i2s::adc1_channel_t)adc_channel, esp_i2s::ADC_ATTEN_DB_11);
+                                                                                         ^~~~~~~~~~~~~~~
+In file included from
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/driver/include/driver/adc.h:14,
+                 from
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/driver/include/driver/i2s.h:21,
+                 from C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src/I2S.h:26,
+                 from C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src/I2S.cpp:21:
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/hal/include/hal/adc_types.h:54:
+5: note: declared here
+     ADC_ATTEN_DB_11 __attribute__((deprecated)) = ADC_ATTEN_DB_12,  ///<This is deprecated, it behaves the same as
+`ADC_ATTEN_DB_12`
+     ^~~~~~~~~~~~~~~
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src/I2S.cpp:204:89: warning:
+'ADC_ATTEN_DB_11' is deprecated [-Wdeprecated-declarations]
+       esp_i2s::adc2_config_channel_atten((esp_i2s::adc2_channel_t)adc_channel, esp_i2s::ADC_ATTEN_DB_11);
+                                                                                         ^~~~~~~~~~~~~~~
+In file included from
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/driver/include/driver/adc.h:14,
+                 from
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/driver/include/driver/i2s.h:21,
+                 from C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src/I2S.h:26,
+                 from C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src/I2S.cpp:21:
+C:/Users/Dell/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/hal/include/hal/adc_types.h:54:
+5: note: declared here
+     ADC_ATTEN_DB_11 __attribute__((deprecated)) = ADC_ATTEN_DB_12,  ///<This is deprecated, it behaves the same as
+`ADC_ATTEN_DB_12`
+     ^~~~~~~~~~~~~~~
+Archiving .pio\build\esp32-lwip-psram\lib4f8\libI2S.a
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiGeneric.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiMulti.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiSTA.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiScan.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiServer.cpp.o
+Compiling .pio\build\esp32-lwip-psram\libdc7\WiFi\WiFiUdp.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib407\WiFiClientSecure\WiFiClientSecure.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib407\WiFiClientSecure\esp_crt_bundle.c.o
+Compiling .pio\build\esp32-lwip-psram\lib407\WiFiClientSecure\ssl_client.cpp.o
+Compiling .pio\build\esp32-lwip-psram\liba0c\HTTPClient\HTTPClient.cpp.o
+Archiving .pio\build\esp32-lwip-psram\libdc7\libWiFi.a
+Compiling .pio\build\esp32-lwip-psram\lib9d9\SD\SD.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib9d9\SD\sd_diskio.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib407\libWiFiClientSecure.a
+Compiling .pio\build\esp32-lwip-psram\lib9d9\SD\sd_diskio_crc.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceBuffer.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceFS.cpp.o
+Archiving .pio\build\esp32-lwip-psram\liba0c\libHTTPClient.a
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceFunction.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib9d9\libSD.a
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceHTTPStream.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceICYStream.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceID3.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourcePROGMEM.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceSD.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceSPIRAMBuffer.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileSourceSTDIO.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioFileStream.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorAAC.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorFLAC.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorMIDI.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorMOD.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorMP3.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorMP3a.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorOpus.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorRTTTL.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorTalkie.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioGeneratorWAV.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioLogger.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputBuffer.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputFilterBiquad.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputFilterDecimate.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputI2S.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputI2SNoDAC.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputMixer.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputPWM.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputSPDIF.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputSPIFFSWAV.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputSTDIO.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputSerialWAV.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\AudioOutputULP.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\driver\SinglePinI2SDriver.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\bitmath.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\bitreader.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\cpu.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\crc.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\fixed.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\float.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\format.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\lpc.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\md5.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\memory.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\stream_decoder.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libflac\window.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\aacdec.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\aactabs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\bitstream.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\buffers.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\dct4.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\decelmnt.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\dequant.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\fft.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\filefmt.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\huffmanaac.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\hufftabs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\imdct.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\noiseless.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\pns.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbr.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrfft.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrfreq.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrhfadj.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrhfgen.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrhuff.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrimdct.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrmath.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrqmf.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrside.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\sbrtabs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\stproc.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\tns.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-aac\trigtabs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\bitstream.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\buffers.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\dct32.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\dequant.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\dqchan.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\huffman.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\hufftabs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\imdct.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\mp3dec.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\mp3tabs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\polyphase.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\scalfact.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\stproc.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\subband.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libhelix-mp3\trigtabs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\bit.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\decoder.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\fixed.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\frame.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\huffman.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\layer3.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\stream.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\synth.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\timer.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libmad\version.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\bands.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\celt.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\celt_decoder.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\celt_lpc.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\cwrs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\entcode.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\entdec.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\entenc.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\kiss_fft.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\laplace.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\mathops.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\mdct.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\modes.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\pitch.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\quant_bands.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\rate.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\celt\vq.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\A2NLSF.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\CNG.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\HP_variable_cutoff.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\LPC_analysis_filter.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\LPC_fit.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\LPC_inv_pred_gain.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\LP_variable_cutoff.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF2A.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF_VQ.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF_VQ_weights_laroia.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF_decode.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF_del_dec_quant.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF_encode.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF_stabilize.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\NLSF_unpack.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\PLC.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\VQ_WMat_EC.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\ana_filt_bank_1.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\biquad_alt.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\bwexpander.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\bwexpander_32.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\check_control_input.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\code_signs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\control_SNR.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\control_audio_bandwidth.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\control_codec.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\debug.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\dec_API.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\decode_core.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\decode_frame.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\decode_indices.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\decode_parameters.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\decode_pitch.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\decode_pulses.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\decoder_set_fs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\encode_indices.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\encode_pulses.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\LTP_analysis_filter_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\LTP_scale_ctrl_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\apply_sine_window_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\autocorr_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\burg_modified_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\corrMatrix_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\find_LPC_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\find_LTP_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\find_pred_coefs_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\k2a_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\k2a_Q16_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\process_gains_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\regularize_correlations_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\residual_energy16_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\residual_energy_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\schur64_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\schur_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\vector_ops_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\fixed\warped_autocorrelation_FIX.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\gain_quant.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\init_decoder.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\inner_prod_aligned.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\interpolate.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\lin2log.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\log2lin.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\pitch_est_tables.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\process_NLSFs.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\quant_LTP_gains.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler_down2.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler_down2_3.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler_private_AR2.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler_private_IIR_FIR.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler_private_down_FIR.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler_private_up2_HQ.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\resampler_rom.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\shell_coder.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\sigm_Q15.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\sort.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\stereo_LR_to_MS.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\stereo_MS_to_LR.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\stereo_decode_pred.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\stereo_encode_pred.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\stereo_find_predictor.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\stereo_quant_pred.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\sum_sqr_shift.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\table_LSF_cos.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\tables_LTP.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\tables_NLSF_CB_NB_MB.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\tables_NLSF_CB_WB.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\tables_gain.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\tables_other.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\tables_pitch_lag.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\silk\tables_pulses_per_block.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\src\opus.c.o
+Compiling .pio\build\esp32-lwip-psram\lib204\ESP8266Audio\libopus\src\opus_decoder.c.o
+Compiling .pio\build\esp32-lwip-psram\liba9b\WebServer\Parsing.cpp.o
+Compiling .pio\build\esp32-lwip-psram\liba9b\WebServer\WebServer.cpp.o
+Compiling .pio\build\esp32-lwip-psram\liba9b\WebServer\detail\mimetable.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib204\libESP8266Audio.a
+Compiling .pio\build\esp32-lwip-psram\lib1c2\DNSServer\DNSServer.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib113\EEPROM\EEPROM.cpp.o
+Compiling .pio\build\esp32-lwip-psram\lib680\Preferences\Preferences.cpp.o
+Archiving .pio\build\esp32-lwip-psram\liba9b\libWebServer.a
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\Esp.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib113\libEEPROM.a
+Archiving .pio\build\esp32-lwip-psram\lib1c2\libDNSServer.a
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\FirmwareMSC.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\FunctionalInterrupt.cpp.o
+Archiving .pio\build\esp32-lwip-psram\lib680\libPreferences.a
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\HWCDC.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\HardwareSerial.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\IPAddress.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\IPv6Address.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\MD5Builder.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\Print.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\Stream.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\StreamString.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\Tone.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\USB.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\USBCDC.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\USBMSC.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\WMath.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\WString.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\base64.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\cbuf.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-adc.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-bt.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-cpu.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-dac.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-gpio.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-i2c-slave.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-i2c.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-ledc.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-matrix.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-misc.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-psram.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-rgb-led.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-rmt.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-sigmadelta.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-spi.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-time.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-timer.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-tinyusb.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-touch.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\esp32-hal-uart.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\firmware_msc_fat.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\libb64\cdecode.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\libb64\cencode.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\main.cpp.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\stdlib_noniso.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\wiring_pulse.c.o
+Compiling .pio\build\esp32-lwip-psram\FrameworkArduino\wiring_shift.c.o
+Archiving .pio\build\esp32-lwip-psram\libFrameworkArduino.a
+Linking .pio\build\esp32-lwip-psram\firmware.elf
+Retrieving maximum program size .pio\build\esp32-lwip-psram\firmware.elf
+Checking size .pio\build\esp32-lwip-psram\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [===       ]  26.2% (used 85936 bytes from 327680 bytes)
+Flash: [======    ]  64.3% (used 2022097 bytes from 3145728 bytes)
+Building .pio\build\esp32-lwip-psram\firmware.bin with action:
+  "$PYTHONEXE" "$OBJCOPY" --chip esp32 elf2image --flash_mode ${__get_board_flash_mode(__env__)} --flash_freq ${__get_board_f_image(__env__)} --flash_size 4MB --elf-sha256-offset 0xb0 -o $TARGET $SOURCES
+Building .pio\build\esp32-lwip-psram\firmware.bin
+esptool.py v4.11.0
+Creating esp32 image...
+Merged 27 ELF sections
+Successfully created esp32 image.
+======================== [SUCCESS] Took 242.32 seconds ========================
+
+Environment       Status    Duration
+----------------  --------  ------------
+esp32-lwip-psram  SUCCESS   00:04:02.315
+========================= 1 succeeded in 00:04:02.315 =========================
