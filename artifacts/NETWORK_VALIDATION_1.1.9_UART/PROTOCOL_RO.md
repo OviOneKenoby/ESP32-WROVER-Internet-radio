@@ -1,5 +1,11 @@
 # Protocol unic complet — UART, refuz TX și retry/conversie
 
+**SUSPENDAT după controlul pozitiv al proprietarului. Nu declanșa HTTP.**
+ELF-ul exact conține un operand incorect în clasificatorul de context din
+unlock; controlul original nu este PASS. Vezi
+[analiza discrepanței](BASELINE_DISCREPANCY_RO.md). Instrucțiunile de mai jos
+rămân istorice până la corectarea și verificarea predicatului final.
+
 **1.1.9-uart-validation / fe228ca737b9. Candidat de diagnostic, incident OPEN.**
 Necesită numai CH340/COM5. Fără JTAG, recablare sau dezactivarea encoderului.
 Nu este un fix: TX dynamic32/cache4, retry, payload root și comportamentul
