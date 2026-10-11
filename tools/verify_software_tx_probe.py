@@ -68,11 +68,13 @@ for fragment in ("beginTx", "endTx"):
     name = next(n for n in symbols if "SoftwareTxProbe" in n and fragment in n)
     assert 0x40080000 <= symbols[name] < 0x400c0000
 for name in (unlock,):
+    assert "esp_cpu_process_stack_pc" not in body(name), "flash-outlined PC helper"
     assert not re.search(r"<(?:malloc|calloc|realloc|printf|esp_log_write|heap_caps_get[^>]*)>", body(name))
     print("PASS IRAM callback without allocator/logger/heap queries:", name)
 for fragment in ("internalMalloc", "wifiMalloc", "observeMalloc"):
     name = next(n for n in symbols if fragment in n and "GLOBAL" in n)
     assert 0x40080000 <= symbols[name] < 0x400c0000
+    assert "esp_cpu_process_stack_pc" not in body(name), "flash-outlined PC helper"
     assert not re.search(r"<(?:printf|esp_log_write|heap_caps_get[^>]*)>", body(name))
     print("PASS IRAM typed allocation observation:", name)
 for offset in (348, 364):

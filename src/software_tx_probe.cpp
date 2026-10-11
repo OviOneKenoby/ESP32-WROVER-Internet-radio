@@ -38,6 +38,12 @@ DRAM_ATTR void* (*originalInternalMalloc)(size_t);
 DRAM_ATTR void* (*originalWifiMalloc)(size_t);
 DRAM_ATTR portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 void IRAM_ATTR inc(uint32_t& n) { if (n != UINT32_MAX) ++n; }
+// -Os can outline the SDK static-inline helper into flash. Force this
+// equivalent normalization inline, including the pre-cache-check entry path.
+uint32_t __attribute__((always_inline)) inline callPc(uint32_t pc) {
+    if (pc & 0x80000000) pc = (pc & 0x3fffffff) | 0x40000000;
+    return pc - 3;
+}
 int IRAM_ATTR kindFor(uint32_t pc) {
     // Offsets must be checked against EVERY final ELF by verify_software_tx_probe.py.
     const uint32_t esf = reinterpret_cast<uint32_t>(esf_buf_alloc);
@@ -54,7 +60,7 @@ int IRAM_ATTR kindFor(uint32_t pc) {
 int32_t IRAM_ATTR unlock(void* lock) {
     // IDF's stack-PC helper subtracts three (call instruction). Add it back:
     // these sites are RETURN addresses, not the decoded backtrace call PCs.
-    const uint32_t pc = esp_cpu_process_stack_pc(reinterpret_cast<uint32_t>(__builtin_return_address(0))) + 3;
+    const uint32_t pc = callPc(reinterpret_cast<uint32_t>(__builtin_return_address(0))) + 3;
     // Release the driver's lock BEFORE tracing. Never nest our mux inside it.
     const int32_t result = originalUnlock(lock);
     const int kind = kindFor(pc);
@@ -75,7 +81,7 @@ int32_t IRAM_ATTR unlock(void* lock) {
         esp_backtrace_get_start(&frame.pc, &frame.sp, &frame.next_pc);
         for (unsigned i = 0; i < 12; ++i) {
             if (!esp_stack_ptr_is_sane(frame.sp)) break;
-            const uint32_t framePc = esp_cpu_process_stack_pc(frame.pc);
+            const uint32_t framePc = callPc(frame.pc);
             if (!esp_ptr_executable(reinterpret_cast<void*>(framePc))) break;
             record.pcs[record.frames++] = framePc;
             const uint32_t output = reinterpret_cast<uint32_t>(ieee80211_output_process);
@@ -120,7 +126,7 @@ void IRAM_ATTR observeMalloc(uint32_t pc, void* result) {
     esp_backtrace_get_start(&frame.pc, &frame.sp, &frame.next_pc);
     for (unsigned i = 0; i < 12; ++i) {
         if (!esp_stack_ptr_is_sane(frame.sp)) break;
-        const uint32_t framePc = esp_cpu_process_stack_pc(frame.pc);
+        const uint32_t framePc = callPc(frame.pc);
         if (!esp_ptr_executable(reinterpret_cast<void*>(framePc))) break;
         const uint32_t output = reinterpret_cast<uint32_t>(ieee80211_output_process);
         if (framePc == output + 0xb7 || framePc == output + 0xa9) conversion = true;
@@ -137,13 +143,13 @@ void IRAM_ATTR observeMalloc(uint32_t pc, void* result) {
     portEXIT_CRITICAL(&mux);
 }
 void* IRAM_ATTR internalMalloc(size_t size) {
-    const uint32_t pc = esp_cpu_process_stack_pc(reinterpret_cast<uint32_t>(__builtin_return_address(0))) + 3;
+    const uint32_t pc = callPc(reinterpret_cast<uint32_t>(__builtin_return_address(0))) + 3;
     void* const result = originalInternalMalloc(size);
     observeMalloc(pc, result);
     return result;
 }
 void* IRAM_ATTR wifiMalloc(size_t size) {
-    const uint32_t pc = esp_cpu_process_stack_pc(reinterpret_cast<uint32_t>(__builtin_return_address(0))) + 3;
+    const uint32_t pc = callPc(reinterpret_cast<uint32_t>(__builtin_return_address(0))) + 3;
     void* const result = originalWifiMalloc(size);
     observeMalloc(pc, result);
     return result;

@@ -38,9 +38,12 @@ Callbackurile și memoria lor sunt IRAM/DRAM; unwind-ul este limitat la12 cadre,
 numai în task/cache-on. Contextul nesigur este contorizat ca skipped.
 
 Adresele de retur se compară cu simbol+offset din ELF-ul propriu; nu se
-reutilizează adrese absolute1.1.7. Helperul IDF de normalizare scade3 pentru
+reutilizează adrese absolute1.1.7. Normalizarea echivalentă helperului IDF scade3 pentru
 instrucțiunea call; proba adaugă3 pentru comparația adreselor de retur.
-Urmele SW_PC păstrează instrucțiunile call normalizate, gata pentru addr2line.
+Operațiile sunt forțate always_inline: -Os poate emite helperul SDK în flash,
+inadecvat înaintea verificării cache-ului. ELF-ul final trebuie să confirme
+absența acelui apel din probe. Urmele SW_PC păstrează instrucțiunile call
+normalizate, gata pentru addr2line.
 
 | k | Adresa de retur1.1.7 | Punct observabil prin callback declarat |
 |---|---|---|
