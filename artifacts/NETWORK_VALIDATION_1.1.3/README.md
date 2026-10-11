@@ -43,5 +43,15 @@ establish root cause. No BSSID evidence was available in firmware 1.1.2.
   automatic reboot, station auto-resume, dependency update, partition change,
   GPIO change or irreversible Bluetooth teardown was introduced.
 
-Build identity, resource usage, binary checksum and download URL are recorded
-in `BUILD_MANIFEST.md` after the clean identified build.
+## Software verification
+
+- Clean `esp32-dev` build: PASS.
+- Host correctness suite: PASS, 266 deterministic checks with `-Wall -Wextra
+  -Werror`.
+- Linked static RAM: 83,336 / 327,680 bytes (25.4%).
+- Linked flash: 2,009,881 / 3,145,728 bytes (63.9%).
+- Source commit and embedded build ID: see `BUILD_MANIFEST.md`.
+- Hardware validation of this candidate: **PENDING / NOT RUN**.
+
+The validation binary and exact checksum are published in the candidate
+prerelease. Build success is not hardware validation.

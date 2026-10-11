@@ -28,6 +28,14 @@ not proof that the underlying Wi-Fi outage is fixed. No competing reconnect
 loop, sleep change, reboot, buffer/stack adjustment or station auto-resume was
 added. Dependencies, partitions and GPIO remain unchanged.
 
+The clean identified build from source commit
+`603c4b12a56b83cae712e891c5b1f41b4c158ca9` passed with 83,336 bytes of
+linked RAM (25.4%) and 2,009,881 bytes of flash (63.9%). Its 2,016,464-byte
+binary embeds `build_git_id` `603c4b12a56b` and has SHA-256
+`BDB7CA191AEA282A6F7F27D0FF5B12EF04A6422547AFDC1B4514006F9BDE716F`.
+The host suite passed 266 deterministic checks. Hardware validation remains
+PENDING; the candidate is not a stable release.
+
 ## 2026-10-11 — Wi-Fi state synchronization and connectivity diagnostics (1.1.2)
 
 Replaced the cached-only Wi-Fi status with framework reconciliation plus a
