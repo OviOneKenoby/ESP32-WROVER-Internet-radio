@@ -38,7 +38,13 @@ flashul și conectarea debuggerului nu au fost executate de agent.
 
 ```powershell
 Set-Location 'C:\Users\Dell\Downloads\TUNER01_Arduino_builder\TUNER01_Arduino\investigation\artifacts\NETWORK_VALIDATION_1.1.8_JTAG'
-. .\SESSION_VARS.ps1
+$candidateDir = (Get-Location).Path
+$pio = 'C:\Users\Dell\.platformio\penv\Scripts\platformio.exe'
+$py = 'C:\Users\Dell\.platformio\penv\Scripts\python.exe'
+$ocd = 'C:\Users\Dell\.platformio\packages\tool-openocd-esp32\bin\openocd.exe'
+$gdb = 'C:\Users\Dell\.platformio\packages\tool-xtensa-esp-elf-gdb\bin\xtensa-esp-elf-gdb-3.11.exe'
+$scripts = 'C:\Users\Dell\.platformio\packages\tool-openocd-esp32\share\openocd\scripts'
+$env:PATH = 'C:\Users\Dell\.platformio\python3;' + $env:PATH
 Get-Content "$candidateDir\SHA256SUMS.txt"
 Get-FileHash "$candidateDir\firmware-1.1.8-jtag-e2c5667dd9a1.bin" -Algorithm SHA256
 Get-FileHash "$candidateDir\firmware-1.1.8-jtag-e2c5667dd9a1.elf" -Algorithm SHA256
@@ -213,6 +219,9 @@ FTDI/ESP32/SMP a fost PARSATĂ fără init/adaptor/target și confirmă flash su
 disabled + force hard breakpoints. GDBesp12.1_20221002/Python3.11 a încărcat
 ELF-ul și a verificat guardul ready0: ambele scripturi refuză armarea, fără
 breakpoint-uri create. Asta nu validează conectarea/SMP pe hardware sau stivele.
+Comenzile PowerShell sunt inline: politica locală blochează fișiereps1;
+nu o dezactiva și nu folosi bypass. Repetă blocul de variabile în fiecare
+terminal, fără a executa un fișier de inițializare.
 
 Limite: debuggerul oprește core-uri și poate modifica watchdog/coex/timing;
 dezactivarea encoderului și relinkul schimbă overhead/layout/heap baseline.
