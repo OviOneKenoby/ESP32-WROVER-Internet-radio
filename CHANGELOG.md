@@ -1,5 +1,27 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 - Bounded web responses and allocation diagnostics (1.1.4 validation)
+
+Updated the 1.1.3 owner report: boot and serial worked, radio opened a stream,
+Bluetooth reported SBC playing, then HTTP and tuner ping became unavailable
+while association and the loop remained active. Bluetooth exit recovered heap
+but not ping. Audio quality has no explicit owner confirmation; controlled
+Bluetooth AP/router testing was not run. Incident remains OPEN.
+
+The pinned source streams root HTML directly from flash, but retains header,
+parser, JSON document and TCP allocations. JSON serialization to WiFiClient
+can issue byte writes with independent ten-second retry windows. 1.1.4 batches
+JSON into fixed 512-byte storage and applies a shared 2-second application
+write-retry budget to headers and bodies, closing only a failed HTTP client.
+JSON document overflow returns 503. A scalar-only failed-allocation hook,
+response phase heap/failure samples, route/byte/timing/errno diagnostics and
+serial `x` extensions make the next hardware experiment observable. These
+changes do not establish the cause of the persistent IP outage.
+
+See `artifacts/NETWORK_VALIDATION_1.1.4/` for source findings, build identity
+and the staged hardware test. No reconnect loop, sleep/reboot/auto-resume,
+dependency, partition, GPIO, AAC, menu, REMOTE or BT teardown change was made.
+
 ## 2026-10-11 - Bluetooth-network incident instrumentation (1.1.3 validation)
 
 Recorded the complete 1.1.2 owner evidence without conflating the scenarios:
@@ -33,8 +55,9 @@ The clean identified build from source commit
 linked RAM (25.4%) and 2,009,881 bytes of flash (63.9%). Its 2,016,464-byte
 binary embeds `build_git_id` `603c4b12a56b` and has SHA-256
 `BDB7CA191AEA282A6F7F27D0FF5B12EF04A6422547AFDC1B4514006F9BDE716F`.
-The host suite passed 266 deterministic checks. Hardware validation remains
-PENDING; the candidate is not a stable release.
+The host suite passed 266 deterministic checks. Subsequent owner hardware
+validation is PARTIAL, with network access FAIL and incident OPEN; the
+candidate is not a stable release. See the dated 1.1.3 owner report.
 
 ## 2026-10-11 — Wi-Fi state synchronization and connectivity diagnostics (1.1.2)
 

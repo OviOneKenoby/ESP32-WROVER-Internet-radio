@@ -1,7 +1,11 @@
 # TUNER//01 firmware 1.1.3 network instrumentation candidate
 
-Status: **software candidate; hardware validation PENDING**. This build does
-not claim that the recurring Bluetooth-network incident is fixed.
+Status after owner test on 11 October 2026: **PARTIAL; network access FAIL;
+incident OPEN**. Boot/serial work; radio opened a stream; Bluetooth reports
+SBC playing, but explicit owner audio confirmation is absent. The outage
+survived Bluetooth exit. Controlled AP/router test in BT: **NOT RUN**.
+See [owner report](OWNER_REPORT_2026-10-11.md). This build did not eliminate
+the recurring Bluetooth-network incident.
 
 ## Demonstrated findings
 
@@ -51,7 +55,7 @@ establish root cause. No BSSID evidence was available in firmware 1.1.2.
 - Linked static RAM: 83,336 / 327,680 bytes (25.4%).
 - Linked flash: 2,009,881 / 3,145,728 bytes (63.9%).
 - Source commit and embedded build ID: see `BUILD_MANIFEST.md`.
-- Hardware validation of this candidate: **PENDING / NOT RUN**.
+- Hardware validation: **PARTIAL**, as recorded in the owner report above.
 
 The validation binary and exact checksum are published in the
 [candidate prerelease](https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.3-network-validation-603c4b1).
