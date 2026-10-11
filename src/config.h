@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 #ifdef TUNER_UART_TX_PROBE
-#define FIRMWARE_VERSION "1.1.9-uart-validation"
+#define FIRMWARE_VERSION "1.1.10-uart-validation"
 #elif defined(TUNER_JTAG_DIAGNOSTIC)
 #define FIRMWARE_VERSION "1.1.8-jtag-validation"
 #else

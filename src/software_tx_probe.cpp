@@ -17,6 +17,27 @@ static_assert(offsetof(wifi_osi_funcs_t, _malloc_internal) == 348, "fixed SDK AB
 static_assert(offsetof(wifi_osi_funcs_t, _wifi_malloc) == 364, "fixed SDK ABI");
 static_assert(sizeof(wifi_osi_funcs_t) == 468, "fixed SDK ABI");
 enum Kind { Empty, Pop, RequeueNull, PendingEmpty, DynamicPassed, DynamicNull, Kinds };
+struct ClassificationSite { const unsigned char* base; uint32_t offset; };
+// Relocate BASE symbols only. Volatile loads force the offset addition to run
+// on target, avoiding a linker-relaxed symbol+addend literal. The final ELF
+// verifier evaluates every predicate and checks this complete DRAM table.
+DRAM_ATTR const volatile ClassificationSite classificationSites[] = {
+    {esf_buf_alloc, 0x7a}, {ieee80211_output_process, 0x4f},
+    {ieee80211_output_process, 0x108}, {ieee80211_output_process, 0x226},
+    {esf_buf_alloc_dynamic, 0x78}, {esf_buf_alloc_dynamic, 0x1a8},
+    {ieee80211_output_process, 0xb7}, {ieee80211_output_process, 0xa9},
+    {esf_buf_alloc_dynamic, 0xa8}
+};
+uint32_t IRAM_ATTR __attribute__((noinline)) classificationAddress(unsigned index) {
+    return reinterpret_cast<uint32_t>(classificationSites[index].base) +
+           classificationSites[index].offset;
+}
+bool IRAM_ATTR __attribute__((noinline)) conversionPc(uint32_t pc) {
+    return pc == classificationAddress(6) || pc == classificationAddress(7);
+}
+bool IRAM_ATTR __attribute__((noinline)) mallocPc(uint32_t pc) {
+    return pc == classificationAddress(8);
+}
 struct Record { uint32_t sequence, tick, task, pc; uint32_t pcs[12]; uint8_t kind, frames; };
 struct Scope { uint32_t task, empty; };
 struct Conversion { uint32_t task; bool uncertain, mallocSeen; };
@@ -44,17 +65,9 @@ uint32_t __attribute__((always_inline)) inline callPc(uint32_t pc) {
     if (pc & 0x80000000) pc = (pc & 0x3fffffff) | 0x40000000;
     return pc - 3;
 }
-int IRAM_ATTR kindFor(uint32_t pc) {
-    // Offsets must be checked against EVERY final ELF by verify_software_tx_probe.py.
-    const uint32_t esf = reinterpret_cast<uint32_t>(esf_buf_alloc);
-    const uint32_t out = reinterpret_cast<uint32_t>(ieee80211_output_process);
-    const uint32_t dyn = reinterpret_cast<uint32_t>(esf_buf_alloc_dynamic);
-    if (pc == esf + 0x7a) return Empty;
-    if (pc == out + 0x4f) return Pop;
-    if (pc == out + 0x108) return RequeueNull;
-    if (pc == out + 0x226) return PendingEmpty;
-    if (pc == dyn + 0x78) return DynamicPassed;
-    if (pc == dyn + 0x1a8) return DynamicNull;
+int IRAM_ATTR __attribute__((noinline)) kindFor(uint32_t pc) {
+    for (unsigned k = 0; k < Kinds; ++k)
+        if (pc == classificationAddress(k)) return k;
     return -1;
 }
 int32_t IRAM_ATTR unlock(void* lock) {
@@ -84,8 +97,7 @@ int32_t IRAM_ATTR unlock(void* lock) {
             const uint32_t framePc = callPc(frame.pc);
             if (!esp_ptr_executable(reinterpret_cast<void*>(framePc))) break;
             record.pcs[record.frames++] = framePc;
-            const uint32_t output = reinterpret_cast<uint32_t>(ieee80211_output_process);
-            if (framePc == output + 0xb7 || framePc == output + 0xa9) conversion = true;
+            if (conversionPc(framePc)) conversion = true;
             if (!frame.next_pc || !esp_backtrace_get_next_frame(&frame)) break;
         }
     }
@@ -115,7 +127,7 @@ int32_t IRAM_ATTR unlock(void* lock) {
     return result;
 }
 void IRAM_ATTR observeMalloc(uint32_t pc, void* result) {
-    if (pc != reinterpret_cast<uint32_t>(esf_buf_alloc_dynamic) + 0xa8) return;
+    if (!mallocPc(pc)) return;
     if (!spi_flash_cache_enabled() || xPortInIsrContext()) {
         portENTER_CRITICAL(&mux); inc(state.skipped); portEXIT_CRITICAL(&mux);
         return;
@@ -128,8 +140,7 @@ void IRAM_ATTR observeMalloc(uint32_t pc, void* result) {
         if (!esp_stack_ptr_is_sane(frame.sp)) break;
         const uint32_t framePc = callPc(frame.pc);
         if (!esp_ptr_executable(reinterpret_cast<void*>(framePc))) break;
-        const uint32_t output = reinterpret_cast<uint32_t>(ieee80211_output_process);
-        if (framePc == output + 0xb7 || framePc == output + 0xa9) conversion = true;
+        if (conversionPc(framePc)) conversion = true;
         if (!frame.next_pc || !esp_backtrace_get_next_frame(&frame)) break;
     }
     portENTER_CRITICAL(&mux);
