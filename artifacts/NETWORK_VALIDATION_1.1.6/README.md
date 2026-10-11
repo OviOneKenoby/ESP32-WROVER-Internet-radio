@@ -6,6 +6,12 @@ Extends failure traces from six to twelve bounded frames, preserving first four
 failures and latest. A trace can still end early due to stack validation,
 optimization, ISR/cache-off context. Decode only with the published matching ELF.
 
+Extract `firmware-1.1.6-18553c4a207e.elf.zip`, then run:
+
+```text
+xtensa-esp32-elf-addr2line -aipfC -e firmware-1.1.6-18553c4a207e.elf 0xPC1 0xPC2 ...
+```
+
 `x` now prints NET_PROGRESS: Wi-Fi by-reference transmit calls/results,
 registered netstack pbuf ref/free calls, and netif receive calls/results.
 Counters are saturating, copied under a short critical section and formatted

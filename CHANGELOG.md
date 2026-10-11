@@ -1,5 +1,16 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 - Observe network progress (1.1.6 validation)
+
+1.1.5 hardware now demonstrates five Wi-Fi ESF DMA failures at the first root
+request after a zero-HTTP Bluetooth baseline. Exact decoding and candidate
+queue failure paths are recorded; persistence remains unverified.
+1.1.6 extends bounded traces to 12 frames and observes TX acceptance, netif RX
+and existing pbuf ref/free callbacks through verified linker wrappers. It does
+not count private conversion successes or radio ACKs. No TX policy/retry change,
+callback replacement, gzip fix claim or reconnect/reboot. Incident OPEN;
+hardware candidate test NOT RUN. See the 1.1.6 manifest and short test protocol.
+
 ## 2026-10-11 - Root-refresh DMA failure attribution (1.1.5 validation)
 
 Owner 1.1.4 evidence now reproduces ping loss at main-page refresh with five
