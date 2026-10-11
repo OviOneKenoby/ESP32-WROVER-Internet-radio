@@ -1,6 +1,9 @@
 # TUNER//01 1.1.4 network validation candidate
 
-**Incident OPEN. Hardware validation NOT RUN.** This candidate corrects
+**Incident OPEN. Hardware validation PARTIAL; network outage reproduced.**
+See [new owner evidence](OWNER_REPORT_2026-10-11.md): root refresh correlated
+with ping loss and five internal-capability allocation failures. Output itself
+was fast, without retries; requester/mechanism remain unresolved. This candidate corrects
 observable response-write behavior and collects causal evidence; it does not
 claim that persistent IP loss is fixed. No automatic flashing is authorized.
 
@@ -17,8 +20,9 @@ was found in the checkout or workspace ancestor directories inspected.
 
 The corrected 1.1.3 owner report is in
 `../NETWORK_VALIDATION_1.1.3/OWNER_REPORT_2026-10-11.md`. Boot/serial work;
-radio opened a stream; Bluetooth reports SBC playing. Explicit owner audio
-quality confirmation is absent. HTTP and tuner ping failed while serial and
+radio opened a stream; Bluetooth reports SBC playing. Subsequent owner audio
+confirmation records correct music throughout, including manual BT re-entry
+(audio PASS observationally). HTTP and tuner ping failed while serial and
 association reports continued; leaving BT recovered heap but not ping.
 Controlled Bluetooth AP/router test was NOT RUN. That boot was power_on;
 the 1.1.2 watchdog report is a separate historical boot.

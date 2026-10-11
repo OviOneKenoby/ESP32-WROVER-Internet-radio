@@ -2,7 +2,8 @@
 
 Status after owner test on 11 October 2026: **PARTIAL; network access FAIL;
 incident OPEN**. Boot/serial work; radio opened a stream; Bluetooth reports
-SBC playing, but explicit owner audio confirmation is absent. The outage
+SBC playing. Subsequent owner confirmation records correct audible music
+throughout, including manual BT re-entry (audio PASS observationally). The outage
 survived Bluetooth exit. Controlled AP/router test in BT: **NOT RUN**.
 See [owner report](OWNER_REPORT_2026-10-11.md). This build did not eliminate
 the recurring Bluetooth-network incident.

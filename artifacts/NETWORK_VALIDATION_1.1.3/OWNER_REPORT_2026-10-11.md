@@ -6,7 +6,9 @@ Installed executable: `603c4b12a56b83cae712e891c5b1f41b4c158ca9`,
 firmware `1.1.3-validation`. Boot and serial `x` work; reset reason is
 `power_on`. Radio opened West City and supplied metadata. Bluetooth reports
 SBC playing and metadata, but the owner has **not explicitly confirmed audio
-quality for 1.1.3**. Do not mark that audio test PASS.
+quality in the original supplied log**. Subsequent owner correction explicitly
+confirms correct audible music throughout, including manual BT re-entry while
+pages remained inaccessible: **audio PASS observationally**, network FAIL.
 
 After the requested web refresh, the owner reported that pages no longer
 loaded. No subsequent ping excerpt contains a reply from tuner .129; Windows
