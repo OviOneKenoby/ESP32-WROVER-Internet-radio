@@ -1,0 +1,50 @@
+PASS __wrap_esp_wifi_internal_tx_by_ref: IRAM, exactly one original call
+PASS __wrap_esp_netif_netstack_buf_ref: IRAM, exactly one original call
+PASS __wrap_esp_netif_netstack_buf_free: IRAM, exactly one original call
+PASS __wrap_esp_netif_receive: IRAM, exactly one original call
+PASS __wrap_esp_wifi_init: IRAM, exactly one original call
+PASS wifi_transmit_wrap routes to wrapper
+PASS wifi_start registers wrapped ref/free and RX callbacks
+PASS wifiLowLevelInit routes unchanged config through init wrapper
+PASS final ELF boundary routing verified (not hardware TX delivery)
+PASS PBUF_RAM -> wrapper -> PSRAM caps0x404 / original fallback once
+PASS original malloc/free ABI unchanged, no stats prefix, argument forwarding unchanged
+PASS cache/ISR guards and threshold512 present; host tests verify branch behavior
+Hardware PSRAM/DMA pressure, latency and delivery still NOT RUN
+PASS 7 actual-wrapper cases: boundary, PSRAM caps/size, fallback once, NULL, cache/ISR, zero
+Host doubles only: target ABI/free/routing require exact-ELF checks; hardware NOT RUN
+PASS final load/add operands site=0 effective=0x402416ee
+PASS final load/add operands site=1 effective=0x4023d76f
+PASS final load/add operands site=2 effective=0x4023d828
+PASS final load/add operands site=3 effective=0x4023d946
+PASS final load/add operands site=4 effective=0x40240f60
+PASS final load/add operands site=5 effective=0x40241090
+PASS final load/add operands site=6 effective=0x4023d7d7
+PASS final load/add operands site=7 effective=0x4023d7c9
+PASS final load/add operands site=8 effective=0x40240f90
+PASS six site predicates, normal/WAPI agreement between unlock and malloc, malloc-site predicate
+PASS explicitly rejects historical normal offset +0xa2; static evaluation only, not hardware unwind coverage
+PASS unchanged normalized private instructions: esf_buf_alloc
+PASS unchanged normalized private instructions: esf_buf_alloc_dynamic
+PASS unchanged normalized private instructions: wifi_osi_funcs_register
+PASS unchanged normalized private instructions: ieee80211_output_process
+PASS unchanged normalized private instructions: ieee80211_output_do
+PASS unchanged normalized private instructions: ieee80211_alloc_tx_buf
+PASS OSI _mutex_unlock site esf_buf_alloc+0x7a return=0x402416ee
+PASS OSI _mutex_unlock site ieee80211_output_process+0x4f return=0x4023d76f
+PASS OSI _mutex_unlock site ieee80211_output_process+0x108 return=0x4023d828
+PASS OSI _mutex_unlock site ieee80211_output_process+0x226 return=0x4023d946
+PASS OSI _mutex_unlock site esf_buf_alloc_dynamic+0x78 return=0x40240f60
+PASS OSI _mutex_unlock site esf_buf_alloc_dynamic+0x1a8 return=0x40241090
+PASS allocation uses the registered declared OSI table
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_16unlockEPv
+PASS IRAM callback without allocator/logger/heap queries: _ZN12_GLOBAL__N_16unlockEPv
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_114internalMallocEj
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_114internalMallocEj
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_110wifiMallocEj
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_110wifiMallocEj
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_113observeMallocEjPv
+PASS declared allocation callback return site 0x40240f90
+PASS all serial printf fragments fit the stack buffer at UINT32_MAX
+STATIC ONLY: runtime positive control, scope and unwind coverage still required
+PASS 20 ELF verifier checks: exact candidate accepted; historic fe228ca737b9 and all 18 operand mutations rejected (tools/test_tx_classification_verifier.py).

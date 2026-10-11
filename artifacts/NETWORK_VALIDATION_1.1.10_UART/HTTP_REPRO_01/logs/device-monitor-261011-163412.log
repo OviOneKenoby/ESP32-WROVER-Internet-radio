@@ -1,0 +1,396 @@
+16:34:33.811 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+16:34:33.815 > [SNAPSHOT] firmware=1.1.10-uart-validation build_git_id=a7a31ef9afc7 uptime_ms=5060921
+16:34:33.822 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+16:34:33.825 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+16:34:33.833 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+16:34:33.842 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-51
+16:34:33.849 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+16:34:33.858 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+16:34:33.865 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12518 age_ms=5048403
+16:34:33.870 > [SNAPSHOT] wifi_last_disconnect=none
+16:34:33.873 > [SNAPSHOT] heap_internal_free=18680 largest_block=10740 allocator_region_minimum=2060 psram_free=4177447
+16:34:33.884 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7644
+16:34:33.895 > [SNAPSHOT] loop_count=427794 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2545 last_completed_age_ms=1 main_task_stack_hwm=3800
+16:34:33.906 > [SNAPSHOT] web_handle_count=427794 last_handle_ms=1 max_handle_ms=2 last_handle_age_ms=0
+16:34:33.916 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+16:34:33.925 > [SNAPSHOT] web_response_count=0 route=none build_ms=0 header_ms=0 body_ms=0 body_expected=0 body_sent=0 header_sent=0 socket_calls=0 retry_waits=0 socket_error=0 failed=no json_overflow=no
+16:34:33.942 > [SNAPSHOT] web_heap_start=0/0 built=0/0 end=0/0 alloc_fail_start_built_end=0/0/0
+16:34:33.948 > [SW_TX] ready=1 skipped=0
+16:34:33.950 > [SW_TX] scope_overflow=0
+16:34:33.954 > [SW_TX] paired=0 unpaired=0
+16:34:33.956 > [SW_TX] unexpected=0
+16:34:33.956 > [SW_CONVERT] quota_passed=193
+16:34:33.958 > [SW_CONVERT] preheap_null=0
+16:34:33.961 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+16:34:33.969 > [SW_MALLOC] calls=193 ok=193 null=0
+16:34:33.971 > [SW_SITE] k=0 n=0 tick=0
+16:34:33.972 > [SW_SITE] k=1 n=193 tick=5050086
+16:34:33.975 > [SW_SITE] k=2 n=0 tick=0
+16:34:33.975 > [SW_SITE] k=3 n=386 tick=5050088
+16:34:33.978 > [SW_SITE] k=4 n=16117 tick=5060993
+16:34:33.983 > [SW_SITE] k=5 n=0 tick=0
+16:34:33.983 > [SW_TRACE] total=0 retained_max=8
+16:34:33.987 > [NET_PROGRESS] tx_calls=191 accepted=191 nomem=0 other_error=0 last_result=0 tx_last_tick=5050087 refs=191 frees=191 free_last_tick=5050086 rx_calls=14640 rx_accepted=14640 rx_last_tick=5060993 tick_unavailable=0
+16:34:34.006 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+16:34:34.015 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=92 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+16:34:34.025 > [SNAPSHOT] dma_heap_free=18680 largest=10740 web_dma_start=0/0 built=0/0 end=0/0
+16:34:34.034 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+16:34:34.039 > === END DIAGNOSTIC SNAPSHOT ===
+16:35:32.044 > [BT] Metadata: Leidfeuer - Six Pack and a Jukebox
+16:35:32.049 > [BT] Metadata: Leidfeuer - Six Pack and a Jukebox
+16:35:34.257 > _Update_Full : 1654998
+16:35:34.649 > _Update_Part : 345000
+16:35:35.617 > [BT] Metadata: Leidfeuer - Six Pack and a Jukebox
+16:35:35.621 > [BT] Metadata: Leidfeuer - Six Pack and a Jukebox
+16:35:52.331 > [BT] Metadata: Leidfeuer - Six Pack and a Jukebox
+16:35:52.334 > [BT] Metadata: Leidfeuer - Six Pack and a Jukebox
+16:35:57.741 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+16:35:57.744 > [SNAPSHOT] firmware=1.1.10-uart-validation build_git_id=a7a31ef9afc7 uptime_ms=5144853
+16:35:57.752 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+16:35:57.755 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+16:35:57.763 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+16:35:57.771 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-47
+16:35:57.777 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+16:35:57.789 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+16:35:57.793 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12518 age_ms=5132335
+16:35:57.799 > [SNAPSHOT] wifi_last_disconnect=none
+16:35:57.803 > [SNAPSHOT] heap_internal_free=7488 largest_block=6132 allocator_region_minimum=2060 psram_free=4177447
+16:35:57.813 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7644
+16:35:57.825 > [SNAPSHOT] loop_count=435202 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2545 last_completed_age_ms=1 main_task_stack_hwm=3800
+16:35:57.836 > [SNAPSHOT] web_handle_count=435202 last_handle_ms=1 max_handle_ms=2 last_handle_age_ms=0
+16:35:57.843 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+16:35:57.855 > [SNAPSHOT] web_response_count=0 route=none build_ms=0 header_ms=0 body_ms=0 body_expected=0 body_sent=0 header_sent=0 socket_calls=0 retry_waits=0 socket_error=0 failed=no json_overflow=no
+16:35:57.871 > [SNAPSHOT] web_heap_start=0/0 built=0/0 end=0/0 alloc_fail_start_built_end=0/0/0
+16:35:57.877 > [SW_TX] ready=1 skipped=0
+16:35:57.880 > [SW_TX] scope_overflow=0
+16:35:57.882 > [SW_TX] paired=0 unpaired=0
+16:35:57.885 > [SW_TX] unexpected=0
+16:35:57.885 > [SW_CONVERT] quota_passed=237
+16:35:57.888 > [SW_CONVERT] preheap_null=0
+16:35:57.891 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+16:35:57.896 > [SW_MALLOC] calls=237 ok=237 null=0
+16:35:57.899 > [SW_SITE] k=0 n=0 tick=0
+16:35:57.899 > [SW_SITE] k=1 n=237 tick=5144044
+16:35:57.903 > [SW_SITE] k=2 n=0 tick=0
+16:35:57.905 > [SW_SITE] k=3 n=474 tick=5144047
+16:35:57.907 > [SW_SITE] k=4 n=16683 tick=5144963
+16:35:57.910 > [SW_SITE] k=5 n=0 tick=0
+16:35:57.913 > [SW_TRACE] total=0 retained_max=8
+16:35:57.916 > [NET_PROGRESS] tx_calls=235 accepted=235 nomem=0 other_error=0 last_result=0 tx_last_tick=5144045 refs=235 frees=235 free_last_tick=5144044 rx_calls=14969 rx_accepted=14969 rx_last_tick=5144963 tick_unavailable=0
+16:35:57.936 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+16:35:57.943 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=133 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+16:35:57.956 > [SNAPSHOT] dma_heap_free=7488 largest=6132 web_dma_start=0/0 built=0/0 end=0/0
+16:35:57.963 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+16:35:57.971 > === END DIAGNOSTIC SNAPSHOT ===
+16:36:50.287 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+16:36:50.290 > [SNAPSHOT] firmware=1.1.10-uart-validation build_git_id=a7a31ef9afc7 uptime_ms=5197400
+16:36:50.298 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+16:36:50.302 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+16:36:50.309 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+16:36:50.319 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-50
+16:36:50.323 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+16:36:50.335 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+16:36:50.340 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12518 age_ms=5184882
+16:36:50.345 > [SNAPSHOT] wifi_last_disconnect=none
+16:36:50.348 > [SNAPSHOT] heap_internal_free=9492 largest_block=8180 allocator_region_minimum=2060 psram_free=4177447
+16:36:50.359 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7644
+16:36:50.370 > [SNAPSHOT] loop_count=439955 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2545 last_completed_age_ms=1 main_task_stack_hwm=3800
+16:36:50.381 > [SNAPSHOT] web_handle_count=439955 last_handle_ms=1 max_handle_ms=2 last_handle_age_ms=0
+16:36:50.390 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+16:36:50.401 > [SNAPSHOT] web_response_count=0 route=none build_ms=0 header_ms=0 body_ms=0 body_expected=0 body_sent=0 header_sent=0 socket_calls=0 retry_waits=0 socket_error=0 failed=no json_overflow=no
+16:36:50.418 > [SNAPSHOT] web_heap_start=0/0 built=0/0 end=0/0 alloc_fail_start_built_end=0/0/0
+16:36:50.423 > [SW_TX] ready=1 skipped=0
+16:36:50.425 > [SW_TX] scope_overflow=0
+16:36:50.428 > [SW_TX] paired=0 unpaired=0
+16:36:50.431 > [SW_TX] unexpected=0
+16:36:50.431 > [SW_CONVERT] quota_passed=293
+16:36:50.434 > [SW_CONVERT] preheap_null=0
+16:36:50.436 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+16:36:50.443 > [SW_MALLOC] calls=293 ok=293 null=0
+16:36:50.445 > [SW_SITE] k=0 n=0 tick=0
+16:36:50.445 > [SW_SITE] k=1 n=293 tick=5197396
+16:36:50.448 > [SW_SITE] k=2 n=0 tick=0
+16:36:50.451 > [SW_SITE] k=3 n=586 tick=5197397
+16:36:50.453 > [SW_SITE] k=4 n=17222 tick=5197513
+16:36:50.457 > [SW_SITE] k=5 n=0 tick=0
+16:36:50.459 > [SW_TRACE] total=0 retained_max=8
+16:36:50.462 > [NET_PROGRESS] tx_calls=291 accepted=291 nomem=0 other_error=0 last_result=0 tx_last_tick=5197396 refs=291 frees=291 free_last_tick=5197396 rx_calls=15196 rx_accepted=15196 rx_last_tick=5197513 tick_unavailable=0
+16:36:50.481 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+16:36:50.490 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=186 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+16:36:50.502 > [SNAPSHOT] dma_heap_free=7488 largest=6132 web_dma_start=0/0 built=0/0 end=0/0
+16:36:50.509 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+16:36:50.514 > === END DIAGNOSTIC SNAPSHOT ===
+16:37:41.825 > [WEB_RESPONSE] count=1 route=root build_ms=1 header_ms=5 body_ms=2 expected=3617 sent=3617 header_sent=100 calls=2 waits=0 error=0 failed=0 overflow=0 heap_start=6200/3316 heap_built=6984/3316 heap_end=3964/1396 alloc_fail=0/0/5
+16:37:48.953 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+16:37:48.957 > [SNAPSHOT] firmware=1.1.10-uart-validation build_git_id=a7a31ef9afc7 uptime_ms=5256069
+16:37:48.965 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+16:37:48.968 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+16:37:48.976 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+16:37:48.985 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-46
+16:37:48.991 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+16:37:49.002 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+16:37:49.007 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12518 age_ms=5243551
+16:37:49.012 > [SNAPSHOT] wifi_last_disconnect=none
+16:37:49.015 > [SNAPSHOT] heap_internal_free=4464 largest_block=1652 allocator_region_minimum=1848 psram_free=4175895
+16:37:49.026 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7644
+16:37:49.038 > [SNAPSHOT] loop_count=445262 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2545 last_completed_age_ms=1 main_task_stack_hwm=3752
+16:37:49.048 > [SNAPSHOT] web_handle_count=445262 last_handle_ms=1 max_handle_ms=25 last_handle_age_ms=0
+16:37:49.057 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=5 internal_cap_failures=5 last_size=1622 last_caps=0x0000080c largest_failed_size=1622
+16:37:49.069 > [SNAPSHOT] web_response_count=1 route=root build_ms=1 header_ms=5 body_ms=2 body_expected=3617 body_sent=3617 header_sent=100 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+16:37:49.085 > [SNAPSHOT] web_heap_start=6200/3316 built=6984/3316 end=3964/1396 alloc_fail_start_built_end=0/0/5
+16:37:49.093 > [SW_TX] ready=1 skipped=0
+16:37:49.096 > [SW_TX] scope_overflow=0
+16:37:49.098 > [SW_TX] paired=2 unpaired=0
+16:37:49.101 > [SW_TX] unexpected=0
+16:37:49.101 > [SW_CONVERT] quota_passed=354
+16:37:49.104 > [SW_CONVERT] preheap_null=0
+16:37:49.107 > [SW_CONVERT] after_malloc_null=5 unpaired=0
+16:37:49.112 > [SW_MALLOC] calls=354 ok=349 null=5
+16:37:49.115 > [SW_SITE] k=0 n=2 tick=5254742
+16:37:49.118 > [SW_SITE] k=1 n=354 tick=5248916
+16:37:49.121 > [SW_SITE] k=2 n=5 tick=5248916
+16:37:49.123 > [SW_SITE] k=3 n=697 tick=5248911
+16:37:49.126 > [SW_SITE] k=4 n=17773 tick=5256170
+16:37:49.129 > [SW_SITE] k=5 n=5 tick=5248916
+16:37:49.132 > [SW_TRACE] seq=1 kind=5 tick=5248914
+16:37:49.135 > [SW_TRACE] task=0x3ffdcd00 site=0x40240fb0 frames=5
+16:37:49.140 > [SW_PC] seq=1 frame=0 pc=0x40240fad
+16:37:49.143 > [SW_PC] seq=1 frame=1 pc=0x40241678
+16:37:49.146 > [SW_PC] seq=1 frame=2 pc=0x4020c9f1
+16:37:49.149 > [SW_PC] seq=1 frame=3 pc=0x4023d6f7
+16:37:49.152 > [SW_PC] seq=1 frame=4 pc=0x4023f059
+16:37:49.154 > [SW_TRACE] seq=2 kind=2 tick=5248914
+16:37:49.157 > [SW_TRACE] task=0x3ffdcd00 site=0x4023d748 frames=2
+16:37:49.162 > [SW_PC] seq=2 frame=0 pc=0x4023d745
+16:37:49.166 > [SW_PC] seq=2 frame=1 pc=0x4023f059
+16:37:49.168 > [SW_TRACE] seq=3 kind=5 tick=5248914
+16:37:49.171 > [SW_TRACE] task=0x3ffdcd00 site=0x40240fb0 frames=5
+16:37:49.176 > [SW_PC] seq=3 frame=0 pc=0x40240fad
+16:37:49.179 > [SW_PC] seq=3 frame=1 pc=0x40241678
+16:37:49.182 > [SW_PC] seq=3 frame=2 pc=0x4020c9f1
+16:37:49.184 > [SW_PC] seq=3 frame=3 pc=0x4023d6f7
+16:37:49.188 > [SW_PC] seq=3 frame=4 pc=0x4023f059
+16:37:49.193 > [SW_TRACE] seq=4 kind=2 tick=5248914
+16:37:49.195 > [SW_TRACE] task=0x3ffdcd00 site=0x4023d748 frames=2
+16:37:49.199 > [SW_PC] seq=4 frame=0 pc=0x4023d745
+16:37:49.204 > [SW_PC] seq=4 frame=1 pc=0x4023f059
+16:37:49.207 > [SW_TRACE] seq=9 kind=5 tick=5248916
+16:37:49.209 > [SW_TRACE] task=0x3ffdcd00 site=0x40240fb0 frames=7
+16:37:49.212 > [SW_PC] seq=9 frame=0 pc=0x40240fad
+16:37:49.218 > [SW_PC] seq=9 frame=1 pc=0x40241678
+16:37:49.221 > [SW_PC] seq=9 frame=2 pc=0x4020c9f1
+16:37:49.223 > [SW_PC] seq=9 frame=3 pc=0x4023d6f7
+16:37:49.226 > [SW_PC] seq=9 frame=4 pc=0x4023df45
+16:37:49.229 > [SW_PC] seq=9 frame=5 pc=0x402100e9
+16:37:49.231 > [SW_PC] seq=9 frame=6 pc=0x4023f062
+16:37:49.235 > [SW_TRACE] seq=10 kind=2 tick=5248916
+16:37:49.238 > [SW_TRACE] task=0x3ffdcd00 site=0x4023d748 frames=4
+16:37:49.243 > [SW_PC] seq=10 frame=0 pc=0x4023d745
+16:37:49.245 > [SW_PC] seq=10 frame=1 pc=0x4023df45
+16:37:49.248 > [SW_PC] seq=10 frame=2 pc=0x402100e9
+16:37:49.254 > [SW_PC] seq=10 frame=3 pc=0x4023f062
+16:37:49.257 > [SW_TRACE] seq=11 kind=0 tick=5249825
+16:37:49.259 > [SW_TRACE] task=0x3ffbc548 site=0x4024160e frames=12
+16:37:49.265 > [SW_PC] seq=11 frame=0 pc=0x4024160b
+16:37:49.268 > [SW_PC] seq=11 frame=1 pc=0x4020c9f1
+16:37:49.270 > [SW_PC] seq=11 frame=2 pc=0x401fe6f9
+16:37:49.273 > [SW_PC] seq=11 frame=3 pc=0x401ffe69
+16:37:49.276 > [SW_PC] seq=11 frame=4 pc=0x401ffee2
+16:37:49.278 > [SW_PC] seq=11 frame=5 pc=0x4008190b
+16:37:49.284 > [SW_PC] seq=11 frame=6 pc=0x40120616
+16:37:49.288 > [SW_PC] seq=11 frame=7 pc=0x40237ab5
+16:37:49.290 > [SW_PC] seq=11 frame=8 pc=0x40133273
+16:37:49.293 > [SW_PC] seq=11 frame=9 pc=0x40132b49
+16:37:49.295 > [SW_PC] seq=11 frame=10 pc=0x4012dbc5
+16:37:49.299 > [SW_PC] seq=11 frame=11 pc=0x4012de52
+16:37:49.304 > [SW_TRACE] seq=12 kind=0 tick=5254742
+16:37:49.307 > [SW_TRACE] task=0x3ffbc548 site=0x4024160e frames=12
+16:37:49.309 > [SW_PC] seq=12 frame=0 pc=0x4024160b
+16:37:49.315 > [SW_PC] seq=12 frame=1 pc=0x4020c9f1
+16:37:49.318 > [SW_PC] seq=12 frame=2 pc=0x401fe6f9
+16:37:49.320 > [SW_PC] seq=12 frame=3 pc=0x401ffe69
+16:37:49.323 > [SW_PC] seq=12 frame=4 pc=0x401ffee2
+16:37:49.326 > [SW_PC] seq=12 frame=5 pc=0x4008190b
+16:37:49.329 > [SW_PC] seq=12 frame=6 pc=0x40120616
+16:37:49.332 > [SW_PC] seq=12 frame=7 pc=0x40237ab5
+16:37:49.337 > [SW_PC] seq=12 frame=8 pc=0x40133273
+16:37:49.340 > [SW_PC] seq=12 frame=9 pc=0x40132b49
+16:37:49.343 > [SW_PC] seq=12 frame=10 pc=0x4012dbc5
+16:37:49.346 > [SW_PC] seq=12 frame=11 pc=0x4012de52
+16:37:49.349 > [SW_TRACE] total=12 retained_max=8
+16:37:49.352 > [NET_PROGRESS] tx_calls=353 accepted=351 nomem=2 other_error=0 last_result=257 tx_last_tick=5254742 refs=351 frees=347 free_last_tick=5248911 rx_calls=15421 rx_accepted=15421 rx_last_tick=5256171 tick_unavailable=0
+16:37:49.370 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+16:37:49.379 > [TX_REFUSAL_SUMMARY] count=2 rx_echo_request=239 refused_echo_reply=2 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+16:37:49.390 > [TX_RETAINED_REF] pbuf=0x3ffff2d8 refs=1 first_tick=5248913
+16:37:49.395 > [TX_RETAINED_REF] pbuf=0x3ffff8e8 refs=1 first_tick=5248914
+16:37:49.401 > [TX_RETAINED_REF] pbuf=0x3f8041d8 refs=1 first_tick=5248914
+16:37:49.407 > [TX_RETAINED_REF] pbuf=0x3fffe708 refs=1 first_tick=5248915
+16:37:49.412 > [TX_NO_MEM] sequence=1 tick=5249825 ifx=0 len=74 buffer=1 pbuf=0x3fffe820 kind=4 alloc_before=5 alloc_after=5
+16:37:49.421 > [TX_NO_MEM] sequence=2 tick=5254742 ifx=0 len=74 buffer=1 pbuf=0x3fffe7f8 kind=4 alloc_before=5 alloc_after=5
+16:37:49.432 > [SNAPSHOT] dma_heap_free=5540 largest=1972 web_dma_start=7224/3316 built=6984/3316 end=3964/1396
+16:37:49.440 > [ALLOC_FAILURE] sequence=1 size=1622 caps=0x0000080c tick=5248914 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:37:49.462 > [ALLOC_FAILURE] sequence=2 size=1622 caps=0x0000080c tick=5248914 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:37:49.484 > [ALLOC_FAILURE] sequence=3 size=1622 caps=0x0000080c tick=5248914 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:37:49.507 > [ALLOC_FAILURE] sequence=4 size=1622 caps=0x0000080c tick=5248915 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:37:49.529 > [ALLOC_FAILURE] sequence=5 size=1622 caps=0x0000080c tick=5248916 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=11 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023df45,0x402100e9,0x4023f062
+16:37:49.554 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+16:37:49.559 > === END DIAGNOSTIC SNAPSHOT ===
+16:39:50.721 > [BT] Metadata: Leidfeuer - Dragging the Truth
+16:39:50.724 > [BT] Metadata: Unavailable - Dragging the Truth
+16:39:51.441 > _Update_Part : 345004
+16:39:53.453 > _Update_Part : 345000
+16:39:54.088 > [BT] Metadata: Unavailable - Dragging the Truth
+16:39:54.090 > [BT] Metadata: Gertouma - Dragging the Truth
+16:39:54.454 > _Update_Part : 345000
+16:39:54.969 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+16:39:54.972 > [SNAPSHOT] firmware=1.1.10-uart-validation build_git_id=a7a31ef9afc7 uptime_ms=5382087
+16:39:54.980 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+16:39:54.982 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+16:39:54.991 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+16:39:54.999 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-50
+16:39:55.005 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+16:39:55.016 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+16:39:55.021 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12518 age_ms=5369569
+16:39:55.027 > [SNAPSHOT] wifi_last_disconnect=none
+16:39:55.029 > [SNAPSHOT] heap_internal_free=5540 largest_block=2420 allocator_region_minimum=1756 psram_free=4174895
+16:39:55.041 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7644
+16:39:55.052 > [SNAPSHOT] loop_count=456558 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2545 last_completed_age_ms=1 main_task_stack_hwm=3636
+16:39:55.063 > [SNAPSHOT] web_handle_count=456558 last_handle_ms=1 max_handle_ms=25 last_handle_age_ms=0
+16:39:55.071 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=5 internal_cap_failures=5 last_size=1622 last_caps=0x0000080c largest_failed_size=1622
+16:39:55.082 > [SNAPSHOT] web_response_count=1 route=root build_ms=1 header_ms=5 body_ms=2 body_expected=3617 body_sent=3617 header_sent=100 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+16:39:55.099 > [SNAPSHOT] web_heap_start=6200/3316 built=6984/3316 end=3964/1396 alloc_fail_start_built_end=0/0/5
+16:39:55.107 > [SW_TX] ready=1 skipped=0
+16:39:55.110 > [SW_TX] scope_overflow=0
+16:39:55.113 > [SW_TX] paired=130 unpaired=0
+16:39:55.116 > [SW_TX] unexpected=0
+16:39:55.116 > [SW_CONVERT] quota_passed=354
+16:39:55.119 > [SW_CONVERT] preheap_null=0
+16:39:55.121 > [SW_CONVERT] after_malloc_null=5 unpaired=0
+16:39:55.127 > [SW_MALLOC] calls=354 ok=349 null=5
+16:39:55.130 > [SW_SITE] k=0 n=130 tick=5381203
+16:39:55.132 > [SW_SITE] k=1 n=354 tick=5248916
+16:39:55.135 > [SW_SITE] k=2 n=5 tick=5248916
+16:39:55.138 > [SW_SITE] k=3 n=697 tick=5248911
+16:39:55.141 > [SW_SITE] k=4 n=18332 tick=5382124
+16:39:55.144 > [SW_SITE] k=5 n=5 tick=5248916
+16:39:55.146 > [SW_TRACE] seq=1 kind=5 tick=5248914
+16:39:55.149 > [SW_TRACE] task=0x3ffdcd00 site=0x40240fb0 frames=5
+16:39:55.155 > [SW_PC] seq=1 frame=0 pc=0x40240fad
+16:39:55.157 > [SW_PC] seq=1 frame=1 pc=0x40241678
+16:39:55.160 > [SW_PC] seq=1 frame=2 pc=0x4020c9f1
+16:39:55.162 > [SW_PC] seq=1 frame=3 pc=0x4023d6f7
+16:39:55.166 > [SW_PC] seq=1 frame=4 pc=0x4023f059
+16:39:55.168 > [SW_TRACE] seq=2 kind=2 tick=5248914
+16:39:55.172 > [SW_TRACE] task=0x3ffdcd00 site=0x4023d748 frames=2
+16:39:55.177 > [SW_PC] seq=2 frame=0 pc=0x4023d745
+16:39:55.180 > [SW_PC] seq=2 frame=1 pc=0x4023f059
+16:39:55.183 > [SW_TRACE] seq=3 kind=5 tick=5248914
+16:39:55.185 > [SW_TRACE] task=0x3ffdcd00 site=0x40240fb0 frames=5
+16:39:55.191 > [SW_PC] seq=3 frame=0 pc=0x40240fad
+16:39:55.194 > [SW_PC] seq=3 frame=1 pc=0x40241678
+16:39:55.196 > [SW_PC] seq=3 frame=2 pc=0x4020c9f1
+16:39:55.199 > [SW_PC] seq=3 frame=3 pc=0x4023d6f7
+16:39:55.205 > [SW_PC] seq=3 frame=4 pc=0x4023f059
+16:39:55.208 > [SW_TRACE] seq=4 kind=2 tick=5248914
+16:39:55.210 > [SW_TRACE] task=0x3ffdcd00 site=0x4023d748 frames=2
+16:39:55.216 > [SW_PC] seq=4 frame=0 pc=0x4023d745
+16:39:55.219 > [SW_PC] seq=4 frame=1 pc=0x4023f059
+16:39:55.222 > [SW_TRACE] seq=137 kind=0 tick=5378232
+16:39:55.224 > [SW_TRACE] task=0x3ffbc548 site=0x4024160e frames=12
+16:39:55.230 > [SW_PC] seq=137 frame=0 pc=0x4024160b
+16:39:55.232 > [SW_PC] seq=137 frame=1 pc=0x4020c9f1
+16:39:55.235 > [SW_PC] seq=137 frame=2 pc=0x401fe6f9
+16:39:55.238 > [SW_PC] seq=137 frame=3 pc=0x401ffe69
+16:39:55.241 > [SW_PC] seq=137 frame=4 pc=0x401ffee2
+16:39:55.246 > [SW_PC] seq=137 frame=5 pc=0x4008190b
+16:39:55.249 > [SW_PC] seq=137 frame=6 pc=0x40120616
+16:39:55.252 > [SW_PC] seq=137 frame=7 pc=0x40237ab5
+16:39:55.255 > [SW_PC] seq=137 frame=8 pc=0x40133273
+16:39:55.258 > [SW_PC] seq=137 frame=9 pc=0x40132b49
+16:39:55.263 > [SW_PC] seq=137 frame=10 pc=0x4012d8ce
+16:39:55.265 > [SW_PC] seq=137 frame=11 pc=0x4012d9f9
+16:39:55.269 > [SW_TRACE] seq=138 kind=0 tick=5379262
+16:39:55.272 > [SW_TRACE] task=0x3ffbc548 site=0x4024160e frames=12
+16:39:55.277 > [SW_PC] seq=138 frame=0 pc=0x4024160b
+16:39:55.280 > [SW_PC] seq=138 frame=1 pc=0x4020c9f1
+16:39:55.282 > [SW_PC] seq=138 frame=2 pc=0x401fe6f9
+16:39:55.285 > [SW_PC] seq=138 frame=3 pc=0x401ffe69
+16:39:55.291 > [SW_PC] seq=138 frame=4 pc=0x401ffee2
+16:39:55.294 > [SW_PC] seq=138 frame=5 pc=0x4008190b
+16:39:55.296 > [SW_PC] seq=138 frame=6 pc=0x40120616
+16:39:55.299 > [SW_PC] seq=138 frame=7 pc=0x40237ab5
+16:39:55.302 > [SW_PC] seq=138 frame=8 pc=0x40133273
+16:39:55.307 > [SW_PC] seq=138 frame=9 pc=0x40132b49
+16:39:55.310 > [SW_PC] seq=138 frame=10 pc=0x4012d8ce
+16:39:55.313 > [SW_PC] seq=138 frame=11 pc=0x4012d9f9
+16:39:55.316 > [SW_TRACE] seq=139 kind=0 tick=5380180
+16:39:55.319 > [SW_TRACE] task=0x3ffbc548 site=0x4024160e frames=12
+16:39:55.324 > [SW_PC] seq=139 frame=0 pc=0x4024160b
+16:39:55.327 > [SW_PC] seq=139 frame=1 pc=0x4020c9f1
+16:39:55.330 > [SW_PC] seq=139 frame=2 pc=0x401fe6f9
+16:39:55.335 > [SW_PC] seq=139 frame=3 pc=0x401ffe69
+16:39:55.338 > [SW_PC] seq=139 frame=4 pc=0x401ffee2
+16:39:55.341 > [SW_PC] seq=139 frame=5 pc=0x4008190b
+16:39:55.344 > [SW_PC] seq=139 frame=6 pc=0x40120616
+16:39:55.346 > [SW_PC] seq=139 frame=7 pc=0x40237ab5
+16:39:55.352 > [SW_PC] seq=139 frame=8 pc=0x40133273
+16:39:55.355 > [SW_PC] seq=139 frame=9 pc=0x40132b49
+16:39:55.357 > [SW_PC] seq=139 frame=10 pc=0x4012d8ce
+16:39:55.360 > [SW_PC] seq=139 frame=11 pc=0x4012d9f9
+16:39:55.363 > [SW_TRACE] seq=140 kind=0 tick=5381203
+16:39:55.369 > [SW_TRACE] task=0x3ffbc548 site=0x4024160e frames=12
+16:39:55.372 > [SW_PC] seq=140 frame=0 pc=0x4024160b
+16:39:55.374 > [SW_PC] seq=140 frame=1 pc=0x4020c9f1
+16:39:55.380 > [SW_PC] seq=140 frame=2 pc=0x401fe6f9
+16:39:55.382 > [SW_PC] seq=140 frame=3 pc=0x401ffe69
+16:39:55.385 > [SW_PC] seq=140 frame=4 pc=0x401ffee2
+16:39:55.389 > [SW_PC] seq=140 frame=5 pc=0x4008190b
+16:39:55.391 > [SW_PC] seq=140 frame=6 pc=0x40120616
+16:39:55.396 > [SW_PC] seq=140 frame=7 pc=0x40237ab5
+16:39:55.399 > [SW_PC] seq=140 frame=8 pc=0x40133273
+16:39:55.402 > [SW_PC] seq=140 frame=9 pc=0x40132b49
+16:39:55.405 > [SW_PC] seq=140 frame=10 pc=0x4012d8ce
+16:39:55.407 > [SW_PC] seq=140 frame=11 pc=0x4012d9f9
+16:39:55.412 > [SW_TRACE] total=140 retained_max=8
+16:39:55.416 > [NET_PROGRESS] tx_calls=482 accepted=351 nomem=131 other_error=0 last_result=257 tx_last_tick=5382227 refs=351 frees=347 free_last_tick=5248911 rx_calls=15912 rx_accepted=15912 rx_last_tick=5382227 tick_unavailable=0
+16:39:55.432 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+16:39:55.444 > [TX_REFUSAL_SUMMARY] count=131 rx_echo_request=241 refused_echo_reply=4 refused_tcp80=10 ledger_overflow=0 unmatched_free=0
+16:39:55.455 > [TX_RETAINED_REF] pbuf=0x3ffff2d8 refs=1 first_tick=5248913
+16:39:55.460 > [TX_RETAINED_REF] pbuf=0x3ffff8e8 refs=1 first_tick=5248914
+16:39:55.463 > [TX_RETAINED_REF] pbuf=0x3f8041d8 refs=1 first_tick=5248914
+16:39:55.469 > [TX_RETAINED_REF] pbuf=0x3fffe708 refs=1 first_tick=5248915
+16:39:55.474 > [TX_NO_MEM] sequence=1 tick=5249825 ifx=0 len=74 buffer=1 pbuf=0x3fffe820 kind=4 alloc_before=5 alloc_after=5
+16:39:55.485 > [TX_NO_MEM] sequence=2 tick=5254742 ifx=0 len=74 buffer=1 pbuf=0x3fffe7f8 kind=4 alloc_before=5 alloc_after=5
+16:39:55.494 > [TX_NO_MEM] sequence=3 tick=5258936 ifx=0 len=54 buffer=1 pbuf=0x3fffe63c kind=2 alloc_before=5 alloc_after=5
+16:39:55.502 > [TX_NO_MEM] sequence=4 tick=5259168 ifx=0 len=54 buffer=1 pbuf=0x3fffe7f8 kind=2 alloc_before=5 alloc_after=5
+16:39:55.513 > [TX_NO_MEM] sequence=131 tick=5382227 ifx=0 len=42 buffer=1 pbuf=0x3fffe840 kind=1 alloc_before=5 alloc_after=5
+16:39:55.521 > [SNAPSHOT] dma_heap_free=4444 largest=980 web_dma_start=7224/3316 built=6984/3316 end=3964/1396
+16:39:55.530 > [ALLOC_FAILURE] sequence=1 size=1622 caps=0x0000080c tick=5248914 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:39:55.555 > [ALLOC_FAILURE] sequence=2 size=1622 caps=0x0000080c tick=5248914 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:39:55.577 > [ALLOC_FAILURE] sequence=3 size=1622 caps=0x0000080c tick=5248914 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:39:55.599 > [ALLOC_FAILURE] sequence=4 size=1622 caps=0x0000080c tick=5248915 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=9 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023f059
+16:39:55.622 > [ALLOC_FAILURE] sequence=5 size=1622 caps=0x0000080c tick=5248916 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdcd00 frames=11 pcs=0x40084e99,0x40084fd5,0x40084d2d,0x4008217d,0x40240ead,0x40241678,0x4020c9f1,0x4023d6f7,0x4023df45,0x402100e9,0x4023f062
+16:39:55.646 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+16:39:55.652 > === END DIAGNOSTIC SNAPSHOT ===
+16:39:56.009 > _Update_Part : 345000
+16:39:58.012 > _Update_Part : 345003
+16:40:00.024 > _Update_Part : 345000
+16:40:02.035 > _Update_Part : 345016
+16:40:04.038 > _Update_Part : 345000
+16:40:06.051 > _Update_Part : 345000
+16:40:08.062 > _Update_Part : 345000
+16:40:10.074 > _Update_Part : 344994
+16:40:12.086 > _Update_Part : 345000
+16:40:14.098 > _Update_Part : 345004
+16:40:16.110 > _Update_Part : 345002
+16:40:18.123 > _Update_Part : 344996
+16:40:20.136 > _Update_Part : 345004
+16:40:22.150 > _Update_Part : 345008
+16:40:24.156 > _Update_Part : 345000
+16:40:26.159 > _Update_Part : 344998
+16:40:28.171 > _Update_Part : 345000
+16:40:30.173 > _Update_Part : 345000
+16:40:32.185 > _Update_Part : 345015
+16:40:34.197 > _Update_Part : 345002
+16:40:36.209 > _Update_Part : 345001
+16:40:38.220 > _Update_Part : 345000
