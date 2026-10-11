@@ -1,5 +1,12 @@
 # Candidat corectiv 1.1.11: buffere lwIP mari în PSRAM
 
+**TEST_01 executat:** curl a trecut complet; browserul real a produs trei
+eșecuri DMA, urmate de recuperare TX observată timp de aproximativ123s, fără
+NO_MEM/headNULL/referințe reținute. Criteriul strict zero-fail nu a trecut și
+incidentul rămâne OPEN. Vezi [raportul hardware](TEST_01/HARDWARE_REPORT_RO.md).
+Pasul următor este [validarea susținută a aceluiași binar](PROTOCOL_SUSTAINED_RO.md),
+nu repetarea protocolului inițial și nu un firmware nou în acest moment.
+
 Incident OPEN. Test manual CH340/COM5; fără JTAG, merge, recovery sau flash
 executat de agent. TX dynamic32/cache4, driverul și payloadul root rămân aceleași.
 
