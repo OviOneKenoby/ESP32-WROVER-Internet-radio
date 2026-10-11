@@ -1,6 +1,8 @@
 # 1.1.7 refusal discriminator: safe boundary alternative
 
-**Hardware NOT RUN; incident OPEN; PR unmerged.** Uses the saved 1.1.6 captures,
+**Hardware at publication NOT RUN; subsequent owner run network FAIL at first
+root; incident OPEN; PR unmerged.** See OWNER_REPORT_2026-10-11.md for exact
+decode, retained identities and echo/TCP refusal evidence. Uses saved 1.1.6 captures,
 which already demonstrate conversion failures, a retry via TX-done processing,
 then growing API NO_MEM with recovered DMA heap and four unreleased ref events.
 No repetition of 1.1.6 is requested.

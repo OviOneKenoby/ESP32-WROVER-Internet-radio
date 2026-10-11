@@ -1,5 +1,11 @@
 1.1.7-validation / 9cf48e9022c0 is a diagnostic candidate, not a fix.
-Incident OPEN, hardware test NOT RUN, PR #5 unmerged. No automatic flash.
+Incident OPEN, PR #5 unmerged. No automatic flash. Hardware at publication
+NOT RUN; subsequent owner run network FAIL at first root. Exact decode and
+correlation are in OWNER_REPORT_2026-10-11.md: four distinct retained pbuf
+identities coincide with four Wi-Fi conversion failures, followed by31 NO_MEM
+(29 TCP80/two echo replies) with no further registered allocator failure.
+Cache-pool exhaustion is strongly supported, but the actual private refusal
+branch and the reason progress fails to recover are not yet demonstrated.
 
 Saved 1.1.6 captures already show growing TX NO_MEM after allocation failures
 stop and DMA heap recovers. This candidate preserves dynamic TX32/cache4 and

@@ -34,8 +34,10 @@
   JTAG execution NOT RUN. Requires compatible manual hardware/SMP setup; halts
   perturb timing. Firmware itself does not capture private branch PCs/cache
   descriptor counts. No unsafe fallback private patch/list walk.
-- Hardware NOT RUN. Saved 1.1.6 captures are the existing evidence, not a
-  validation of this build. Incident OPEN; no fix/leak/private queue proof.
+- At publication hardware NOT RUN. Subsequent owner1.1.7 run: network FAIL
+  at first root; four distinct retained identities and TCP/echo TX refusals
+  observed. See OWNER_REPORT_2026-10-11.md. Incident OPEN; private refusal
+  branch/JTAG not observed; no fix/leak/private queue proof.
 - Publication/download verification PASS: bin, zip and extracted exact ELF
   downloaded from GitHub matched all three published SHA256 entries. Routing
   verifier and branch-probe generator also passed on the downloaded ELF; its

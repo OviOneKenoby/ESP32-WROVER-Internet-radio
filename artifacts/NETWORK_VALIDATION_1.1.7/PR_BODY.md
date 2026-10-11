@@ -22,5 +22,10 @@ Validation and artifacts: clean PlatformIO build, 2367 host checks and final
 ELF routing verification. Published 1.1.7 bin/exact ELF zip/hash manifest and
 short new hardware protocol:
 https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.7-tx-refusal-9cf48e9
-Hardware NOT RUN; owner test is pending. Diagnostic evidence cannot yet support
+Hardware at publication NOT RUN; subsequent 1.1.7 owner run network FAIL at
+first root. Exact ELF decode confirms dynamic conversion failures; four distinct
+retained reference identities overlap their ticks. Later31 NO_MEM include29
+TCP80/two echo replies with failure count unchanged. Cache-pool refusal is the
+strongest hypothesis but direct private branch/JTAG capture remains missing.
+See OWNER_REPORT_2026-10-11.md. Diagnostic evidence cannot yet support
 a demonstrated fix, leak or private-queue lockup claim.
