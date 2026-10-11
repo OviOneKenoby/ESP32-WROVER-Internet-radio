@@ -1,11 +1,29 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 - Root-refresh DMA failure attribution (1.1.5 validation)
+
+Owner 1.1.4 evidence now reproduces ping loss at main-page refresh with five
+internal-capability allocation failures; last/largest request is 1622 bytes,
+last caps 0x80c (INTERNAL|DMA|8BIT). Root output was fast, fully accepted by
+the local socket and had no retries, so a long output stall does not explain
+this observation. Four failures fall in root's sampled interval, which also
+includes concurrent tasks and cleanup. Requester and causal mechanism remain
+unproven. Seven earlier HTTP responses exclude a complete no-HTTP baseline.
+
+1.1.5 adds bounded fixed-storage allocator/task/caller records and matching
+DMA-arena heap samples. Callback is in IRAM, storage in DRAM; task/stack capture
+is skipped in ISR/cache-off contexts. Logging is deferred to serial `x`.
+The proposed mitigation is static gzip root output to reduce TCP queue memory;
+it is not mixed into this attribution candidate. No reconnect/reboot is added.
+See the 1.1.4 allocation analysis and 1.1.5 manifest; incident remains OPEN.
+
 ## 2026-10-11 - Bounded web responses and allocation diagnostics (1.1.4 validation)
 
 Updated the 1.1.3 owner report: boot and serial worked, radio opened a stream,
 Bluetooth reported SBC playing, then HTTP and tuner ping became unavailable
 while association and the loop remained active. Bluetooth exit recovered heap
-but not ping. Audio quality has no explicit owner confirmation; controlled
+but not ping. Subsequent owner confirmation records correct audio throughout
+and manual BT re-entry (audio PASS observationally); controlled
 Bluetooth AP/router testing was not run. Incident remains OPEN.
 
 The pinned source streams root HTML directly from flash, but retains header,

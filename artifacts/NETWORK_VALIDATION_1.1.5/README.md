@@ -23,10 +23,13 @@ Retain `[WEB_RESPONSE]` and every `[ALLOC_FAILURE]` line. Distinguish existing
 HTTP response count from a true no-HTTP stage. Decode PCs with matching ELF:
 
 ```text
-xtensa-esp32-elf-addr2line -aipfC -e firmware-1.1.5-<build_git_id>.elf 0xPC1 0xPC2 ...
+xtensa-esp32-elf-addr2line -aipfC -e firmware-1.1.5-f33ef76cfc29.elf 0xPC1 0xPC2 ...
 ```
 
 `allocator=heap_caps_malloc` alone does not identify the consumer. Caller
 frames can identify Wi-Fi's DMA wrapper/esf buffer path, TCP or another user.
 The task name is execution context, not proof that the task owns all memory.
 Capturing failures is not a claim of network recovery or root-cause proof.
+
+Extract the published `firmware-1.1.5-f33ef76cfc29.elf.zip` first. Do not
+decode these PCs with the older 1.1.4 ELF or an unidentified rebuild.

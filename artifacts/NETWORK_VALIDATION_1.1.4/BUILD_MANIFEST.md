@@ -34,7 +34,9 @@
   `-std=c++17 -Wall -Wextra -Werror`.
 - Existing upstream AudioTools/ADC deprecation warnings remain in firmware
   dependency builds; no dependency changes were made to suppress them.
-- Hardware: **NOT RUN; incident OPEN**. No flash performed.
+- Hardware at publication: NOT RUN. Subsequent owner testing: **PARTIAL;
+  root-refresh network outage reproduced; incident OPEN**. See
+  `OWNER_REPORT_2026-10-11.md` and `ALLOCATION_ANALYSIS.md`. No Codex flash.
 
 Host commands (put the portable compiler's bin directory on PATH):
 
