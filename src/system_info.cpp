@@ -4,6 +4,36 @@
 
 namespace SystemInfo {
 
+namespace {
+portMUX_TYPE allocationMux = portMUX_INITIALIZER_UNLOCKED;
+AllocationFailures failures;
+// Allocator callback: fixed scalar stores only. No logging, allocation, heap
+// queries, task inspection, or network manipulation; safe across both cores.
+void allocationFailed(size_t size, uint32_t caps, const char*) {
+    portENTER_CRITICAL(&allocationMux);
+    ++failures.count;
+    if (caps & MALLOC_CAP_INTERNAL) ++failures.internalCount;
+    failures.lastSize = size;
+    failures.lastCaps = caps;
+    if (size > failures.largestSize) failures.largestSize = size;
+    portEXIT_CRITICAL(&allocationMux);
+}
+}
+
+void beginAllocationDiagnostics() {
+    const esp_err_t result = heap_caps_register_failed_alloc_callback(allocationFailed);
+    portENTER_CRITICAL(&allocationMux);
+    failures.registrationResult = result;
+    portEXIT_CRITICAL(&allocationMux);
+}
+
+AllocationFailures allocationFailures() {
+    portENTER_CRITICAL(&allocationMux);
+    const AllocationFailures copy = failures;
+    portEXIT_CRITICAL(&allocationMux);
+    return copy;
+}
+
 const char* resetReasonName(esp_reset_reason_t reason) {
     switch (reason) {
         case ESP_RST_POWERON: return "power_on";

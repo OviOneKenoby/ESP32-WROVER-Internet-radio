@@ -157,6 +157,7 @@ void setup() {
     delay(500);
 
     SystemInfo::logBootInfo();
+    SystemInfo::beginAllocationDiagnostics();
     
     Serial.println("\n\n");
     Serial.println("=====================================");
@@ -1392,6 +1393,26 @@ void printDiagnosticSnapshot() {
         web.lastHandleCompletedMs
             ? (unsigned long)(now - web.lastHandleCompletedMs)
             : 0UL);
+    const auto allocation = SystemInfo::allocationFailures();
+    Serial.printf("[SNAPSHOT] alloc_hook_result=%d alloc_failures=%lu internal_cap_failures=%lu last_size=%lu last_caps=0x%08lx largest_failed_size=%lu\n",
+        allocation.registrationResult, (unsigned long)allocation.count,
+        (unsigned long)allocation.internalCount, (unsigned long)allocation.lastSize,
+        (unsigned long)allocation.lastCaps, (unsigned long)allocation.largestSize);
+    const auto& response = web.response;
+    Serial.printf("[SNAPSHOT] web_response_count=%lu route=%s build_ms=%lu header_ms=%lu body_ms=%lu body_expected=%u body_sent=%u header_sent=%u socket_calls=%lu retry_waits=%lu socket_error=%d failed=%s json_overflow=%s\n",
+        (unsigned long)response.responses, response.route,
+        (unsigned long)response.buildMs, (unsigned long)response.headerMs,
+        (unsigned long)response.bodyMs, (unsigned)response.expectedBody,
+        (unsigned)response.sentBody, (unsigned)response.sentHeader,
+        (unsigned long)response.writeCalls, (unsigned long)response.retryWaits,
+        response.socketError, response.failed ? "yes" : "no",
+        response.jsonOverflow ? "yes" : "no");
+    Serial.printf("[SNAPSHOT] web_heap_start=%u/%u built=%u/%u end=%u/%u alloc_fail_start_built_end=%lu/%lu/%lu\n",
+        (unsigned)response.freeStart, (unsigned)response.largestStart,
+        (unsigned)response.freeBuilt, (unsigned)response.largestBuilt,
+        (unsigned)response.freeEnd, (unsigned)response.largestEnd,
+        (unsigned long)response.allocStart, (unsigned long)response.allocBuilt,
+        (unsigned long)response.allocEnd);
     Serial.println("=== END DIAGNOSTIC SNAPSHOT ===");
 }
 

@@ -31,14 +31,15 @@ station.onsubmit=async e=>{e.preventDefault();try{await api('/api/stations',{met
 </script>)HTML";
 
 void WebPortal::registerRoutes() {
-    server.on("/", HTTP_GET, [this] { handleRoot(); });
-    server.on("/api/status", HTTP_GET, [this] { handleStatus(); });
-    server.on("/api/diagnostics", HTTP_GET, [this] { handleDiagnostics(); });
-    server.on("/api/stations", HTTP_GET, [this] { handleStations(); });
-    server.on("/api/stations", HTTP_POST, [this] { handleAddStation(); });
-    server.on("/api/wifi", HTTP_POST, [this] { handleWiFiSave(); });
-    server.on("/api/timezone", HTTP_POST, [this] { handleTimezoneSave(); });
+    server.on("/", HTTP_GET, [this] { server.beginResponse("root"); handleRoot(); });
+    server.on("/api/status", HTTP_GET, [this] { server.beginResponse("status"); handleStatus(); });
+    server.on("/api/diagnostics", HTTP_GET, [this] { server.beginResponse("diagnostics"); handleDiagnostics(); });
+    server.on("/api/stations", HTTP_GET, [this] { server.beginResponse("stations"); handleStations(); });
+    server.on("/api/stations", HTTP_POST, [this] { server.beginResponse("add_station"); handleAddStation(); });
+    server.on("/api/wifi", HTTP_POST, [this] { server.beginResponse("wifi_save"); handleWiFiSave(); });
+    server.on("/api/timezone", HTTP_POST, [this] { server.beginResponse("timezone_save"); handleTimezoneSave(); });
     server.onNotFound([this] {
+        server.beginResponse("other");
         String uri = server.uri();
         if (server.method() == HTTP_DELETE && uri.startsWith("/api/station/")) { handleDeleteStation(); return; }
         if (server.method() == HTTP_DELETE && uri.startsWith("/api/favorite/")) { handleDeleteFavorite(); return; }
@@ -70,6 +71,22 @@ void WebPortal::beginConfigPortal() {
 void WebPortal::handle() {
     const uint32_t startedMs = millis();
     if (started) server.handleClient();
+    if (server.diagnostics.responses != loggedResponseCount) {
+        server.finishResponse();
+        const auto& r = server.diagnostics;
+        Serial.printf("[WEB_RESPONSE] count=%lu route=%s build_ms=%lu header_ms=%lu body_ms=%lu expected=%u sent=%u header_sent=%u calls=%lu waits=%lu error=%d failed=%u overflow=%u heap_start=%u/%u heap_built=%u/%u heap_end=%u/%u alloc_fail=%lu/%lu/%lu\n",
+            (unsigned long)r.responses, r.route, (unsigned long)r.buildMs,
+            (unsigned long)r.headerMs, (unsigned long)r.bodyMs,
+            (unsigned)r.expectedBody, (unsigned)r.sentBody, (unsigned)r.sentHeader,
+            (unsigned long)r.writeCalls, (unsigned long)r.retryWaits,
+            r.socketError, r.failed, r.jsonOverflow,
+            (unsigned)r.freeStart, (unsigned)r.largestStart,
+            (unsigned)r.freeBuilt, (unsigned)r.largestBuilt,
+            (unsigned)r.freeEnd, (unsigned)r.largestEnd,
+            (unsigned long)r.allocStart, (unsigned long)r.allocBuilt,
+            (unsigned long)r.allocEnd);
+        loggedResponseCount = r.responses;
+    }
     if (configPortalActive) dnsServer.processNextRequest();
     lastHandleDurationMs = millis() - startedMs;
     if (lastHandleDurationMs > maxHandleDurationMs) {
@@ -84,25 +101,37 @@ void WebPortal::getDiagnostics(WebPortalDiagnostics& diagnostics) const {
     diagnostics.lastHandleDurationMs = lastHandleDurationMs;
     diagnostics.maxHandleDurationMs = maxHandleDurationMs;
     diagnostics.lastHandleCompletedMs = lastHandleCompletedMs;
+    diagnostics.response = server.diagnostics;
 }
 
 void WebPortal::sendJson(int code, JsonDocument& document) {
-    // Avoid a second, contiguous heap allocation for a serialized String.
-    // This matters in Bluetooth mode, where the measured largest free block
-    // was only a few kilobytes. The document is written directly to the
-    // already-connected client with an exact Content-Length.
+    server.diagnostics.jsonOverflow = document.overflowed();
+    if (document.overflowed()) {
+        sendJsonError(503, "JSON allocation failed");
+        return;
+    }
     const size_t expectedBytes = measureJson(document);
+    server.diagnostics.expectedBody = expectedBytes;
     server.setContentLength(expectedBytes);
     server.send(code, "application/json", "");
-    WiFiClient client = server.client();
-    const size_t writtenBytes = serializeJson(document, client);
+    BufferedWebWriter<ObservedWebServer> output(server);
+    serializeJson(document, output);
+    output.flush();
+    const size_t writtenBytes = server.diagnostics.sentBody;
     if (writtenBytes != expectedBytes) {
         Serial.printf("[WEB] JSON response truncated: expected=%u, written=%u\n",
                       (unsigned)expectedBytes, (unsigned)writtenBytes);
     }
 }
-void WebPortal::sendJsonError(int code, const char* message) { server.send(code, "application/json", String("{\"error\":\"") + message + "\"}"); }
-void WebPortal::handleRoot() { server.send_P(200, "text/html; charset=utf-8", WEB_PAGE); }
+void WebPortal::sendJsonError(int code, const char* message) {
+    String body = String("{\"error\":\"") + message + "\"}";
+    server.diagnostics.expectedBody = body.length();
+    server.send(code, "application/json", body);
+}
+void WebPortal::handleRoot() {
+    server.diagnostics.expectedBody = sizeof(WEB_PAGE) - 1;
+    server.send_P(200, "text/html; charset=utf-8", WEB_PAGE);
+}
 
 void WebPortal::handleStatus() {
     JsonDocument doc; doc["connected"] = wifiManager.isConnected(); doc["ssid"] = wifiManager.getSSID(); doc["ip"] = wifiManager.getIP(); doc["portal"] = configPortalActive ? portalSSID : ""; doc["timezone"] = timeService.getTimezone();

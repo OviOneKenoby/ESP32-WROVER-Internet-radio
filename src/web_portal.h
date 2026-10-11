@@ -6,12 +6,14 @@
 #include <WebServer.h>
 #include <DNSServer.h>
 #include <ArduinoJson.h>
+#include "observed_web_server.h"
 
 struct WebPortalDiagnostics {
     uint32_t handleCount;
     uint32_t lastHandleDurationMs;
     uint32_t maxHandleDurationMs;
     uint32_t lastHandleCompletedMs;
+    WebResponseDiagnostics response;
 };
 
 class WebPortal {
@@ -25,7 +27,7 @@ public:
     const char* getPortalPassword() const { return portalPassword; }
 
 private:
-    WebServer server{WEB_SERVER_PORT};
+    ObservedWebServer server{WEB_SERVER_PORT};
     DNSServer dnsServer;
     bool started = false;
     bool configPortalActive = false;
@@ -35,6 +37,7 @@ private:
     uint32_t lastHandleDurationMs = 0;
     uint32_t maxHandleDurationMs = 0;
     uint32_t lastHandleCompletedMs = 0;
+    uint32_t loggedResponseCount = 0;
 
     void registerRoutes();
     void sendJsonError(int code, const char* message);
