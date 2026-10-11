@@ -41,6 +41,7 @@ Set-Location 'C:\Users\Dell\Downloads\TUNER01_Arduino_builder\TUNER01_Arduino\in
 $candidateDir = (Get-Location).Path
 $pio = 'C:\Users\Dell\.platformio\penv\Scripts\platformio.exe'
 $py = 'C:\Users\Dell\.platformio\penv\Scripts\python.exe'
+$espTool = 'C:\Users\Dell\.platformio\packages\tool-esptoolpy\esptool.py'
 $ocd = 'C:\Users\Dell\.platformio\packages\tool-openocd-esp32\bin\openocd.exe'
 $gdb = 'C:\Users\Dell\.platformio\packages\tool-xtensa-esp-elf-gdb\bin\xtensa-esp-elf-gdb-3.11.exe'
 $scripts = 'C:\Users\Dell\.platformio\packages\tool-openocd-esp32\share\openocd\scripts'
@@ -57,7 +58,7 @@ comanda de mai jos face reset pentru instalarea noului experiment, nu recuperare
 automată a incidentului. Nu șterge NVS sau flashul întreg.
 
 ```powershell
-& $py -m esptool --chip esp32 --port COM5 --baud 460800 write_flash 0x10000 "$candidateDir\firmware-1.1.8-jtag-e2c5667dd9a1.bin"
+& $py $espTool --chip esp32 --port COM5 --baud 460800 write_flash 0x10000 "$candidateDir\firmware-1.1.8-jtag-e2c5667dd9a1.bin"
 ```
 
 Terminal UART, păstrat deschis, logging automat în fișier:
