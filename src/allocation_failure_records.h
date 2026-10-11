@@ -15,7 +15,8 @@ struct AllocationFailureRecords {
     AllocationFailureRecord first[4], last;
     uint32_t total = 0;
     inline __attribute__((always_inline)) void append(AllocationFailureRecord record) {
-        record.sequence = ++total;
+        if (total != UINT32_MAX) ++total;
+        record.sequence = total;
         if (total <= 4) first[total - 1] = record;
         last = record;
     }

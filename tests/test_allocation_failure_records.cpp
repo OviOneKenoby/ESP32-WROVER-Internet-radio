@@ -26,5 +26,9 @@ int main() {
         expect(records.first[i].sequence == i + 1 && records.first[i].size == i + 1,
             "first four events preserve original order");
     expect(records.first[0].caps == 0x80c, "capability mask preserved");
+    records.total = UINT32_MAX;
+    records.append(event);
+    expect(records.total == UINT32_MAX && records.last.sequence == UINT32_MAX &&
+        records.first[0].size == 1622, "counter saturation never indexes outside storage");
     std::cout << "PASS: " << checks << " failure-record retention checks\n";
 }
