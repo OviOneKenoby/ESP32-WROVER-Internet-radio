@@ -89,3 +89,14 @@ Discriminating outcomes:
   across threads; use event order, interface metadata and debug context.
 
 No outcome is a hardware-verified fix. Incident remains OPEN.
+
+## Exact artifact and decode
+
+Executable source: `9cf48e9022c0a9e8b88943c073bb29f447bfa80a`;
+embedded build ID `9cf48e9022c0`, firmware `1.1.7-validation`.
+Use firmware-1.1.7-validation-9cf48e9022c0.bin and extract
+firmware-1.1.7-9cf48e9022c0.elf from the matching zip. Verify all entries in
+SHA256SUMS.txt. Run the pinned xtensa-esp32-elf-addr2line with `-pfiaC -e`
+that exact ELF followed by the new PC addresses. The optional GDB script's
+addresses apply only to this ELF; no earlier addresses may be substituted.
+BUILD_MANIFEST.md and ELF_VERIFICATION.txt record the final checks.
