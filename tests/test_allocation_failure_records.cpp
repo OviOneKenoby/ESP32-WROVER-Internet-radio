@@ -26,6 +26,11 @@ int main() {
         expect(records.first[i].sequence == i + 1 && records.first[i].size == i + 1,
             "first four events preserve original order");
     expect(records.first[0].caps == 0x80c, "capability mask preserved");
+    for (unsigned i = 0; i < AllocationFailureRecord::maxFrames; ++i) event.pcs[i] = i + 1;
+    event.frameCount = AllocationFailureRecord::maxFrames;
+    records.append(event);
+    expect(records.last.frameCount == 12 && records.last.pcs[11] == 12,
+        "long trace stores the caller above the previous six-frame boundary");
     records.total = UINT32_MAX;
     records.append(event);
     expect(records.total == UINT32_MAX && records.last.sequence == UINT32_MAX &&

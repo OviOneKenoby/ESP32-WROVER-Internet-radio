@@ -5,7 +5,8 @@
 // Caller supplies synchronization. Never stores borrowed task-name pointers.
 struct AllocationFailureRecord {
     uint32_t sequence = 0, size = 0, caps = 0, tick = 0;
-    uint32_t taskHandle = 0, pcs[6] = {};
+    static constexpr unsigned maxFrames = 12;
+    uint32_t taskHandle = 0, pcs[maxFrames] = {};
     char allocator[24] = {}, task[16] = {};
     uint8_t core = 0, frameCount = 0;
     bool isr = false, cacheEnabled = false;

@@ -34,7 +34,7 @@ void IRAM_ATTR allocationFailed(size_t size, uint32_t caps, const char* function
             if (task) copyName(record.task, sizeof(record.task), pcTaskGetName(task));
             esp_backtrace_frame_t frame = {};
             esp_backtrace_get_start(&frame.pc, &frame.sp, &frame.next_pc);
-            for (unsigned i = 0; i < 6; ++i) {
+            for (unsigned i = 0; i < AllocationFailureRecord::maxFrames; ++i) {
                 if (!esp_stack_ptr_is_sane(frame.sp)) break;
                 const uint32_t pc = esp_cpu_process_stack_pc(frame.pc);
                 if (!esp_ptr_executable(reinterpret_cast<void*>(pc))) break;

@@ -11,6 +11,7 @@
 #include "correctness_guards.h"
 #include "current_station_context.h"
 #include "system_info.h"
+#include "network_progress.h"
 #include <esp_heap_caps.h>
 
 // ============================================
@@ -1413,6 +1414,15 @@ void printDiagnosticSnapshot() {
         (unsigned)response.freeEnd, (unsigned)response.largestEnd,
         (unsigned long)response.allocStart, (unsigned long)response.allocBuilt,
         (unsigned long)response.allocEnd);
+    const auto network = NetworkProgress::snapshot();
+    Serial.printf("[NET_PROGRESS] tx_calls=%lu accepted=%lu nomem=%lu other_error=%lu last_result=%ld tx_last_tick=%lu refs=%lu frees=%lu free_last_tick=%lu rx_calls=%lu rx_accepted=%lu rx_last_tick=%lu tick_unavailable=%lu\n",
+        (unsigned long)network.txCalls, (unsigned long)network.txAccepted,
+        (unsigned long)network.txNoMem, (unsigned long)network.txOtherError,
+        (long)network.txLastResult, (unsigned long)network.txLastTick,
+        (unsigned long)network.refs, (unsigned long)network.frees,
+        (unsigned long)network.freeLastTick, (unsigned long)network.rxCalls,
+        (unsigned long)network.rxAccepted, (unsigned long)network.rxLastTick,
+        (unsigned long)network.ticksUnavailable);
     const auto records = SystemInfo::allocationFailureRecords();
     Serial.printf("[SNAPSHOT] dma_heap_free=%u largest=%u web_dma_start=%u/%u built=%u/%u end=%u/%u\n",
         heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT),
