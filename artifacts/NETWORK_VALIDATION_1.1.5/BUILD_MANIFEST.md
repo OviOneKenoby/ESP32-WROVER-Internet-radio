@@ -9,7 +9,9 @@
 - PlatformIO 6.2.0, espressif32 7.0.1, Arduino framework
   `3.20017.241212+sha.dcc1105b`, IDF headers 4.4.7,
   Xtensa `8.4.0+2021r2-patch5`. Dependencies/configuration unchanged.
-- Hardware NOT RUN; incident OPEN. Attribution instrumentation is not a fix.
+- Hardware at publication NOT RUN. Subsequent owner run: PARTIAL, network
+  FAIL at first root; task wifi/ESF attribution demonstrated. See owner report.
+  Incident OPEN. Attribution instrumentation is not a fix.
 - Matching ELF is supplied compressed; extract before decoding caller PCs.
 - Publication verification: PASS. Binary and ELF archive were downloaded again;
   binary, archive and extracted ELF SHA-256 match SHA256SUMS.txt.

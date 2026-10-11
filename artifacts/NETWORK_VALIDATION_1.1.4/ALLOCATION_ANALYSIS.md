@@ -1,7 +1,9 @@
 # Root-refresh DMA allocation investigation
 
 Evidence priority: the dated 1.1.4 owner report, not the previous JSON theory.
-**Incident OPEN. Requester/mechanism not yet hardware-attributed.**
+**Incident OPEN.** This records findings from 1.1.4. Subsequent 1.1.5 evidence
+demonstrates wifi-task/ESF allocator attribution; persistence remains unresolved.
+See [exact ELF decoding and failure paths](../NETWORK_VALIDATION_1.1.5/OWNER_REPORT_2026-10-11.md).
 
 ## Exact mask and compiled evidence
 

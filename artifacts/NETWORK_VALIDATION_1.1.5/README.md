@@ -1,6 +1,9 @@
 # 1.1.5 allocation-requester attribution candidate
 
-**Diagnostic candidate; hardware NOT RUN; incident OPEN.**
+**Diagnostic candidate; hardware PARTIAL/network FAIL reproduced; incident OPEN.**
+See [owner evidence and exact ELF decoding](OWNER_REPORT_2026-10-11.md): first
+root after zero-HTTP baseline reproduces outage; all five 1622-byte failures
+belong to wifi/core 0 through the ESF allocator. Persistence is unverified.
 
 Built on the tested 1.1.4 executable and the new root-refresh failure report.
 HTTP output behavior, JSON, audio/BT lifecycle, pins, partitions and all
@@ -13,9 +16,9 @@ latest. It also reports free/largest for INTERNAL|DMA|8BIT and the same arena
 at root start/built/end. Callback performs no allocation/logging/network work.
 Stack capture is skipped in ISR/cache-off contexts. Omitted records are counted.
 
-Keep the current failed tuner unchanged until its wait-only snapshot and ping
-evidence are saved. This candidate is for a later, manually installed test;
-no flash is performed by Codex. Verify version and build_git_id from manifest.
+The 1.1.4 observation is concluded and its wait-only evidence is saved.
+For the failed 1.1.5 boot, retain wait-only snapshot/ping evidence before
+perturbing it. No flash is performed by Codex. Verify build identity in manifest.
 
 Next run: `x` at boot and BT before HTTP; retain continuous ping. Request root
 once with the browser, capture `x` immediately afterward and after waiting.
