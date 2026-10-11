@@ -1,0 +1,32 @@
+﻿PASS unchanged normalized private instructions: ieee80211_output_process
+PASS unchanged normalized private instructions: esf_buf_alloc_dynamic
+PASS unchanged normalized private instructions: ieee80211_output_do
+PASS unchanged normalized private instructions: wifi_osi_funcs_register
+PASS unchanged normalized private instructions: ieee80211_alloc_tx_buf
+PASS unchanged normalized private instructions: esf_buf_alloc
+PASS OSI _mutex_unlock site esf_buf_alloc+0x7a return=0x4024160e
+PASS OSI _mutex_unlock site ieee80211_output_process+0x4f return=0x4023d68f
+PASS OSI _mutex_unlock site ieee80211_output_process+0x108 return=0x4023d748
+PASS OSI _mutex_unlock site ieee80211_output_process+0x226 return=0x4023d866
+PASS OSI _mutex_unlock site esf_buf_alloc_dynamic+0x78 return=0x40240e80
+PASS OSI _mutex_unlock site esf_buf_alloc_dynamic+0x1a8 return=0x40240fb0
+PASS allocation uses the registered declared OSI table
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_16unlockEPv
+PASS IRAM callback without allocator/logger/heap queries: _ZN12_GLOBAL__N_16unlockEPv
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_114internalMallocEj
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_114internalMallocEj
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_110wifiMallocEj
+PASS first call forwards original through DRAM: _ZN12_GLOBAL__N_110wifiMallocEj
+PASS IRAM typed allocation observation: _ZN12_GLOBAL__N_113observeMallocEjPv
+PASS declared allocation callback return site 0x40240eb0
+PASS all serial printf fragments fit the stack buffer at UINT32_MAX
+STATIC ONLY: runtime positive control, scope and unwind coverage still required
+PASS __wrap_esp_wifi_internal_tx_by_ref: IRAM, exactly one original call
+PASS __wrap_esp_netif_netstack_buf_ref: IRAM, exactly one original call
+PASS __wrap_esp_netif_netstack_buf_free: IRAM, exactly one original call
+PASS __wrap_esp_netif_receive: IRAM, exactly one original call
+PASS __wrap_esp_wifi_init: IRAM, exactly one original call
+PASS wifi_transmit_wrap routes to wrapper
+PASS wifi_start registers wrapped ref/free and RX callbacks
+PASS wifiLowLevelInit routes unchanged config through init wrapper
+PASS final ELF boundary routing verified (not hardware TX delivery)

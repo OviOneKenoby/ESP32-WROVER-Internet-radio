@@ -64,6 +64,25 @@ print("PASS allocation uses the registered declared OSI table")
 
 unlock = next(n for n in symbols if n.endswith("unlockEPv") and "GLOBAL" in n)
 assert 0x40080000 <= symbols[unlock] < 0x400c0000
+def original_is_first_call(name, original_fragment):
+    original = next(a for n, a in symbols.items() if original_fragment in n and "GLOBAL" in n)
+    assert 0x3ffb0000 <= original < 0x40000000, "original pointer not DRAM"
+    registers = {}
+    for line in body(name).splitlines():
+        m = re.search(r"\bl32r\s+(a\d+),\s*([0-9a-f]+)", line)
+        if m:
+            registers[m[1]] = word(int(m[2], 16))
+        m = re.search(r"\bl32i(?:\.n)?\s+(a\d+), (a\d+), 0\s*$", line)
+        if m:
+            registers[m[1]] = ("pointer", registers.get(m[2]))
+        m = re.search(r"\bcallx8\s+(a\d+)", line)
+        if m:
+            assert registers.get(m[1]) == ("pointer", original), "helper before original or wrong forwarding pointer"
+            print("PASS first call forwards original through DRAM:", name)
+            return
+        assert not re.search(r"\bcall(?:0|4|8|12)\b", line), "added call before original"
+    raise AssertionError("original call missing: " + name)
+original_is_first_call(unlock, "originalUnlock")
 for fragment in ("beginTx", "endTx"):
     name = next(n for n in symbols if "SoftwareTxProbe" in n and fragment in n)
     assert 0x40080000 <= symbols[name] < 0x400c0000
@@ -77,6 +96,8 @@ for fragment in ("internalMalloc", "wifiMalloc", "observeMalloc"):
     assert "esp_cpu_process_stack_pc" not in body(name), "flash-outlined PC helper"
     assert not re.search(r"<(?:printf|esp_log_write|heap_caps_get[^>]*)>", body(name))
     print("PASS IRAM typed allocation observation:", name)
+    if fragment != "observeMalloc":
+        original_is_first_call(name, "originalInternalMalloc" if fragment == "internalMalloc" else "originalWifiMalloc")
 for offset in (348, 364):
     assert 0x40080000 <= word(symbols["g_wifi_osi_funcs"] + offset) < 0x400c0000
 malloc_return = symbols["esf_buf_alloc_dynamic"] + 0xa8

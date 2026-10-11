@@ -1,5 +1,19 @@
 # Exact 1.1.7 retry/recycling and feasibility analysis
 
+## Follow-up: UART-only equipment, 1.1.9 software observation
+
+The owner confirmed CH340/UART only, no JTAG adapter. The JTAG protocol is
+archived and cannot be executed here. New feasibility work found declared
+OSI callback boundaries that indirectly identify private instruction paths:
+typed mutex-unlock and allocation callbacks, forwarded through a static table
+copy before init, with no private ABI calls or binary patches. This changes
+the earlier observation feasibility, not the status of the 1.1.7 evidence.
+See [software feasibility](../NETWORK_VALIDATION_1.1.9_UART/FEASIBILITY_RO.md)
+and the [single complete UART protocol](../NETWORK_VALIDATION_1.1.9_UART/PROTOCOL_RO.md).
+Runtime branch/pool/retry attribution is pending hardware observation;
+no direct pool inventory, leak, queue deadlock or causal fix is demonstrated.
+Incident OPEN. Main/source main.cpp unchanged; no automatic flash/merge/recovery.
+
 Uses ELF22D30785E7C25F3587A04ECFBE73610A438D7D78AB843D1773DE167EBC75D999
 and owner wait interval84.314s. Firmware TX policy is not changed.
 

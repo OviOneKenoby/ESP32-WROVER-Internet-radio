@@ -1,5 +1,10 @@
 # Protocol condițional complet: ramura NO_MEM și retry/recycling
 
+**Neexecutabil pe echipamentul disponibil: proprietarul are numai CH340/UART,
+fără adaptor JTAG.** Alternativa software și protocolul UART sunt în
+[NETWORK_VALIDATION_1.1.9_UART](../NETWORK_VALIDATION_1.1.9_UART/PROTOCOL_RO.md).
+Protocolul de mai jos rămâne arhivat, nu este următorul test cerut aici.
+
 **Candidat în repository, nu release. Incident OPEN. Fără merge sau flash executat de
 agent.** 1.1.8-jtag-validation / e2c5667dd9a1 păstrează instrumentarea1.1.7 și
 TX dynamic32/cache4; dezactivează encoderul (inițializare, IRQ, polling) pentru
