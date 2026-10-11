@@ -21,7 +21,9 @@
   proves Wi-Fi TX routing and wrapped callback pointers in wifi_start;
   each IRAM wrapper has exactly one call to its original. No logging/allocation
   added to wrappers, no diagnostic lock held across original calls.
-- Hardware NOT RUN; diagnostic candidate, not a demonstrated fix.
+- Hardware at publication NOT RUN. Subsequent owner run: PARTIAL/network FAIL
+  at third refresh, TX conversion attributed; see OWNER_REPORT_2026-10-11.md.
+  Diagnostic candidate, not a demonstrated fix.
 - Publication/download verification PASS: bin, zip and extracted exact ELF
   were downloaded from GitHub and matched all published SHA-256 entries.
   Wrapper routing verification also passed on the downloaded ELF. Release

@@ -1,0 +1,57 @@
+=== DIAGNOSTIC SNAPSHOT (read-only) ===
+[SNAPSHOT] firmware=1.1.6-validation build_git_id=18553c4a207e uptime_ms=496512
+[SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+[SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+[SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+[SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-52
+[SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+[SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+[SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12469 age_ms=484043
+[SNAPSHOT] wifi_last_disconnect=none
+[SNAPSHOT] heap_internal_free=6616 largest_block=3188 allocator_region_minimum=1092 psram_free=4174343
+[SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+[SNAPSHOT] loop_count=36054 current_loop_elapsed_ms=2 last_loop_ms=11 max_loop_ms=2522 last_completed_age_ms=2 main_task_stack_hwm=4716
+[SNAPSHOT] web_handle_count=36054 last_handle_ms=1 max_handle_ms=38 last_handle_age_ms=1
+[SNAPSHOT] alloc_hook_result=0 alloc_failures=16 internal_cap_failures=16 last_size=1622 last_caps=0x0000080c largest_failed_size=1622
+[SNAPSHOT] web_response_count=7 route=root build_ms=0 header_ms=9 body_ms=5 body_expected=3617 body_sent=3617 header_sent=100 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+[SNAPSHOT] web_heap_start=7464/5620 built=8392/5620 end=4708/1524 alloc_fail_start_built_end=11/11/15
+[NET_PROGRESS] tx_calls=457 accepted=413 nomem=44 other_error=0 last_result=257 tx_last_tick=496504 refs=413 frees=409 free_last_tick=427825 rx_calls=1961 rx_accepted=1961 rx_last_tick=496499 tick_unavailable=0
+[SNAPSHOT] dma_heap_free=7640 largest=5876 web_dma_start=7488/5620 built=8392/5620 end=4000/1524
+[ALLOC_FAILURE] sequence=1 size=1622 caps=0x0000080c tick=418703 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=2 size=1622 caps=0x0000080c tick=418704 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=3 size=1622 caps=0x0000080c tick=418704 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=4 size=1622 caps=0x0000080c tick=418705 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=16 size=1622 caps=0x0000080c tick=427892 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=10 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023dbed,0x4020fd91,0x4023ed0e
+[SNAPSHOT] alloc_detail_omitted=11 (first_four_and_latest_retained)
+=== END DIAGNOSTIC SNAPSHOT ===
+_Update_Part : 344998
+
+
+
+
+=== DIAGNOSTIC SNAPSHOT (read-only) ===
+[SNAPSHOT] firmware=1.1.6-validation build_git_id=18553c4a207e uptime_ms=521553
+[SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+[SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+[SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+[SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-51
+[SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+[SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+[SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12469 age_ms=509084
+[SNAPSHOT] wifi_last_disconnect=none
+[SNAPSHOT] heap_internal_free=7640 largest_block=4852 allocator_region_minimum=1092 psram_free=4174343
+[SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7656
+[SNAPSHOT] loop_count=37876 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2522 last_completed_age_ms=1 main_task_stack_hwm=4716
+[SNAPSHOT] web_handle_count=37876 last_handle_ms=1 max_handle_ms=38 last_handle_age_ms=0
+[SNAPSHOT] alloc_hook_result=0 alloc_failures=16 internal_cap_failures=16 last_size=1622 last_caps=0x0000080c largest_failed_size=1622
+[SNAPSHOT] web_response_count=7 route=root build_ms=0 header_ms=9 body_ms=5 body_expected=3617 body_sent=3617 header_sent=100 socket_calls=2 retry_waits=0 socket_error=0 failed=no json_overflow=no
+[SNAPSHOT] web_heap_start=7464/5620 built=8392/5620 end=4708/1524 alloc_fail_start_built_end=11/11/15
+[NET_PROGRESS] tx_calls=480 accepted=413 nomem=67 other_error=0 last_result=257 tx_last_tick=521588 refs=413 frees=409 free_last_tick=427825 rx_calls=2062 rx_accepted=2062 rx_last_tick=521588 tick_unavailable=0
+[SNAPSHOT] dma_heap_free=7640 largest=5876 web_dma_start=7488/5620 built=8392/5620 end=4000/1524
+[ALLOC_FAILURE] sequence=1 size=1622 caps=0x0000080c tick=418703 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=2 size=1622 caps=0x0000080c tick=418704 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=3 size=1622 caps=0x0000080c tick=418704 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=4 size=1622 caps=0x0000080c tick=418705 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=8 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023ed05
+[ALLOC_FAILURE] sequence=16 size=1622 caps=0x0000080c tick=427892 core=0 isr=0 cache=1 allocator=heap_caps_malloc task=wifi task_handle=0x3ffdc61c frames=10 pcs=0x40084449,0x40084585,0x400842dd,0x40240b59,0x40241324,0x4020c69d,0x4023d39f,0x4023dbed,0x4020fd91,0x4023ed0e
+[SNAPSHOT] alloc_detail_omitted=11 (first_four_and_latest_retained)
+=== END DIAGNOSTIC SNAPSHOT ===

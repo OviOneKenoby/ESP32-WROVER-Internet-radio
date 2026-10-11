@@ -93,8 +93,10 @@ support open adapter/netif behavior; archive identities are in the 1.1.4 analysi
 - On successful conversion, ieee80211_recycle_cache_eb calls the registered
   netstack free callback and recycles the old descriptor. Open netif callbacks
   map ref/free to pbuf_ref/pbuf_free; therefore deferred conversion can retain
-  a pbuf independently of fd closure. Pinned config: static TX=8, cache TX=16.
-  Static TX configuration does not exclude dynamic DMA cache conversion.
+  a pbuf independently of fd closure. Correction from later source inspection:
+  SDK defaults are static TX8/cache16, but Arduino's default init overrides
+  these to dynamic TX32/cache4. See the 1.1.6 owner report; no buffer change
+  was applied. Cache conversion still needs a dynamic DMA packet buffer.
 - ieee80211_output_init registers output_process as the net80211 TX callback.
   ppTask dispatch at 0x4023ec79 calls it, then jumps at 0x4023ec7c to the event
   loop at 0x4023ed11, without checking OOM or scheduling immediate retry in

@@ -1,6 +1,10 @@
 # 1.1.6 network progress instrumentation
 
-**Diagnostic candidate; hardware NOT RUN; incident OPEN; PR unmerged.**
+**Diagnostic candidate; hardware PARTIAL/network FAIL reproduced; incident OPEN; PR unmerged.**
+See [new hardware evidence and NO_MEM branch analysis](OWNER_REPORT_2026-10-11.md).
+TX conversion is now attributed; later API refusals continue without new heap
+failures. A preallocated cache-resource branch explains this possibility, but
+its runtime occupancy and the persistence mechanism remain unproven.
 
 Extends failure traces from six to twelve bounded frames, preserving first four
 failures and latest. A trace can still end early due to stack validation,
