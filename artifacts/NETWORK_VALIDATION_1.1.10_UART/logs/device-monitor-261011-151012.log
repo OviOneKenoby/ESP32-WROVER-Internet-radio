@@ -1,0 +1,209 @@
+15:10:12.401 > ets Jul 29 2019 12:21:46
+15:10:12.402 > 
+15:10:12.402 > rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+15:10:12.407 > configsip: 0, SPIWP:0xee
+15:10:12.410 > clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+15:10:12.415 > mode:DIO, clock div:1
+15:10:12.418 > load:0x3fff0030,len:1184
+15:10:12.421 > load:0x40078000,len:13260
+15:10:12.424 > load:0x40080400,len:3028
+15:10:12.424 > entry 0x400805e4
+15:10:14.099 > [SYSTEM] Firmware 1.1.10-uart-validation, build a7a31ef9afc7
+15:10:14.102 > [SYSTEM] Reset reason: power_on (1)
+15:10:14.108 > [SYSTEM] Flash: 4194304 bytes; PSRAM: 4192107 bytes
+15:10:14.110 > 
+15:10:14.110 > 
+15:10:14.110 > 
+15:10:14.110 > =====================================
+15:10:14.115 >    ESP32 Internet Radio + Bluetooth
+15:10:14.118 >    WeAct 1.54" E-paper Display
+15:10:14.122 > =====================================
+15:10:14.124 > 
+15:10:14.124 > [MAIN] PSRAM detected: 4192107 bytes total, 4191863 bytes free
+15:10:14.129 > [MAIN] Initializing display...
+15:10:15.951 > _Update_Full : 1653994
+15:10:17.644 > _Update_Full : 1654000
+15:10:17.681 > [MAIN] Initializing input controls...
+15:10:17.685 > [INPUT] Initialized: Buttons + EC11 Encoder (state=1)
+15:10:17.687 > [MAIN] Initializing audio system...
+15:10:17.692 > [AUDIO] Initialization complete
+15:10:17.695 > [MAIN] Loading radio stations...
+15:10:17.698 > [STATION] Loaded 0 saved stations
+15:10:17.706 > [STATION] Loaded 5 recent, 3 favorites from flash
+15:10:17.709 > [MAIN] Loading WiFi configuration...
+15:10:17.711 > [WIFI] Event tracking ready; framework autoReconnect=true
+15:10:17.718 > [WIFI] Loaded config: The Originals
+15:10:17.720 > [TIME] Timezone: EET-2EEST,M3.5.0/3,M10.5.0/4
+15:10:19.416 > _Update_Full : 1654000
+15:10:23.149 > _Update_Full : 1654000
+15:10:23.187 > [MAIN] Attempting to reconnect to: The Originals
+15:10:23.190 > [WIFI] Attempting to reconnect to: The Originals
+15:10:23.195 > [WIFI] Connecting to: The Originals
+15:10:23.804 > [WIFI] Event STA_START at 10202 ms
+15:10:23.807 > [WIFI] Event STA_CONNECTED at 10273 ms; awaiting IP
+15:10:23.810 > ....[WIFI] Event STA_GOT_IP at 12518 ms
+15:10:25.806 > .
+15:10:25.806 > [WIFI] Connected!
+15:10:25.806 > [WIFI] IP: 192.168.1.129
+15:10:25.809 > [WIFI] Signal: -48 dBm
+15:10:25.812 > [WIFI] Config saved: The Originals
+15:10:26.170 > _Update_Part : 345000
+15:10:26.186 > [WEB] Ready: http://192.168.1.129/
+15:10:28.557 > _Update_Part : 344994
+15:10:28.594 > [MAIN] Setup complete!
+15:10:28.595 > 
+15:10:28.595 > === Remote control via serial monitor ===
+15:10:28.600 >   u / d   = encoder up / down (scroll stations, volume)
+15:10:28.603 >   k       = encoder click (select / confirm / back)
+15:10:28.609 >   space   = play / pause
+15:10:28.611 >   n / p   = next/prev station (fixed list); n = add to Favorites when playing a discovered station
+15:10:28.620 >   l       = long-press (Bluetooth mode from main list; Back everywhere in Browse/Favorites/Recent)
+15:10:28.628 >   s       = print current screen contents as text
+15:10:28.633 >   x       = read-only network/audio/runtime diagnostic snapshot
+15:10:28.639 > ==========================================
+15:10:28.641 > 
+15:10:28.641 > [TIME] NTP synchronization requested
+15:10:54.179 > [SERIAL] Simulating input: l
+15:10:54.615 > [AUDIO] Bluetooth A2DP sink started - discoverable as 'ESP32-Radio'
+15:10:56.312 > _Update_Full : 1653998
+15:10:56.349 > [MAIN] Switched to Bluetooth mode
+15:10:56.704 > _Update_Part : 344997
+15:11:08.960 > [BT] Metadata: Iron Rooster – 1340 (Blues-Rock / Official Audio)
+15:11:08.966 > [BT] Metadata: Iron Rooster - Iron Rooster – 1340 (Blues-Rock / Official Audio)
+15:11:11.074 > _Update_Full : 1653997
+15:11:11.466 > _Update_Part : 345000
+15:11:11.829 > _Update_Part : 345000
+15:11:13.203 > _Update_Part : 345002
+15:11:15.207 > _Update_Part : 345002
+15:11:17.211 > _Update_Part : 345000
+15:11:19.216 > _Update_Part : 345003
+15:11:21.219 > _Update_Part : 345005
+15:11:23.221 > _Update_Part : 344992
+15:11:25.225 > _Update_Part : 344999
+15:11:27.229 > _Update_Part : 344999
+15:11:29.232 > _Update_Part : 345002
+15:11:31.233 > _Update_Part : 345004
+15:11:33.237 > _Update_Part : 345002
+15:11:35.239 > _Update_Part : 345000
+15:11:37.241 > _Update_Part : 345005
+15:11:39.244 > _Update_Part : 345000
+15:11:41.246 > _Update_Part : 344997
+15:11:43.249 > _Update_Part : 345000
+15:11:45.251 > _Update_Part : 345000
+15:11:47.254 > _Update_Part : 345002
+15:11:49.256 > _Update_Part : 345002
+15:11:51.258 > _Update_Part : 345000
+15:11:51.464 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+15:11:51.468 > [SNAPSHOT] firmware=1.1.10-uart-validation build_git_id=a7a31ef9afc7 uptime_ms=98381
+15:11:51.473 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+15:11:51.478 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+15:11:51.487 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+15:11:51.495 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-48
+15:11:51.501 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+15:11:51.509 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+15:11:51.517 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12518 age_ms=85863
+15:11:51.523 > [SNAPSHOT] wifi_last_disconnect=none
+15:11:51.526 > [SNAPSHOT] heap_internal_free=8428 largest_block=4852 allocator_region_minimum=3476 psram_free=4177447
+15:11:51.537 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7644
+15:11:51.548 > [SNAPSHOT] loop_count=6413 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2545 last_completed_age_ms=1 main_task_stack_hwm=4404
+15:11:51.559 > [SNAPSHOT] web_handle_count=6413 last_handle_ms=1 max_handle_ms=2 last_handle_age_ms=0
+15:11:51.568 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+15:11:51.578 > [SNAPSHOT] web_response_count=0 route=none build_ms=0 header_ms=0 body_ms=0 body_expected=0 body_sent=0 header_sent=0 socket_calls=0 retry_waits=0 socket_error=0 failed=no json_overflow=no
+15:11:51.592 > [SNAPSHOT] web_heap_start=0/0 built=0/0 end=0/0 alloc_fail_start_built_end=0/0/0
+15:11:51.600 > [SW_TX] ready=1 skipped=0
+15:11:51.603 > [SW_TX] scope_overflow=0
+15:11:51.607 > [SW_TX] paired=0 unpaired=0
+15:11:51.607 > [SW_TX] unexpected=0
+15:11:51.609 > [SW_CONVERT] quota_passed=31
+15:11:51.612 > [SW_CONVERT] preheap_null=0
+15:11:51.614 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+15:11:51.618 > [SW_MALLOC] calls=31 ok=31 null=0
+15:11:51.620 > [SW_SITE] k=0 n=0 tick=0
+15:11:51.623 > [SW_SITE] k=1 n=31 tick=98038
+15:11:51.626 > [SW_SITE] k=2 n=0 tick=0
+15:11:51.628 > [SW_SITE] k=3 n=62 tick=98039
+15:11:51.631 > [SW_SITE] k=4 n=424 tick=98162
+15:11:51.634 > [SW_SITE] k=5 n=0 tick=0
+15:11:51.636 > [SW_TRACE] total=0 retained_max=8
+15:11:51.639 > [NET_PROGRESS] tx_calls=29 accepted=29 nomem=0 other_error=0 last_result=0 tx_last_tick=98038 refs=29 frees=29 free_last_tick=98038 rx_calls=270 rx_accepted=270 rx_last_tick=98037 tick_unavailable=0
+15:11:51.656 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+15:11:51.665 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=18 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+15:11:51.676 > [SNAPSHOT] dma_heap_free=7396 largest=4852 web_dma_start=0/0 built=0/0 end=0/0
+15:11:51.681 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+15:11:51.687 > === END DIAGNOSTIC SNAPSHOT ===
+15:11:53.261 > _Update_Part : 345016
+15:11:55.266 > _Update_Part : 345002
+15:11:57.270 > _Update_Part : 345000
+15:11:59.272 > _Update_Part : 345000
+15:12:01.276 > _Update_Part : 344997
+15:12:03.279 > _Update_Part : 345000
+15:12:05.286 > _Update_Part : 345000
+15:12:07.289 > _Update_Part : 345000
+15:12:09.293 > _Update_Part : 344996
+15:12:11.295 > _Update_Part : 345000
+15:12:13.299 > _Update_Part : 345005
+15:12:15.303 > _Update_Part : 344997
+15:12:17.307 > _Update_Part : 344999
+15:12:19.309 > _Update_Part : 345003
+15:12:21.312 > _Update_Part : 344999
+15:12:23.322 > _Update_Part : 345000
+15:12:24.168 > === DIAGNOSTIC SNAPSHOT (read-only) ===
+15:12:24.172 > [SNAPSHOT] firmware=1.1.10-uart-validation build_git_id=a7a31ef9afc7 uptime_ms=131087
+15:12:24.177 > [SNAPSHOT] reset_reason_raw=1 reset_reason=power_on
+15:12:24.182 > [SNAPSHOT] wifi_cached_state=connected framework_status=connected(3) connected=yes auto_reconnect=yes
+15:12:24.191 > [SNAPSHOT] wifi_configured_ssid=The Originals association_info=available result=0
+15:12:24.199 > [SNAPSHOT] wifi_ssid=The Originals bssid=E8:48:B8:66:61:DF channel=7 rssi_dbm=-49
+15:12:24.205 > [SNAPSHOT] ip=192.168.1.129 gateway=192.168.1.1 subnet=255.255.255.0 dns1=192.168.1.1 dns2=0.0.0.0
+15:12:24.215 > [SNAPSHOT] wifi_events processed=3 dropped=0 queued=0 disconnects=0 got_ip=1 lost_ip=0
+15:12:24.221 > [SNAPSHOT] wifi_last_event=STA_GOT_IP at_ms=12518 age_ms=118569
+15:12:24.227 > [SNAPSHOT] wifi_last_disconnect=none
+15:12:24.229 > [SNAPSHOT] heap_internal_free=7528 largest_block=5620 allocator_region_minimum=3380 psram_free=4177447
+15:12:24.241 > [SNAPSHOT] audio_source=bluetooth playback=playing codec=SBC bluetooth_lifecycle=active restartable=yes audio_task_stack_hwm=7644
+15:12:24.251 > [SNAPSHOT] loop_count=8835 current_loop_elapsed_ms=1 last_loop_ms=11 max_loop_ms=2545 last_completed_age_ms=1 main_task_stack_hwm=3944
+15:12:24.262 > [SNAPSHOT] web_handle_count=8835 last_handle_ms=1 max_handle_ms=2 last_handle_age_ms=0
+15:12:24.271 > [SNAPSHOT] alloc_hook_result=0 alloc_failures=0 internal_cap_failures=0 last_size=0 last_caps=0x00000000 largest_failed_size=0
+15:12:24.282 > [SNAPSHOT] web_response_count=0 route=none build_ms=0 header_ms=0 body_ms=0 body_expected=0 body_sent=0 header_sent=0 socket_calls=0 retry_waits=0 socket_error=0 failed=no json_overflow=no
+15:12:24.299 > [SNAPSHOT] web_heap_start=0/0 built=0/0 end=0/0 alloc_fail_start_built_end=0/0/0
+15:12:24.304 > [SW_TX] ready=1 skipped=0
+15:12:24.308 > [SW_TX] scope_overflow=0
+15:12:24.310 > [SW_TX] paired=0 unpaired=0
+15:12:24.313 > [SW_TX] unexpected=0
+15:12:24.313 > [SW_CONVERT] quota_passed=65
+15:12:24.315 > [SW_CONVERT] preheap_null=0
+15:12:24.318 > [SW_CONVERT] after_malloc_null=0 unpaired=0
+15:12:24.321 > [SW_MALLOC] calls=65 ok=65 null=0
+15:12:24.324 > [SW_SITE] k=0 n=0 tick=0
+15:12:24.327 > [SW_SITE] k=1 n=65 tick=130191
+15:12:24.329 > [SW_SITE] k=2 n=0 tick=0
+15:12:24.332 > [SW_SITE] k=3 n=130 tick=130192
+15:12:24.335 > [SW_SITE] k=4 n=733 tick=130906
+15:12:24.337 > [SW_SITE] k=5 n=0 tick=0
+15:12:24.341 > [SW_TRACE] total=0 retained_max=8
+15:12:24.343 > [NET_PROGRESS] tx_calls=63 accepted=63 nomem=0 other_error=0 last_result=0 tx_last_tick=130192 refs=63 frees=63 free_last_tick=130191 rx_calls=387 rx_accepted=387 rx_last_tick=130907 tick_unavailable=0
+15:12:24.360 > [TX_CONFIG] captured=1 init_calls=1 result=0 type=1 dynamic=32 cache=4 static=0 features=0x0000000000000003
+15:12:24.368 > [TX_REFUSAL_SUMMARY] count=0 rx_echo_request=50 refused_echo_reply=0 refused_tcp80=0 ledger_overflow=0 unmatched_free=0
+15:12:24.379 > [SNAPSHOT] dma_heap_free=7500 largest=5620 web_dma_start=0/0 built=0/0 end=0/0
+15:12:24.388 > [SNAPSHOT] alloc_detail_omitted=0 (first_four_and_latest_retained)
+15:12:24.393 > === END DIAGNOSTIC SNAPSHOT ===
+15:12:25.328 > _Update_Part : 345000
+15:12:27.330 > _Update_Part : 344998
+15:12:29.332 > _Update_Part : 345000
+15:12:31.336 > _Update_Part : 345001
+15:12:33.341 > _Update_Part : 345000
+15:12:35.342 > _Update_Part : 345000
+15:12:37.348 > _Update_Part : 344998
+15:12:39.350 > _Update_Part : 345001
+15:12:41.354 > _Update_Part : 344998
+15:12:43.359 > _Update_Part : 345002
+15:12:45.361 > _Update_Part : 345002
+15:12:47.363 > _Update_Part : 345000
+15:12:49.367 > _Update_Part : 345000
+15:12:51.373 > _Update_Part : 345000
+15:12:53.375 > _Update_Part : 344998
+15:12:55.379 > _Update_Part : 344998
+15:12:57.382 > _Update_Part : 345000
+15:12:59.387 > _Update_Part : 345000
+15:13:01.389 > _Update_Part : 345000
+15:13:03.392 > _Update_Part : 345000
+15:13:05.394 > _Update_Part : 345000
+15:13:07.395 > _Update_Part : 345000

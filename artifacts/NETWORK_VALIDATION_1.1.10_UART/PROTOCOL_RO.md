@@ -1,5 +1,11 @@
 # 1.1.10 UART — numai controlul pozitiv B0/B1
 
+**Controlul normal a fost confirmat din logurile proprietarului.** Vezi
+[raportul B0/B1](CONTROL_B0_B1_RO.md), inclusiv abaterea de timp.
+Etapa următoare pe același binar, fără reflash, are un
+[protocol HTTP separat și complet](PROTOCOL_HTTP_RO.md).
+Instrucțiunile de mai jos documentează etapa de control deja executată.
+
 **Incident OPEN. Fără HTTP în această etapă.** Candidat
 1.1.10-uart-validation / a7a31ef9afc7, pentru CH340/UART COM5.
 1.1.9 rămâne suspendat; nu folosi protocolul său pentru declanșare.
