@@ -92,6 +92,14 @@ Discriminating outcomes:
 
 No outcome is a hardware-verified fix. Incident remains OPEN.
 
+Owner wait endpoint293034 now establishes84.314s with accepted/ref/free fixed,
+same four retained identities, NO_MEM31->193 and failures4, despite DMA
+largest3700. RX701->1041 but echo102/2 unchanged; do not infer later ping RX.
+See RETRY_RECYCLING_ANALYSIS.md: stock encoder GPIO13/14 prevent a simple JTAG
+attach and hbreak alone can fall back to software flash. A separate local
+encoder-disabled JTAG candidate and complete protocol are prepared; no new
+firmware release/automatic flash or merge. Existing1.1.7 bin/ELF/hash unchanged.
+
 ## Exact artifact and decode
 
 Executable source: `9cf48e9022c0a9e8b88943c073bb29f447bfa80a`;

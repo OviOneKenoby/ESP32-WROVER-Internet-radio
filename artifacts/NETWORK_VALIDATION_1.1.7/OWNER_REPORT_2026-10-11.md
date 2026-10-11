@@ -2,11 +2,48 @@
 
 Incident OPEN; PR unmerged. Owner reports that the first root request stopped
 ping and the page did not load. No new firmware or behavior change is proposed
-in this evidence update. This snapshot does not include the pre-HTTP baseline
-or a later wait series; do not invent either. Root's own interval starts with
+in this evidence update. The initial snapshot does not include a pre-HTTP
+baseline; a later endpoint summary is recorded below. Root's own interval starts with
 allocation-failure count0 and ends4. Hardware observation is network FAIL,
 with Bluetooth reported playing; audible quality was not explicitly stated
 for this particular run.
+
+## Later snapshot: uptime293034, persistence established
+
+Owner supplied endpoint deltas (not the full second snapshot transcript).
+Interval293034-208720 = **84314ms /84.314s**; no additional HTTP or Wi-Fi
+events. These endpoints supersede the earlier seven-second-only limitation.
+
+| Observation | 208720ms | 293034ms |
+|---|---:|---:|
+| TX accepted | 124 | 124 |
+| Ref/free events | 124/120 | 124/120 |
+| TX NO_MEM | 31 | 193 |
+| Failed allocations | 4 | 4 |
+| Netif RX accepted/total previously equal; later total | 701 | total1041 |
+| Accepted classified echo requests | 102 | 102 |
+| Refused echo replies | 2 | 2 |
+| Largest DMA block | 2676 | 3700 |
+
+The same four ledger handles/refs1/first_ticks remain. Zero successful TX
+submissions and zero observed netstack ref/free activity across the interval,
+with162 additional NO_MEM returns, **demonstrate persistent lack of progress at
+these TX boundaries during the observed interval**. They do not measure all
+radio/management traffic or all private completions. Stable identities exclude
+observed release/replacement of these entries between endpoints because frees
+and refs themselves do not increase.
+
+Additional340 RX are not additional classified accepted echo requests; the
+echo counter is unchanged. Consequently this wait interval does not demonstrate
+ongoing delivery of ping requests, nor new refused echo replies. The two earlier
+refused replies remain real output-side evidence. The later refused_tcp80 field
+was not provided: do not label all162 later refusals TCP80 by subtraction.
+
+DMA largest3700 exceeds1622 at the later sample; no new registered allocator
+failure is observed. Recovery of a contiguous heap block is not a wakeup/retry
+and does not establish live private descriptor availability or available quota
+at a particular later attempt. The persistent pool/resource hypothesis is
+strengthened, but pool inventory and exact refusal branch remain unobserved.
 
 ## Exact ELF decode
 
@@ -78,8 +115,8 @@ not the subsequent executed PCs or the reason that later progress stops.
   accepted echo request, correlate request/reply IDs or prove every post-fault
   request arrived. Advancing unrelated RX alone is insufficient for that claim.
 - Last free precedes retained events by3..5ms. Observation is approximately7s
-  after the first retained event; refusals span201916..208394. This is short
-  persistence, not a demonstrated minute-long wait for this build.
+  after the first retained event; refusals span201916..208394. This initial
+  snapshot alone was short persistence; the later84.314s interval above extends it.
 - Current DMA5840/largest2676, internal5436/largest2676. Samples are sequential,
   not atomic; largest exceeding1622 now does not describe the heap at failures
   or prove a future allocation would succeed. Do not import the recovered5876
@@ -120,7 +157,7 @@ is insufficient. The optional published script and BRANCH_REVIEW.md explain
 SMP/halt timing limitations; JTAG has NOT been run. A supported synchronized
 vendor diagnostic with equivalent semantics would also supply this evidence.
 
-No repeat of 1.1.6 is requested. Any already collected wait snapshots for this
-1.1.7 run can establish whether the same identities persist while DMA recovers;
-such observations strengthen persistence evidence but cannot replace branch
-capture. No cache resize, gzip fix claim, auto reconnect/reboot, flash or merge.
+The later supplied interval now establishes persistence; it cannot replace
+branch capture. See RETRY_RECYCLING_ANALYSIS.md for the event-dependent retry
+path and JTAG feasibility correction. No repeat of 1.1.6, cache resize, gzip fix
+claim, auto reconnect/reboot, flash or merge.

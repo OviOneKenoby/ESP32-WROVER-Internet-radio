@@ -38,6 +38,11 @@
   at first root; four distinct retained identities and TCP/echo TX refusals
   observed. See OWNER_REPORT_2026-10-11.md. Incident OPEN; private refusal
   branch/JTAG not observed; no fix/leak/private queue proof.
+- Subsequent wait endpoint293034 extends persistence to84.314s with unchanged
+  accepted/refs/frees/identities, growing NO_MEM and DMA largest3700. Updated
+  owner report and retry analysis distinguish evidence from private inventory.
+  Existing firmware assets unchanged; revised GDB scripts are gated candidates,
+  not a replay of the initially published script or hardware-verified probes.
 - Publication/download verification PASS: bin, zip and extracted exact ELF
   downloaded from GitHub matched all three published SHA256 entries. Routing
   verifier and branch-probe generator also passed on the downloaded ELF; its

@@ -29,3 +29,14 @@ TCP80/two echo replies with failure count unchanged. Cache-pool refusal is the
 strongest hypothesis but direct private branch/JTAG capture remains missing.
 See OWNER_REPORT_2026-10-11.md. Diagnostic evidence cannot yet support
 a demonstrated fix, leak or private-queue lockup claim.
+
+Later1.1.7 endpoint293034 demonstrates84.314s with the same four retained
+identities, accepted124/ref124/free120 unchanged, NO_MEM31->193/failures4,
+DMA largest3700. RX grows340 but echo counters remain102/2. Retry/recycling
+analysis identifies event-dependent triggers; their actual post-fault execution
+is unresolved. GPIO13/14 input mux and OpenOCD flash-breakpoint fallback limit
+the original JTAG suggestion. A separate local1.1.8 JTAG profile disables only
+encoder initialization/polling/IRQ and prepares exact-ELF private-PC probes with
+hardware-only/SMP feasibility gates and a full protocol. TXdynamic32/cache4
+and policy unchanged; default build remains esp32-dev. No new firmware release,
+flash or merge; actual JTAG execution NOT RUN.

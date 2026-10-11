@@ -1,5 +1,12 @@
 # Optional exact-ELF JTAG observation
 
+**Feasibility correction:** stock1.1.7 initializes encoder GPIO13/14 as GPIO,
+conflicting with JTAG. hbreak alone may fall back to software flash breakpoints
+in Espressif OpenOCD. Do not run the old proposal on the present failed boot.
+See RETRY_RECYCLING_ANALYSIS.md. Revised scripts require a host readiness gate,
+ESP_FLASH_SIZE0 before target config, verified real hardware/SMP support and
+correct pin mux; they are static candidates, not hardware-validated probes.
+
 ELF SHA256 `22D30785E7C25F3587A04ECFBE73610A438D7D78AB843D1773DE167EBC75D999`.
 No target attached or GDB script executed. These are static checks, not hardware
 proof. The firmware's metadata alternative is usable without a debugger.

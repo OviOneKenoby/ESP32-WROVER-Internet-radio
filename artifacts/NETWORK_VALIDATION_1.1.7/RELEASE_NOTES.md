@@ -7,6 +7,14 @@ identities coincide with four Wi-Fi conversion failures, followed by31 NO_MEM
 Cache-pool exhaustion is strongly supported, but the actual private refusal
 branch and the reason progress fails to recover are not yet demonstrated.
 
+Later snapshot293034 establishes84.314s persistence: same four retained pbuf
+identities/first ticks, accepted124 and refs/frees124/120 fixed, NO_MEM31->193,
+failures4, RX701->1041, echo102/2 fixed, later DMA largest3700, no new HTTP or
+Wi-Fi events. See RETRY_RECYCLING_ANALYSIS.md for event-dependent retry paths
+and the corrected JTAG prerequisites (encoder GPIO13/14, hardware-only server
+configuration). A separate local JTAG candidate/protocol is prepared; no new
+firmware release. Existing1.1.7 executable assets/hashes are unchanged.
+
 Saved 1.1.6 captures already show growing TX NO_MEM after allocation failures
 stop and DMA heap recovers. This candidate preserves dynamic TX32/cache4 and
 TX behavior while recording actual initialization fields, per-refusal interface,
