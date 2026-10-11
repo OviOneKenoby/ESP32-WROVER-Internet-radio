@@ -16,6 +16,8 @@ struct WebResponseDiagnostics {
     size_t freeStart = 0, largestStart = 0, freeBuilt = 0, largestBuilt = 0;
     size_t freeEnd = 0, largestEnd = 0;
     uint32_t allocStart = 0, allocBuilt = 0, allocEnd = 0;
+    size_t dmaFreeStart = 0, dmaLargestStart = 0, dmaFreeBuilt = 0, dmaLargestBuilt = 0;
+    size_t dmaFreeEnd = 0, dmaLargestEnd = 0;
 };
 
 class ObservedWebServer : public WebServer {
@@ -43,12 +45,16 @@ public:
         diagnostics.freeStart = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         diagnostics.largestStart = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         diagnostics.allocStart = SystemInfo::allocationFailures().count;
+        diagnostics.dmaFreeStart = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
+        diagnostics.dmaLargestStart = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
         writer_.reset(); firstWrite_ = true; startedMs_ = millis();
     }
     void finishResponse() {
         diagnostics.freeEnd = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         diagnostics.largestEnd = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         diagnostics.allocEnd = SystemInfo::allocationFailures().count;
+        diagnostics.dmaFreeEnd = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
+        diagnostics.dmaLargestEnd = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
     }
     size_t write(const uint8_t* data, size_t size) { return writeObserved(data, size, false); }
     WebResponseDiagnostics diagnostics;
@@ -69,6 +75,8 @@ private:
             diagnostics.freeBuilt = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             diagnostics.largestBuilt = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             diagnostics.allocBuilt = SystemInfo::allocationFailures().count;
+            diagnostics.dmaFreeBuilt = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
+            diagnostics.dmaLargestBuilt = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
         }
         const uint32_t start = millis();
         const size_t sent = writer_.write(data, size);

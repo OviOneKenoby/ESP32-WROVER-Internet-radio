@@ -1413,6 +1413,28 @@ void printDiagnosticSnapshot() {
         (unsigned)response.freeEnd, (unsigned)response.largestEnd,
         (unsigned long)response.allocStart, (unsigned long)response.allocBuilt,
         (unsigned long)response.allocEnd);
+    const auto records = SystemInfo::allocationFailureRecords();
+    Serial.printf("[SNAPSHOT] dma_heap_free=%u largest=%u web_dma_start=%u/%u built=%u/%u end=%u/%u\n",
+        heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT),
+        heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT),
+        (unsigned)response.dmaFreeStart, (unsigned)response.dmaLargestStart,
+        (unsigned)response.dmaFreeBuilt, (unsigned)response.dmaLargestBuilt,
+        (unsigned)response.dmaFreeEnd, (unsigned)response.dmaLargestEnd);
+    for (unsigned index = 0; index < 5; ++index) {
+        const auto& record = index < 4 ? records.first[index] : records.last;
+        if (!record.sequence || (index == 4 && records.total <= 4)) continue;
+        Serial.printf("[ALLOC_FAILURE] sequence=%lu size=%lu caps=0x%08lx tick=%lu core=%u isr=%u cache=%u allocator=%s task=%s task_handle=0x%08lx frames=%u pcs=",
+            (unsigned long)record.sequence, (unsigned long)record.size,
+            (unsigned long)record.caps, (unsigned long)record.tick,
+            record.core, record.isr, record.cacheEnabled, record.allocator,
+            record.task, (unsigned long)record.taskHandle, record.frameCount);
+        for (unsigned pc = 0; pc < record.frameCount; ++pc)
+            Serial.printf("0x%08lx%s", (unsigned long)record.pcs[pc],
+                pc + 1 < record.frameCount ? "," : "");
+        Serial.println();
+    }
+    Serial.printf("[SNAPSHOT] alloc_detail_omitted=%lu (first_four_and_latest_retained)\n",
+        records.total > 5 ? (unsigned long)(records.total - 5) : 0UL);
     Serial.println("=== END DIAGNOSTIC SNAPSHOT ===");
 }
 
