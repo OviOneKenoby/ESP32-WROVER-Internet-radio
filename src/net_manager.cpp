@@ -1,6 +1,7 @@
 #include "net_manager.h"
 #include "config.h"
 #include <EEPROM.h>
+#include <esp_wifi.h>
 
 // Global WiFi manager
 WiFiManager wifiManager;
@@ -395,13 +396,54 @@ void WiFiManager::getDiagnostics(WiFiDiagnostics& diagnostics) const {
         diagnostics.state = WIFI_DISCONNECTED;
     }
     diagnostics.autoReconnect = WiFi.getAutoReconnect();
-    strncpy(diagnostics.ssid, connectedSSID, sizeof(diagnostics.ssid) - 1);
-    diagnostics.ssid[sizeof(diagnostics.ssid) - 1] = '\0';
+    strncpy(diagnostics.configuredSsid, connectedSSID,
+            sizeof(diagnostics.configuredSsid) - 1);
+    diagnostics.configuredSsid[sizeof(diagnostics.configuredSsid) - 1] = '\0';
+    strcpy(diagnostics.ssid, "unavailable");
+    strcpy(diagnostics.bssid, "unavailable");
+    strcpy(diagnostics.gateway, "0.0.0.0");
+    strcpy(diagnostics.subnet, "0.0.0.0");
+    strcpy(diagnostics.dns1, "0.0.0.0");
+    strcpy(diagnostics.dns2, "0.0.0.0");
+    diagnostics.channel = 0;
+    diagnostics.associationInfoAvailable = false;
+    diagnostics.associationInfoResult = ESP_ERR_INVALID_STATE;
     if (diagnostics.connected) {
         const IPAddress ip = WiFi.localIP();
+        const IPAddress gateway = WiFi.gatewayIP();
+        const IPAddress subnet = WiFi.subnetMask();
+        const IPAddress dns1 = WiFi.dnsIP(0);
+        const IPAddress dns2 = WiFi.dnsIP(1);
         snprintf(diagnostics.ip, sizeof(diagnostics.ip), "%u.%u.%u.%u",
                  ip[0], ip[1], ip[2], ip[3]);
-        diagnostics.rssi = WiFi.RSSI();
+        snprintf(diagnostics.gateway, sizeof(diagnostics.gateway), "%u.%u.%u.%u",
+                 gateway[0], gateway[1], gateway[2], gateway[3]);
+        snprintf(diagnostics.subnet, sizeof(diagnostics.subnet), "%u.%u.%u.%u",
+                 subnet[0], subnet[1], subnet[2], subnet[3]);
+        snprintf(diagnostics.dns1, sizeof(diagnostics.dns1), "%u.%u.%u.%u",
+                 dns1[0], dns1[1], dns1[2], dns1[3]);
+        snprintf(diagnostics.dns2, sizeof(diagnostics.dns2), "%u.%u.%u.%u",
+                 dns2[0], dns2[1], dns2[2], dns2[3]);
+
+        wifi_ap_record_t accessPoint{};
+        const esp_err_t associationResult = esp_wifi_sta_get_ap_info(&accessPoint);
+        diagnostics.associationInfoResult = associationResult;
+        if (associationResult == ESP_OK) {
+            diagnostics.associationInfoAvailable = true;
+            strncpy(diagnostics.ssid,
+                    reinterpret_cast<const char*>(accessPoint.ssid),
+                    sizeof(diagnostics.ssid) - 1);
+            diagnostics.ssid[sizeof(diagnostics.ssid) - 1] = '\0';
+            snprintf(diagnostics.bssid, sizeof(diagnostics.bssid),
+                     "%02X:%02X:%02X:%02X:%02X:%02X",
+                     accessPoint.bssid[0], accessPoint.bssid[1],
+                     accessPoint.bssid[2], accessPoint.bssid[3],
+                     accessPoint.bssid[4], accessPoint.bssid[5]);
+            diagnostics.channel = accessPoint.primary;
+            diagnostics.rssi = accessPoint.rssi;
+        } else {
+            diagnostics.rssi = -100;
+        }
     } else {
         strcpy(diagnostics.ip, "0.0.0.0");
         diagnostics.rssi = -100;
@@ -416,6 +458,14 @@ void WiFiManager::getDiagnostics(WiFiDiagnostics& diagnostics) const {
     diagnostics.lostIpCount = snapshot.lostIpCount;
     diagnostics.processedEventCount = snapshot.processedEventCount;
     diagnostics.droppedEventCount = droppedEventCount;
+    diagnostics.queuedEventCount = eventQueue
+        ? uxQueueMessagesWaiting(eventQueue)
+        : 0;
+    diagnostics.lastEvent = snapshot.lastEvent;
+    strncpy(diagnostics.lastEventName, eventName(snapshot.lastEvent),
+            sizeof(diagnostics.lastEventName) - 1);
+    diagnostics.lastEventName[sizeof(diagnostics.lastEventName) - 1] = '\0';
+    diagnostics.lastEventMs = snapshot.lastEventMs;
     diagnostics.stateSinceMs = snapshot.stateSinceMs;
     diagnostics.connectedSinceMs = snapshot.connectedSinceMs;
     diagnostics.lastDisconnectMs = snapshot.lastDisconnectMs;
@@ -425,6 +475,7 @@ void WiFiManager::getDiagnostics(WiFiDiagnostics& diagnostics) const {
     diagnostics.hasDisconnected = snapshot.hasDisconnected;
     diagnostics.hasGotIp = snapshot.hasGotIp;
     diagnostics.hasLostIp = snapshot.hasLostIp;
+    diagnostics.hasLastEvent = snapshot.hasLastEvent;
 }
 
 const char* WiFiManager::stateName(WiFiState state) {
@@ -448,6 +499,18 @@ const char* WiFiManager::frameworkStatusName(uint8_t status) {
         case WL_CONNECTION_LOST: return "connection_lost";
         case WL_DISCONNECTED: return "disconnected";
         case WL_NO_SHIELD: return "station_stopped";
+        default: return "unknown";
+    }
+}
+
+const char* WiFiManager::eventName(WiFiObservedEvent event) {
+    switch (event) {
+        case WiFiObservedEvent::STA_STARTED: return "STA_START";
+        case WiFiObservedEvent::STA_ASSOCIATED: return "STA_CONNECTED";
+        case WiFiObservedEvent::STA_DISCONNECTED: return "STA_DISCONNECTED";
+        case WiFiObservedEvent::STA_GOT_IP: return "STA_GOT_IP";
+        case WiFiObservedEvent::STA_LOST_IP: return "STA_LOST_IP";
+        case WiFiObservedEvent::STA_STOPPED: return "STA_STOP";
         default: return "unknown";
     }
 }

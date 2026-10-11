@@ -1,7 +1,7 @@
 # TUNER//01 firmware 1.1.2 Wi-Fi validation report
 
-Status: **software verification complete; new physical regression PENDING**.
-The original uncontrolled connectivity incident remains **OPEN**.
+Status: **PARTIAL hardware validation; recurring Bluetooth-network incident
+OPEN**. The original similar 1.1.1 incident also remains **OPEN**.
 
 ## Baseline verified before modification
 
@@ -83,17 +83,40 @@ without invented event counts. Static inspection confirmed that no new
 change was introduced. Full artifact details are in `BUILD_MANIFEST.md` and
 `SHA256SUMS.txt`.
 
-### New hardware tests
+### Hardware results on 1.1.2 (`7cf087f8c686`)
 
-**PENDING / NOT RUN.** Use `OWNER_TEST_CHECKLIST.md`. A build, screen change,
-or one successful reconnect is not sufficient to close the incident.
+- Radio recovery after a router restart: **PASS for the tested topology**.
+  Same-SSID RE505X extenders remained available, so this was not a verified
+  outage of every AP and was not the planned timed 60-second AP shutdown.
+  Three disconnects were recorded (reason 200 `BEACON_TIMEOUT`, then reason 4
+  `ASSOC_EXPIRE` twice), each followed by association and, where required,
+  `GOT_IP`. At 286,403 ms diagnostics reported connected status, IP
+  `192.168.1.129`, three disconnects, three `GOT_IP` events, 11 processed
+  events and zero drops. Web/diagnostics recovered, and West City started
+  manually without reboot. Automatic station resume was not observed and is
+  outside this task.
+- Stable network availability during Bluetooth: **FAIL observed in two
+  sessions** while SBC playback continued. Web, diagnostics and ping became
+  unreachable. In the second session there was one spontaneous recovery:
+  `STA_DISCONNECTED` reason 200 at 384,317 ms, association at 385,628 ms and
+  `GOT_IP` at 387,854 ms (3,537 ms total). A later persistent outage had no
+  further Wi-Fi event in the complete log.
+- Persistent outage after leaving Bluetooth: **observed**. West City then
+  failed DNS at 651,710 ms despite framework state previously reporting
+  connected.
+- Controlled router restart during Bluetooth: **NOT TESTED**. The outages
+  occurred before that planned test.
+- Overall hardware validation: **PARTIAL; incident OPEN**.
 
 ### Original incident
 
-**OPEN / cause unknown.** The first session's loss of router visibility,
-web/diagnostics, DNS and Radio connectivity has not been reproduced with
-enough diagnostics to assign a cause. This patch makes a recurrence observable
-but does not claim to eliminate an unidentified cause.
+**OPEN / cause unknown.** Low internal heap, the observed `BEACON_TIMEOUT`,
+and same-SSID extenders are evidence and hypotheses, not independent proof of
+root cause. The reset reason `watchdog` belongs to the boot starting the second
+log and is not evidence of a watchdog reset during the later outage. The
+separate REMOTE device at `192.168.1.117` is not TUNER//01. Firmware 1.1.2
+does not expose enough serial-only association/loop detail to resolve the
+incident when HTTP is unavailable.
 
 ## Preserved scope
 

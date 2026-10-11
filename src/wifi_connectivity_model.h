@@ -29,17 +29,23 @@ struct WiFiConnectivitySnapshot {
     uint32_t gotIpCount = 0;
     uint32_t lostIpCount = 0;
     uint32_t processedEventCount = 0;
+    WiFiObservedEvent lastEvent = WiFiObservedEvent::STA_STOPPED;
+    uint32_t lastEventMs = 0;
     uint8_t lastDisconnectReason = 0;
     bool hasConnectedSince = false;
     bool hasDisconnected = false;
     bool hasGotIp = false;
     bool hasLostIp = false;
+    bool hasLastEvent = false;
 };
 
 class WiFiConnectivityModel {
 public:
     void apply(WiFiObservedEvent event, uint8_t reason, uint32_t eventMs) {
         snapshot.processedEventCount++;
+        snapshot.lastEvent = event;
+        snapshot.lastEventMs = eventMs;
+        snapshot.hasLastEvent = true;
         switch (event) {
             case WiFiObservedEvent::STA_STARTED:
             case WiFiObservedEvent::STA_ASSOCIATED:

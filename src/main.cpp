@@ -11,6 +11,7 @@
 #include "correctness_guards.h"
 #include "current_station_context.h"
 #include "system_info.h"
+#include <esp_heap_caps.h>
 
 // ============================================
 // Global State
@@ -43,6 +44,11 @@ uint32_t volumeDisplayUntil = 0; // 0 = not currently showing volume overlay
 char lastBluetoothMetadata[256] = "";
 uint32_t lastUserInteraction = 0;
 char lastIdleClockMinute[6] = "";
+uint32_t loopIterationCount = 0;
+uint32_t currentLoopStartedMs = 0;
+uint32_t lastLoopCompletedMs = 0;
+uint32_t lastLoopDurationMs = 0;
+uint32_t maxLoopDurationMs = 0;
 
 // Shared cursor for all the browse-mode list screens (country/tag/results/
 // favorites/recent) - these are always mutually exclusive (only one such
@@ -105,6 +111,7 @@ void handleErrorInput(InputEvent event);
 void refreshStationListDisplay();
 void checkSerialCommands();
 void printCurrentScreen();
+void printDiagnosticSnapshot();
 void showVolumeOverlay();
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
@@ -228,6 +235,7 @@ void setup() {
     Serial.println("  n / p   = next/prev station (fixed list); n = add to Favorites when playing a discovered station");
     Serial.println("  l       = long-press (Bluetooth mode from main list; Back everywhere in Browse/Favorites/Recent)");
     Serial.println("  s       = print current screen contents as text");
+    Serial.println("  x       = read-only network/audio/runtime diagnostic snapshot");
     Serial.println("==========================================");
     Serial.println();
 }
@@ -236,6 +244,8 @@ void setup() {
 // Main Loop
 // ============================================
 void loop() {
+    currentLoopStartedMs = millis();
+    loopIterationCount++;
     // Drain framework events on the application task before serving web
     // requests, so status/IP diagnostics cannot expose stale connection data.
     wifiManager.update();
@@ -294,6 +304,11 @@ void loop() {
     
     // Small delay to prevent watchdog issues
     delay(10);
+    lastLoopDurationMs = millis() - currentLoopStartedMs;
+    if (lastLoopDurationMs > maxLoopDurationMs) {
+        maxLoopDurationMs = lastLoopDurationMs;
+    }
+    lastLoopCompletedMs = millis();
 }
 
 // ============================================
@@ -1268,6 +1283,9 @@ void checkSerialCommands() {
         case 's': case 'S':
             printCurrentScreen();
             return;
+        case 'x': case 'X':
+            printDiagnosticSnapshot();
+            return;
         case '\r': case '\n':
             return; // ignore bare line endings from the monitor
         default:
@@ -1283,6 +1301,98 @@ void checkSerialCommands() {
     } else {
         handleInput(event);
     }
+}
+
+void printDiagnosticSnapshot() {
+    const uint32_t now = millis();
+    const esp_reset_reason_t resetReason = esp_reset_reason();
+    WiFiDiagnostics wifi{};
+    wifiManager.getDiagnostics(wifi);
+    AudioDiagnostics audio{};
+    const bool haveAudio = audioPlayer.getDiagnostics(audio);
+    WebPortalDiagnostics web{};
+    webPortal.getDiagnostics(web);
+
+    Serial.println("=== DIAGNOSTIC SNAPSHOT (read-only) ===");
+    Serial.printf("[SNAPSHOT] firmware=%s build_git_id=%s uptime_ms=%lu\n",
+                  FIRMWARE_VERSION, BUILD_GIT_ID, (unsigned long)now);
+    Serial.printf("[SNAPSHOT] reset_reason_raw=%d reset_reason=%s\n",
+                  (int)resetReason, SystemInfo::resetReasonName(resetReason));
+    Serial.printf(
+        "[SNAPSHOT] wifi_cached_state=%s framework_status=%s(%u) connected=%s auto_reconnect=%s\n",
+        WiFiManager::stateName(wifiManager.getState()),
+        WiFiManager::frameworkStatusName(wifi.frameworkStatus),
+        wifi.frameworkStatus, wifi.connected ? "yes" : "no",
+        wifi.autoReconnect ? "yes" : "no");
+    Serial.printf("[SNAPSHOT] wifi_configured_ssid=%s association_info=%s result=%ld\n",
+                  wifi.configuredSsid,
+                  wifi.associationInfoAvailable ? "available" : "unavailable",
+                  (long)wifi.associationInfoResult);
+    Serial.printf("[SNAPSHOT] wifi_ssid=%s bssid=%s channel=%u rssi_dbm=",
+                  wifi.ssid, wifi.bssid, wifi.channel);
+    if (wifi.associationInfoAvailable) Serial.printf("%d\n", wifi.rssi);
+    else Serial.println("unavailable");
+    Serial.printf("[SNAPSHOT] ip=%s gateway=%s subnet=%s dns1=%s dns2=%s\n",
+                  wifi.ip, wifi.gateway, wifi.subnet, wifi.dns1, wifi.dns2);
+    Serial.printf(
+        "[SNAPSHOT] wifi_events processed=%lu dropped=%lu queued=%lu disconnects=%lu got_ip=%lu lost_ip=%lu\n",
+        (unsigned long)wifi.processedEventCount,
+        (unsigned long)wifi.droppedEventCount,
+        (unsigned long)wifi.queuedEventCount,
+        (unsigned long)wifi.disconnectCount,
+        (unsigned long)wifi.gotIpCount,
+        (unsigned long)wifi.lostIpCount);
+    if (wifi.hasLastEvent) {
+        Serial.printf("[SNAPSHOT] wifi_last_event=%s at_ms=%lu age_ms=%lu\n",
+                      wifi.lastEventName, (unsigned long)wifi.lastEventMs,
+                      (unsigned long)(now - wifi.lastEventMs));
+    } else {
+        Serial.println("[SNAPSHOT] wifi_last_event=none at_ms=unavailable age_ms=unavailable");
+    }
+    if (wifi.hasDisconnected) {
+        Serial.printf(
+            "[SNAPSHOT] wifi_last_disconnect reason=%u(%s) at_ms=%lu age_ms=%lu\n",
+            wifi.lastDisconnectReason, wifi.lastDisconnectReasonName,
+            (unsigned long)wifi.lastDisconnectMs,
+            (unsigned long)(now - wifi.lastDisconnectMs));
+    } else {
+        Serial.println("[SNAPSHOT] wifi_last_disconnect=none");
+    }
+    Serial.printf(
+        "[SNAPSHOT] heap_internal_free=%u largest_block=%u allocator_region_minimum=%u psram_free=%u\n",
+        heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+        heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+        heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+        ESP.getFreePsram());
+    if (haveAudio) {
+        Serial.printf(
+            "[SNAPSHOT] audio_source=%s playback=%s codec=%s bluetooth_lifecycle=%s restartable=%s audio_task_stack_hwm=%u\n",
+            SystemInfo::audioSourceName(audio.source),
+            SystemInfo::playbackStateName(audio.state),
+            SystemInfo::audioCodecName(audio.codec),
+            SystemInfo::bluetoothLifecycleName(audio.bluetoothLifecycle),
+            audio.bluetoothRestartable ? "yes" : "no",
+            (unsigned)audio.taskStackHighWaterMark);
+    } else {
+        Serial.println("[SNAPSHOT] audio=unavailable (mutex busy for 50ms)");
+    }
+    Serial.printf(
+        "[SNAPSHOT] loop_count=%lu current_loop_elapsed_ms=%lu last_loop_ms=%lu max_loop_ms=%lu last_completed_age_ms=%lu main_task_stack_hwm=%u\n",
+        (unsigned long)loopIterationCount,
+        (unsigned long)(now - currentLoopStartedMs),
+        (unsigned long)lastLoopDurationMs,
+        (unsigned long)maxLoopDurationMs,
+        lastLoopCompletedMs ? (unsigned long)(now - lastLoopCompletedMs) : 0UL,
+        (unsigned)uxTaskGetStackHighWaterMark(nullptr));
+    Serial.printf(
+        "[SNAPSHOT] web_handle_count=%lu last_handle_ms=%lu max_handle_ms=%lu last_handle_age_ms=%lu\n",
+        (unsigned long)web.handleCount,
+        (unsigned long)web.lastHandleDurationMs,
+        (unsigned long)web.maxHandleDurationMs,
+        web.lastHandleCompletedMs
+            ? (unsigned long)(now - web.lastHandleCompletedMs)
+            : 0UL);
+    Serial.println("=== END DIAGNOSTIC SNAPSHOT ===");
 }
 
 // Text summary of whatever the e-paper is currently showing - reads the

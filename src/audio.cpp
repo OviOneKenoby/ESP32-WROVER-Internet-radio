@@ -757,7 +757,9 @@ bool AudioPlayer::getNowPlaying(char* destination, size_t size) {
 bool AudioPlayer::getDiagnostics(AudioDiagnostics& diagnostics) {
     if (!audioMutex) return false;
 
-    xSemaphoreTake(audioMutex, portMAX_DELAY);
+    // Diagnostics must remain bounded: a serial snapshot is specifically
+    // intended for failure capture and must not wait forever on audio I/O.
+    if (xSemaphoreTake(audioMutex, pdMS_TO_TICKS(50)) != pdTRUE) return false;
     diagnostics.source = currentSource;
     diagnostics.state = playbackState;
     diagnostics.codec = currentCodec;

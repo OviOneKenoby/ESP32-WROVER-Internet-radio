@@ -1,6 +1,7 @@
 # TUNER//01 Wi-Fi recovery owner checklist
 
-Status at publication: **PENDING / NOT RUN**.
+Status after owner testing: **PARTIAL; recurring Bluetooth-network incident
+OPEN**.
 
 Before testing, verify the firmware byte count and SHA-256 from the build
 manifest. Capture the complete 115200-baud serial log and save
@@ -34,14 +35,18 @@ manifest. Capture the complete 115200-baud serial log and save
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Correct build ID and SHA-256 | PENDING | PENDING |
-| Radio: down state and stale IP cleared | PENDING | PENDING |
-| Radio: GOT_IP and web recovered | PENDING | PENDING |
-| Radio: manual MP3 start without reboot | PENDING | PENDING |
-| Bluetooth responsive while AP absent | PENDING | PENDING |
-| Bluetooth: web recovered after AP return | PENDING | PENDING |
-| Bluetooth exit and manual MP3 without reboot | PENDING | PENDING |
-| Event queue drops remain zero | PENDING | PENDING |
+| Correct build ID and SHA-256 | PASS | 1.1.2 / `7cf087f8c686`; published SHA-256 matched |
+| Radio: router-restart recovery in tested extender topology | PASS | Three disconnects, recovery to `192.168.1.129`; not a full all-AP outage |
+| Radio: web/diagnostics recovered | PASS | Reachable after final `GOT_IP` |
+| Radio: manual MP3 start without reboot | PASS | West City audible |
+| Stable network availability during Bluetooth | FAIL | Web/diagnostics/ping became unreachable twice while SBC continued |
+| Spontaneous recovery during Bluetooth | OBSERVED ONCE | Disconnect-to-`GOT_IP` in 3,537 ms |
+| Persistent outage after Bluetooth exit | OBSERVED | DNS failure for West City after exit |
+| Controlled router restart during Bluetooth | NOT TESTED | Planned test was not reached |
+| Event queue drops in last successful snapshot | PASS OBSERVATION | 11 processed, zero dropped; not proof for later outage |
+
+Do not repeat this checklist with the uninstrumented 1.1.2 build. Use the
+serial snapshot command documented for the next validation candidate.
 
 Any panic, reboot, stale connected/IP report, lost Bluetooth responsiveness,
 unreachable web after GOT_IP, or inability to start MP3 manually is a FAIL for

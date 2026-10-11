@@ -137,6 +137,10 @@ void testWiFiConnectivityTransitions() {
            "GOT_IP metrics mismatch");
     expect(snapshot.hasConnectedSince && snapshot.connectedSinceMs == 30,
            "connected-since timestamp mismatch");
+    expect(snapshot.hasLastEvent &&
+               snapshot.lastEvent == WiFiObservedEvent::STA_GOT_IP &&
+               snapshot.lastEventMs == 30,
+           "last-event snapshot did not track GOT_IP");
 
     model.apply(WiFiObservedEvent::STA_LOST_IP, 0, 40);
     snapshot = model.get();
@@ -177,6 +181,9 @@ void testWiFiConnectivityTransitions() {
            "framework recovery reconciliation mismatch");
     expect(snapshot.processedEventCount == 6,
            "processed Wi-Fi event count mismatch");
+    expect(snapshot.lastEvent == WiFiObservedEvent::STA_GOT_IP &&
+               snapshot.lastEventMs == 80,
+           "framework reconciliation overwrote the last real event");
 }
 
 } // namespace

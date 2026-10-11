@@ -1,5 +1,33 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 - Bluetooth-network incident instrumentation (1.1.3 validation)
+
+Recorded the complete 1.1.2 owner evidence without conflating the scenarios:
+Radio recovered after a router restart in a topology where same-SSID
+extenders remained available; Bluetooth networking failed persistently in two
+sessions; one intermediate Bluetooth reconnect completed in 3,537 ms; the
+persistent outage survived Bluetooth exit; and the planned controlled router
+restart during Bluetooth was not tested. Overall validation remains PARTIAL
+and both the current incident and similar 1.1.1 incident remain OPEN.
+
+Added read-only serial command `x` for a bounded diagnostic snapshot when HTTP
+is unavailable. It reports firmware/build identity, raw and named reset
+reason, cached and framework Wi-Fi states, current association identity
+(SSID/BSSID/channel/RSSI), IP/gateway/subnet/DNS, auto-reconnect, event queue
+counters and timestamps, internal heap/PSRAM, Bluetooth/audio state, and
+main-loop/web/audio-task health. Association fields explicitly report
+unavailable rather than reusing stale data. The command does not scan, resolve
+DNS, reconnect, write flash or mutate UI.
+
+The web JSON paths now serialize directly to the connected client with an
+exact content length instead of allocating a second complete output `String`.
+This removes one avoidable contiguous internal-heap allocation supported by
+the measured 2-6 KB largest-block values in Bluetooth. Audio diagnostics use
+a bounded 50 ms mutex wait. These are allocation/observability corrections,
+not proof that the underlying Wi-Fi outage is fixed. No competing reconnect
+loop, sleep change, reboot, buffer/stack adjustment or station auto-resume was
+added. Dependencies, partitions and GPIO remain unchanged.
+
 ## 2026-10-11 — Wi-Fi state synchronization and connectivity diagnostics (1.1.2)
 
 Replaced the cached-only Wi-Fi status with framework reconciliation plus a

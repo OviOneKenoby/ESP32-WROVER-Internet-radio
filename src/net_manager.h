@@ -22,9 +22,18 @@ struct WiFiDiagnostics {
     uint8_t frameworkStatus;
     bool connected;
     bool autoReconnect;
+    char configuredSsid[MAX_SSID_LENGTH];
     char ssid[MAX_SSID_LENGTH];
+    char bssid[18];
     char ip[16];
+    char gateway[16];
+    char subnet[16];
+    char dns1[16];
+    char dns2[16];
     int16_t rssi;
+    uint8_t channel;
+    bool associationInfoAvailable;
+    int32_t associationInfoResult;
     uint8_t lastDisconnectReason;
     char lastDisconnectReasonName[48];
     uint32_t disconnectCount;
@@ -32,6 +41,10 @@ struct WiFiDiagnostics {
     uint32_t lostIpCount;
     uint32_t processedEventCount;
     uint32_t droppedEventCount;
+    uint32_t queuedEventCount;
+    WiFiObservedEvent lastEvent;
+    char lastEventName[24];
+    uint32_t lastEventMs;
     uint32_t stateSinceMs;
     uint32_t connectedSinceMs;
     uint32_t lastDisconnectMs;
@@ -41,6 +54,7 @@ struct WiFiDiagnostics {
     bool hasDisconnected;
     bool hasGotIp;
     bool hasLostIp;
+    bool hasLastEvent;
 };
 
 class WiFiManager {
@@ -67,6 +81,7 @@ public:
     void getDiagnostics(WiFiDiagnostics& diagnostics) const;
     static const char* stateName(WiFiState state);
     static const char* frameworkStatusName(uint8_t status);
+    static const char* eventName(WiFiObservedEvent event);
     
     // Network scanning
     bool startScan();
