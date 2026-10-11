@@ -11,6 +11,8 @@
   Xtensa `8.4.0+2021r2-patch5`. Dependencies/configuration unchanged.
 - Hardware NOT RUN; incident OPEN. Attribution instrumentation is not a fix.
 - Matching ELF is supplied compressed; extract before decoding caller PCs.
+- Publication verification: PASS. Binary and ELF archive were downloaded again;
+  binary, archive and extracted ELF SHA-256 match SHA256SUMS.txt.
 - Prerelease: https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.5-alloc-attribution-f33ef76
 - PR #5 remains open and unmerged. No hardware flash or automatic recovery.
 
