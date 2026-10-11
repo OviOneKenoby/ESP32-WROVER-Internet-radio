@@ -2,7 +2,7 @@
 Import("env")
 from hashlib import sha256
 from pathlib import Path
-if env.subst("$PIOENV") == "esp32-uart-probe":
+if env.subst("$PIOENV") in ("esp32-uart-probe", "esp32-lwip-psram"):
     sdk = Path(env.PioPlatform().get_package_dir("framework-arduinoespressif32")) / "tools/sdk/esp32/lib"
     expected = {
         "libpp.a": "a4356534d066da8c1ce08b52e3e614ee4da1a3e9b3b4bfc4285d083f46b75937",

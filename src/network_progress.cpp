@@ -8,6 +8,9 @@
 #ifdef TUNER_UART_TX_PROBE
 #include "software_tx_probe.h"
 #endif
+#ifdef TUNER_LWIP_PSRAM_TX
+#include "lwip_psram_policy.h"
+#endif
 
 // Only declared-in-pinned-headers boundaries. No private queue access,
 // payload logging, diagnostic allocation or retry. The optional UART profile
@@ -126,6 +129,9 @@ NetworkProgress::Snapshot NetworkProgress::snapshot() {
     // This getter is used solely by the serial x command in this fixed source.
     // Keep src/main.cpp and the existing command interface unchanged.
     SoftwareTxProbe::printSnapshot();
+#ifdef TUNER_LWIP_PSRAM_TX
+    LwipPsramPolicy::printSnapshot();
+#endif
 #endif
     portENTER_CRITICAL(&progressMux);
     const Snapshot copy = progress;
