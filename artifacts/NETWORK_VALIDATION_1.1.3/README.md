@@ -53,5 +53,7 @@ establish root cause. No BSSID evidence was available in firmware 1.1.2.
 - Source commit and embedded build ID: see `BUILD_MANIFEST.md`.
 - Hardware validation of this candidate: **PENDING / NOT RUN**.
 
-The validation binary and exact checksum are published in the candidate
-prerelease. Build success is not hardware validation.
+The validation binary and exact checksum are published in the
+[candidate prerelease](https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.3-network-validation-603c4b1).
+The published binary was downloaded again and matched the local byte count and
+SHA-256. Build success is not hardware validation.

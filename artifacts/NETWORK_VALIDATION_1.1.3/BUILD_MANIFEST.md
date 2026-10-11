@@ -14,6 +14,9 @@
 - Binary: `firmware-1.1.3-validation-603c4b12a56b.bin`
 - Binary size: 2,016,464 bytes
 - SHA-256: `BDB7CA191AEA282A6F7F27D0FF5B12EF04A6422547AFDC1B4514006F9BDE716F`
+- Validation release: https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.3-network-validation-603c4b1
+- Binary download: https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/download/tuner-1.1.3-network-validation-603c4b1/firmware-1.1.3-validation-603c4b12a56b.bin
+- Post-publication verification: downloaded size and SHA-256 matched.
 
 Pinned project libraries were unchanged:
 
