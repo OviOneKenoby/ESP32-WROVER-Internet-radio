@@ -36,7 +36,11 @@
   descriptor counts. No unsafe fallback private patch/list walk.
 - Hardware NOT RUN. Saved 1.1.6 captures are the existing evidence, not a
   validation of this build. Incident OPEN; no fix/leak/private queue proof.
-- Publication/download verification pending; recorded after release upload.
+- Publication/download verification PASS: bin, zip and extracted exact ELF
+  downloaded from GitHub matched all three published SHA256 entries. Routing
+  verifier and branch-probe generator also passed on the downloaded ELF; its
+  generated GDB script matched the published script. Release tag targets the
+  executable commit above. Older releases/assets were preserved.
 - Prerelease: https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.7-tx-refusal-9cf48e9
 
 See README.md for the short new test. No automatic flash/reconnect/reboot,
