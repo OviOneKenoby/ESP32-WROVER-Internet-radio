@@ -5,9 +5,14 @@
 #include <esp_netif_net_stack.h>
 #include <esp_private/wifi.h>
 #include <esp_spi_flash.h>
+#ifdef TUNER_UART_TX_PROBE
+#include "software_tx_probe.h"
+#endif
 
-// Only documented-in-pinned-headers boundaries. No private queue access,
-// callback replacement, payload logging, allocation or retry. Header summaries
+// Only declared-in-pinned-headers boundaries. No private queue access,
+// payload logging, diagnostic allocation or retry. The optional UART profile
+// forwards three typed OSI callbacks through a static copy before init.
+// Header summaries
 // are bounded and made before handing the readable buffer to the original.
 // The original ABI/arguments/results and pbuf ownership are preserved.
 namespace {
@@ -38,7 +43,11 @@ esp_err_t IRAM_ATTR __wrap_esp_wifi_init(const wifi_init_config_t* cfg) {
     const int32_t cache = captured ? cfg->cache_tx_buf_num : -1;
     const int32_t stat = captured ? cfg->static_tx_buf_num : -1;
     const uint64_t features = captured ? cfg->feature_caps : 0;
+#ifdef TUNER_UART_TX_PROBE
+    const esp_err_t result = __real_esp_wifi_init(SoftwareTxProbe::prepare(cfg));
+#else
     const esp_err_t result = __real_esp_wifi_init(cfg);
+#endif
     portENTER_CRITICAL(&progressMux);
     increment(evidence.initCalls);
     evidence.configCaptured = captured;
@@ -54,7 +63,13 @@ esp_err_t IRAM_ATTR __wrap_esp_wifi_internal_tx_by_ref(
         wifi_interface_t ifx, void* buffer, size_t len, void* pbuf) {
     const PacketKind kind = spi_flash_cache_enabled() ? packetKind(buffer, len) : PacketKind::Other;
     const uint32_t failuresBefore = SystemInfo::allocationFailureCount();
+#ifdef TUNER_UART_TX_PROBE
+    const int probeSlot = SoftwareTxProbe::beginTx();
+#endif
     const esp_err_t result = __real_esp_wifi_internal_tx_by_ref(ifx, buffer, len, pbuf);
+#ifdef TUNER_UART_TX_PROBE
+    SoftwareTxProbe::endTx(probeSlot, result, ifx == WIFI_IF_STA && pbuf && buffer);
+#endif
     const uint32_t failuresAfter = SystemInfo::allocationFailureCount();
     const uint32_t tick = observationTick();
     portENTER_CRITICAL(&progressMux);
@@ -107,6 +122,11 @@ esp_err_t IRAM_ATTR __wrap_esp_netif_receive(
 }
 }
 NetworkProgress::Snapshot NetworkProgress::snapshot() {
+#ifdef TUNER_UART_TX_PROBE
+    // This getter is used solely by the serial x command in this fixed source.
+    // Keep src/main.cpp and the existing command interface unchanged.
+    SoftwareTxProbe::printSnapshot();
+#endif
     portENTER_CRITICAL(&progressMux);
     const Snapshot copy = progress;
     portEXIT_CRITICAL(&progressMux);
