@@ -22,6 +22,10 @@
   each IRAM wrapper has exactly one call to its original. No logging/allocation
   added to wrappers, no diagnostic lock held across original calls.
 - Hardware NOT RUN; diagnostic candidate, not a demonstrated fix.
+- Publication/download verification PASS: bin, zip and extracted exact ELF
+  were downloaded from GitHub and matched all published SHA-256 entries.
+  Wrapper routing verification also passed on the downloaded ELF. Release
+  tag resolves to the executable commit above; older assets were preserved.
 - Prerelease: https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.6-network-progress-18553c4
 
 See SHA256SUMS.txt and README.md for exact identity, extraction/decoding and
