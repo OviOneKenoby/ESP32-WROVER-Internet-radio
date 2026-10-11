@@ -11,7 +11,10 @@
 - SHA-256: `5CEC87A6FC902411037DCC9CEB045110B7AFEF3AF8588A2613F7BB36B71AB503`
 - Prerelease: https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/tuner-1.1.4-network-validation-e135a1c
 - Download: https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/download/tuner-1.1.4-network-validation-e135a1c/firmware-1.1.4-validation-e135a1c0aace.bin
-- Publication/download verification: PENDING until the recorded follow-up below.
+- Publication/download verification: **PASS**. Published prerelease asset was
+  downloaded again through GitHub CLI; 2,019,072 bytes and the SHA-256 above
+  matched the local clean-build binary. Previous 1.1.2/1.1.3 assets were not
+  overwritten.
 
 ## Build and tests
 
