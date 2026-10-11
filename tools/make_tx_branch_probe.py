@@ -49,27 +49,95 @@ for index, line in enumerate(lines):
         returns.append(int(match[1], 16))
 assert len(returns) == 1
 output.write_text(f"""# OPTIONAL: manually attach a compatible ESP32 SMP OpenOCD/JTAG setup first.
+# BLOCKED on stock 1.1.7 wiring/initialization: GPIO13/14 are encoder GPIO.
+# hbreak ALONE is NOT sufficient: start OpenOCD with ESP_FLASH_SIZE=0
+# before target configuration; verify two real hardware slots on both cores.
+# Set host $tuner_jtag_ready=1 ONLY after the protocol's feasibility checks.
 # Use hardware breakpoints only; no software breakpoint/instruction patch.
 # Never call target functions. Halts perturb timing; label a separate experiment.
 # Verify this ELF is loaded and both cores are halted/resumed appropriately.
+if $tuner_jtag_ready != 1
+echo STOP: JTAG feasibility/hardware-only setup not verified.\\n
+else
 set $cache9_empty_hits = 0
 set $tx_nomem_returns = 0
+set $branch_probe_stops = 0
 hbreak *0x{empty[0]:08x}
 commands
 silent
+set $branch_probe_stops = $branch_probe_stops + 1
 if $a3 == 9
 set $cache9_empty_hits = $cache9_empty_hits + 1
-printf "[JTAG_CACHE9_EMPTY] hits=%u pc=0x%08x type=%u head=0x%08x\\n", $cache9_empty_hits, $pc, $a3, $a2
+printf "[JTAG_CACHE9_EMPTY] hits=%u thread=%u sp=0x%08x pc=0x%08x type=%u head=0x%08x\\n", $cache9_empty_hits, $_thread, $a1, $pc, $a3, $a2
+bt 6
+end
+if $branch_probe_stops >= 16
+disable
+echo SAMPLE_LIMIT: all probes disabled after 16 stops.\\n
 end
 continue
 end
 hbreak *0x{returns[0]:08x}
 commands
 silent
+set $branch_probe_stops = $branch_probe_stops + 1
 set $tx_nomem_returns = $tx_nomem_returns + 1
-printf "[JTAG_TX_NOMEM_RETURN] returns=%u cache9_empty_hits=%u pc=0x%08x result=%u\\n", $tx_nomem_returns, $cache9_empty_hits, $pc, $a2
+printf "[JTAG_TX_NOMEM_RETURN] returns=%u cache9_empty_hits=%u thread=%u sp=0x%08x pc=0x%08x result=%u\\n", $tx_nomem_returns, $cache9_empty_hits, $_thread, $a1, $pc, $a2
+bt 6
+if $tx_nomem_returns >= 8 || $branch_probe_stops >= 16
+disable
+echo SAMPLE_LIMIT: all probes disabled after 8 returns.\\n
+end
 continue
+end
 end
 """, encoding="utf-8")
 print(f"Verified instruction patterns: ESF empty branch 0x{empty[0]:08x}, TX NO_MEM return 0x{returns[0]:08x}")
 print("Manual full branch/ABI review still required; no target attached by this tool.")
+
+# Second phase: result of conversion and cache recycling, two slots again.
+process = body("ieee80211_output_process")
+result_points = []
+for index, line in enumerate(process):
+    if re.search(r"\bs32i.n\s+a10, a1, 16", line):
+        if re.search(r"\bl32i.n\s+a10, a1, 16", process[index + 1]) and re.search(r"\bbeqz.n\s+a10,", process[index + 2]):
+            result_points.append(int(re.search(r"^\s*([0-9a-f]+):", process[index + 2])[1], 16))
+assert len(result_points) == 1
+recycle = body("ieee80211_recycle_cache_eb")
+assert re.search(r"\bentry\s+a1, 32", recycle[0])
+assert re.search(r"\bl32i.n\s+a10, a2, 0", recycle[1])
+recycle_pc = int(re.search(r"^\s*([0-9a-f]+):", recycle[1])[1], 16)
+retry_output = output.with_name("TX_RETRY_PROBE.gdb")
+retry_output.write_text(f"""# Same hardware-only/SMP/pin feasibility gate as TX_BRANCH_PROBE.gdb.
+# Use separately: delete phase-A breakpoints first. Never load/reset target.
+if $tuner_jtag_ready != 1
+echo STOP: JTAG feasibility/hardware-only setup not verified.\\n
+else
+set $retry_probe_stops = 0
+hbreak *0x{result_points[0]:08x}
+commands
+silent
+set $retry_probe_stops = $retry_probe_stops + 1
+printf "[JTAG_CONVERSION_RESULT] stop=%u thread=%u sp=0x%08x pc=0x%08x cache_eb=0x%08x result_eb=0x%08x\\n", $retry_probe_stops, $_thread, $a1, $pc, $a2, $a10
+bt 8
+if $retry_probe_stops >= 16
+disable
+echo SAMPLE_LIMIT: all retry probes disabled.\\n
+end
+continue
+end
+hbreak *0x{recycle_pc:08x}
+commands
+silent
+set $retry_probe_stops = $retry_probe_stops + 1
+printf "[JTAG_CACHE_RECYCLE_ENTRY] stop=%u thread=%u sp=0x%08x pc=0x%08x cache_eb=0x%08x\\n", $retry_probe_stops, $_thread, $a1, $pc, $a2
+bt 6
+if $retry_probe_stops >= 16
+disable
+echo SAMPLE_LIMIT: all retry probes disabled.\\n
+end
+continue
+end
+end
+""", encoding="utf-8")
+print(f"Verified conversion result 0x{result_points[0]:08x}, recycle entry 0x{recycle_pc:08x}")

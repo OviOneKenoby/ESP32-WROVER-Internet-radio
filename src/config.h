@@ -1,7 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#ifdef TUNER_JTAG_DIAGNOSTIC
+#define FIRMWARE_VERSION "1.1.8-jtag-validation"
+#else
 #define FIRMWARE_VERSION "1.1.7-validation"
+#endif
 
 // ============================================
 // DISPLAY CONFIGURATION (WeAct 1.54" E-paper)
