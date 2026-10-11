@@ -1423,6 +1423,26 @@ void printDiagnosticSnapshot() {
         (unsigned long)network.freeLastTick, (unsigned long)network.rxCalls,
         (unsigned long)network.rxAccepted, (unsigned long)network.rxLastTick,
         (unsigned long)network.ticksUnavailable);
+    const auto refusal = NetworkProgress::refusalEvidence();
+    Serial.printf("[TX_CONFIG] captured=%u init_calls=%lu result=%ld type=%ld dynamic=%ld cache=%ld static=%ld features=0x%08lx%08lx\n",
+        refusal.configCaptured, (unsigned long)refusal.initCalls, (long)refusal.initResult,
+        (long)refusal.txType, (long)refusal.dynamicTx, (long)refusal.cacheTx,
+        (long)refusal.staticTx, (unsigned long)refusal.featureHigh, (unsigned long)refusal.featureLow);
+    Serial.printf("[TX_REFUSAL_SUMMARY] count=%lu rx_echo_request=%lu refused_echo_reply=%lu refused_tcp80=%lu ledger_overflow=%lu unmatched_free=%lu\n",
+        (unsigned long)refusal.refusals, (unsigned long)refusal.rxEchoRequests,
+        (unsigned long)refusal.refusedEchoReplies, (unsigned long)refusal.refusedTcp80,
+        (unsigned long)refusal.ledger.overflow, (unsigned long)refusal.ledger.unmatchedFree);
+    for (const auto& entry : refusal.ledger.entries) if (entry.refs)
+        Serial.printf("[TX_RETAINED_REF] pbuf=0x%08lx refs=%lu first_tick=%lu\n",
+            (unsigned long)entry.handle, (unsigned long)entry.refs, (unsigned long)entry.firstTick);
+    for (unsigned i = 0; i < 5; ++i) {
+        const auto& record = i < 4 ? refusal.first[i] : refusal.last;
+        if (!record.sequence || (i == 4 && refusal.refusals <= 4)) continue;
+        Serial.printf("[TX_NO_MEM] sequence=%lu tick=%lu ifx=%u len=%lu buffer=%u pbuf=0x%08lx kind=%u alloc_before=%lu alloc_after=%lu\n",
+            (unsigned long)record.sequence, (unsigned long)record.tick, record.ifx,
+            (unsigned long)record.length, record.hasBuffer, (unsigned long)record.pbufHandle,
+            unsigned(record.kind), (unsigned long)record.failuresBefore, (unsigned long)record.failuresAfter);
+    }
     const auto records = SystemInfo::allocationFailureRecords();
     Serial.printf("[SNAPSHOT] dma_heap_free=%u largest=%u web_dma_start=%u/%u built=%u/%u end=%u/%u\n",
         heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA | MALLOC_CAP_8BIT),

@@ -65,7 +65,7 @@ def calls(name):
     return result
 
 names = ("esp_wifi_internal_tx_by_ref", "esp_netif_netstack_buf_ref",
-         "esp_netif_netstack_buf_free", "esp_netif_receive")
+         "esp_netif_netstack_buf_free", "esp_netif_receive", "esp_wifi_init")
 for original in names:
     wrapper = "__wrap_" + original
     assert 0x40080000 <= symbols[wrapper] < 0x400c0000, f"{wrapper} not IRAM"
@@ -79,8 +79,10 @@ for original in names:
 
 assert symbols["__wrap_esp_wifi_internal_tx_by_ref"] in calls("wifi_transmit_wrap"), "Wi-Fi TX bypass"
 start_literals = literals("wifi_start")
-for original in names[1:]:
+for original in names[1:4]:
     assert symbols["__wrap_" + original] in start_literals, f"callback registration bypass: {original}"
 print("PASS wifi_transmit_wrap routes to wrapper")
 print("PASS wifi_start registers wrapped ref/free and RX callbacks")
+assert symbols["__wrap_esp_wifi_init"] in calls("_Z16wifiLowLevelInitb"), "init capture bypass"
+print("PASS wifiLowLevelInit routes unchanged config through init wrapper")
 print("PASS final ELF boundary routing verified (not hardware TX delivery)")

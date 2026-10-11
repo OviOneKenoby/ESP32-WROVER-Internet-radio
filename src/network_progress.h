@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "tx_refusal_evidence.h"
 
 namespace NetworkProgress {
 struct Snapshot {
@@ -10,4 +11,5 @@ struct Snapshot {
     uint32_t ticksUnavailable = 0;
 };
 Snapshot snapshot();
+TxRefusalEvidence refusalEvidence();
 }

@@ -1,5 +1,18 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 - TX refusal discriminator (1.1.7 validation)
+
+Saved 1.1.6 evidence shows NO_MEM continuing without new failed-allocation
+callbacks, after DMA heap recovery; private descriptor exhaustion or a leak
+is not yet proven. 1.1.7 records initialization configuration, bounded refusal
+metadata, ICMP direction and a shadow ledger of pbuf ref/free events. Dynamic
+TX32/cache4 and original TX arguments/results/policy remain unchanged.
+No verified private descriptor inventory ABI exists in the pinned SDK, so
+direct private-branch instrumentation is not added to the firmware. An optional
+exact-ELF hardware JTAG breakpoint script provides a separate branch experiment;
+halt-induced timing changes must be recorded. Hardware NOT RUN; incident OPEN;
+no merge, automatic flash/reconnect/reboot or gzip fix claim.
+
 ## 2026-10-11 - Observe network progress (1.1.6 validation)
 
 1.1.5 hardware now demonstrates five Wi-Fi ESF DMA failures at the first root

@@ -68,6 +68,13 @@ AllocationFailures allocationFailures() {
     return copy;
 }
 
+uint32_t IRAM_ATTR allocationFailureCount() {
+    portENTER_CRITICAL(&allocationMux);
+    const uint32_t count = failures.count;
+    portEXIT_CRITICAL(&allocationMux);
+    return count;
+}
+
 AllocationFailureRecords allocationFailureRecords() {
     portENTER_CRITICAL(&allocationMux);
     const AllocationFailureRecords copy = records;

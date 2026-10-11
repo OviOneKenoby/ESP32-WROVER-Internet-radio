@@ -18,6 +18,7 @@ struct AllocationFailures {
 };
 void beginAllocationDiagnostics();
 AllocationFailures allocationFailures();
+uint32_t allocationFailureCount();
 AllocationFailureRecords allocationFailureRecords();
 const char* resetReasonName(esp_reset_reason_t reason);
 const char* audioSourceName(AudioSource source);
