@@ -10,7 +10,7 @@
 // This fixed SDK's mem_malloc is plain malloc(size), without a stats prefix.
 // Its mem_free is free(ptr); ESP-IDF free accepts internal and PSRAM pointers.
 // Do not enable this replacement with a different lwIP allocator ABI.
-static_assert(MEM_LIBC_MALLOC == 1 && !(LWIP_STATS && MEM_STATS), "review lwIP allocator ABI");
+static_assert(MEM_LIBC_MALLOC == 1 && MEM_STATS == 0, "review lwIP allocator ABI");
 static_assert(MEM_ALIGNMENT <= 4, "review PSRAM allocation alignment");
 extern "C" void* __real_mem_malloc(mem_size_t size);
 namespace {
