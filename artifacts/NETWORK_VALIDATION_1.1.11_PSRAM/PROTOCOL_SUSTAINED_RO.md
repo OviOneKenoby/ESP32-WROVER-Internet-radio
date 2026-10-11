@@ -1,5 +1,12 @@
 # 1.1.11 — validare susținută pe același binar
 
+**Rezultat SUSTAINED_01:** PASS funcțional în fereastra executată, pe un boot
+nou, cu recuperare TX după trei NULL tranzitorii și fără NO_MEM/pierdere de
+serviciu. Runda a acoperit aproximativ3 min44,566s, nu protocolul integral de
+30 minute; criteriul strict zero-fail nu a trecut. Vezi
+[raportul hardware](SUSTAINED_01/HARDWARE_REPORT_RO.md) și
+[verdictul de integrare](FINAL_VALIDATION_RO.md).
+
 Incident OPEN. Folosește **același 1.1.11-psram-validation / 124e84801b06**,
 TX dynamic32/cache4. Fără reflash dacă imaginea este deja instalată; fără merge,
 reconnect/reboot automat, browser polling sau schimbări de firmware/configurație.

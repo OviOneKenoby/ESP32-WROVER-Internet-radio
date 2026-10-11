@@ -1,5 +1,10 @@
 # Candidat corectiv 1.1.11: buffere lwIP mari în PSRAM
 
+**Verdict de integrare:** proprietarul a acceptat PASS-ul funcțional după două
+booturi independente și a autorizat merge în `main`. Criteriul strict zero-fail
+nu a trecut, iar validarea susținută nu a rulat30 minute. Detalii și limite:
+[FINAL_VALIDATION_RO.md](FINAL_VALIDATION_RO.md).
+
 **TEST_01 executat:** curl a trecut complet; browserul real a produs trei
 eșecuri DMA, urmate de recuperare TX observată timp de aproximativ123s, fără
 NO_MEM/headNULL/referințe reținute. Criteriul strict zero-fail nu a trecut și

@@ -1,5 +1,22 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-11 - PSRAM lwIP policy accepted after hardware recovery tests
+
+Added an explicit `esp32-lwip-psram` build profile that prefers PSRAM for lwIP
+`mem_malloc` requests of at least512 bytes, with one fallback to the original
+allocator. Wi-Fi TX dynamic32/cache4, driver retry behavior and HTTP payloads
+remain unchanged. Exact-ELF checks verify wrapper routing and the effective
+size/capability operands.
+
+Two independent hardware boots of 1.1.11 / 124e84801b06 kept root,
+diagnostics, ping and Bluetooth audio available. Each observed three transient
+1622-byte Wi-Fi conversion failures followed by requeue, resumed conversion and
+balanced TX ref/free progress; neither reproduced cache headNULL, NO_MEM or
+persistent references. The owner accepted this as a functional PASS and
+authorized integration. The strict zero-allocation-failure criterion did not
+pass, and the second run covered about3m44s rather than the planned30 minutes.
+The corrective profile remains explicit; default_envs remains esp32-dev.
+
 ## 2026-10-11 - TX refusal discriminator (1.1.7 validation)
 
 Saved 1.1.6 evidence shows NO_MEM continuing without new failed-allocation
