@@ -1,6 +1,10 @@
 # TUNER//01 1.1.4 network validation candidate
 
 **Incident OPEN. Hardware validation PARTIAL; network outage reproduced.**
+The owner concluded observation at uptime 2088101 ms: ping still failed after
+27 min 10.312 s of waiting from the first post-refresh snapshot, while internal
+free recovered to 8232 B and failure count remained 5. No new HTTP responses,
+Wi-Fi events or reset were recorded. See the final snapshot in the report.
 See [new owner evidence](OWNER_REPORT_2026-10-11.md): root refresh correlated
 with ping loss and five internal-capability allocation failures. Output itself
 was fast, without retries; requester/mechanism remain unresolved. This candidate corrects

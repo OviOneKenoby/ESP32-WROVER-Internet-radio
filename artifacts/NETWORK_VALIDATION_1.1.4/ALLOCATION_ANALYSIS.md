@@ -123,8 +123,14 @@ frames confirm a different subsystem, revise the correction accordingly.
 Global allocator policy changes, arbitrary buffer resizing and internal DMA
 reservation are not justified yet. No automatic reconnect/reboot is added.
 
-For the currently failed 1.1.4 boot, retain the planned wait-only snapshot and
-ping log first, without further refresh/restart. A new firmware cannot add
+The final 1.1.4 wait-only snapshot is now saved: ping remained unavailable
+27 min 10.312 s after the post-refresh snapshot, despite internal free/largest
+recovering from 4940/1972 to 8232/3188 and failure count staying 5. HTTP count
+and Wi-Fi events remained unchanged; observation is concluded. This makes
+transient pressure alone insufficient to explain recovery behavior, but does
+not identify retained packet ownership or a driver-state fault. DMA-specific
+availability was not sampled in 1.1.4. The proposed gzip change remains an
+unproven prevention measure, not a recovery fix. A new firmware cannot add
 caller attribution retroactively to that boot. On a later run, retain `x` and
 decode `[ALLOC_FAILURE]` PCs with the **matching published ELF**. Do not repeat
 an uninstrumented cycle or mistake five observed failures for a proven root
