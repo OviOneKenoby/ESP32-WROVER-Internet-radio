@@ -1,6 +1,6 @@
 # Protocol condițional complet: ramura NO_MEM și retry/recycling
 
-**Candidat local, nu release. Incident OPEN. Fără merge sau flash executat de
+**Candidat în repository, nu release. Incident OPEN. Fără merge sau flash executat de
 agent.** 1.1.8-jtag-validation / e2c5667dd9a1 păstrează instrumentarea1.1.7 și
 TX dynamic32/cache4; dezactivează encoderul (inițializare, IRQ, polling) pentru
 a păstra muxul JTAG GPIO13/14. Butoanele Play/Next/Prev și comanda serială l

@@ -1,4 +1,4 @@
-# Local 1.1.8 JTAG candidate, not a published firmware release
+# Repository 1.1.8 JTAG candidate, not a firmware release
 
 - Firmware1.1.8-jtag-validation; embedded build ID e2c5667dd9a1 verified in bin.
 - Executable source commit e2c5667dd9a16774f7057dbffbb117c6db16ea3b.
@@ -43,5 +43,6 @@
 - Incident OPEN; PR unmerged; no flash/reconnect/reboot/merge performed.
 
 This candidate adds private-PC observation feasibility; it is not a build that
-just adds/repeats counters, and is not a demonstrated fix. Local bin/ELF/probes
-are available for manual review/test. No new firmware release was published.
+just adds/repeats counters, and is not a demonstrated fix. Bin, raw exact ELF,
+ELF zip, hashes, probes and protocol are tracked in the investigation branch
+for manual review/test. No new firmware release was created.
