@@ -2,6 +2,7 @@
 #include "config.h"
 #include "display.h"
 #include "audio.h"
+#include "rtcp_server.h"
 #include "input.h"
 #include "net_manager.h"
 #include "stations.h"
@@ -252,6 +253,9 @@ void loop() {
     // requests, so status/IP diagnostics cannot expose stale connection data.
     wifiManager.update();
     webPortal.handle();
+    // Bounded, nonblocking service on the existing application/main-loop
+    // owner. It stays disabled until a private pairing record exists.
+    rtcpServer.poll(audioPlayer);
     timeService.update();
 
     // Update input controls

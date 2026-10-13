@@ -2368,3 +2368,9 @@ Status:
 Everything else - AAC-aware browsing, Recent/Favorites, the browse flow,
 memory management - is pure software untouched by this hardware switch,
 confirmed still intact.
+# A-REMOTE-011 Phase 3 candidate — 2026-10-13
+
+- Added the bounded RTCP/1 server on the existing main-loop owner: one client, fixed 556-byte RX/TX buffers, no new task, no automatic command retry, and fail-closed authenticated framing.
+- Added read-only pairing lookup from a dedicated NVS namespace. With no privately commissioned pairing record the listener remains disabled; no operational PSK is present in source or logs.
+- Added the first CCM binding slice: exact 1.1.0 identity negotiation, bounded capability snapshot, fresh volume/playback snapshot, exact-grid `volume.set`, and correlated result IDs.
+- Added focused host tests for the bounded application codec. No AAC, station, playback-command, UI, MQTT, SmartThings, hardware or flash behavior changed.
