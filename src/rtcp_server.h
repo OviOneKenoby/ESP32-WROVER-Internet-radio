@@ -21,6 +21,14 @@ struct Pairing {
     std::array<uint8_t, 32> psk{};
 };
 
+struct Timing {
+    uint32_t commands{0};
+    uint32_t lastApplyUs{0};
+    uint32_t maxApplyUs{0};
+    uint32_t lastResponseUs{0};
+    uint32_t maxResponseUs{0};
+};
+
 // Reads an owner-provisioned pairing from the dedicated read-only NVS
 // namespace. It never creates, changes, or logs pairing material.
 bool loadPairing(Pairing& out);
@@ -32,6 +40,7 @@ public:
     bool enabled() const { return enabled_; }
     bool authenticated() const { return state_ == State::records; }
     size_t staticBufferBytes() const { return rx_.size() + tx_.size(); }
+    const Timing& timing() const { return timing_; }
 
 private:
     enum class State { disabled, listening, client_hello, client_finish, records };
@@ -59,6 +68,7 @@ private:
     uint64_t sample_sequence_{0};
     uint64_t media_generation_{1};
     int last_source_{-1};
+    Timing timing_{};
 
     void acceptClient();
     void closeClient();

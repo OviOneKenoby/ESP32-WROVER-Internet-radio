@@ -252,9 +252,12 @@ void loop() {
     // Drain framework events on the application task before serving web
     // requests, so status/IP diagnostics cannot expose stale connection data.
     wifiManager.update();
-    webPortal.handle();
     // Bounded, nonblocking service on the existing application/main-loop
     // owner. It stays disabled until a private pairing record exists.
+    rtcpServer.poll(audioPlayer);
+    webPortal.handle();
+    // Service again after a potentially longer web-manager turn so control
+    // traffic does not wait for the next full application-loop cycle.
     rtcpServer.poll(audioPlayer);
     timeService.update();
 
@@ -309,7 +312,7 @@ void loop() {
     }
     
     // Small delay to prevent watchdog issues
-    delay(10);
+    delay(2);
     lastLoopDurationMs = millis() - currentLoopStartedMs;
     if (lastLoopDurationMs > maxLoopDurationMs) {
         maxLoopDurationMs = lastLoopDurationMs;
@@ -1318,6 +1321,7 @@ void printDiagnosticSnapshot() {
     const bool haveAudio = audioPlayer.getDiagnostics(audio);
     WebPortalDiagnostics web{};
     webPortal.getDiagnostics(web);
+    const auto rtcpTiming = rtcpServer.timing();
 
     Serial.println("=== DIAGNOSTIC SNAPSHOT (read-only) ===");
     Serial.printf("[SNAPSHOT] firmware=%s build_git_id=%s uptime_ms=%lu\n",
@@ -1390,6 +1394,12 @@ void printDiagnosticSnapshot() {
         (unsigned long)maxLoopDurationMs,
         lastLoopCompletedMs ? (unsigned long)(now - lastLoopCompletedMs) : 0UL,
         (unsigned)uxTaskGetStackHighWaterMark(nullptr));
+    Serial.printf("[SNAPSHOT] rtcp_volume_commands=%lu last_apply_us=%lu max_apply_us=%lu last_response_us=%lu max_response_us=%lu\n",
+        (unsigned long)rtcpTiming.commands,
+        (unsigned long)rtcpTiming.lastApplyUs,
+        (unsigned long)rtcpTiming.maxApplyUs,
+        (unsigned long)rtcpTiming.lastResponseUs,
+        (unsigned long)rtcpTiming.maxResponseUs);
     Serial.printf(
         "[SNAPSHOT] web_handle_count=%lu last_handle_ms=%lu max_handle_ms=%lu last_handle_age_ms=%lu\n",
         (unsigned long)web.handleCount,

@@ -13,6 +13,15 @@ int main(){
     uint8_t request[17]={7,0,0,0,0,0,0,0,42,0,0,0,17,0,0,0,25};
     ccm_wire::VolumeSet v;assert(ccm_wire::parseVolumeSet(request,sizeof request,v));++checks;
     uint8_t percent=0;assert(ccm_wire::volumePercent(v,percent)&&percent==68);++checks;
+    const struct { uint32_t n,d; uint8_t expected; } targets[] = {
+        {0,1,0},{1,100,1},{1,2,50},{19,20,95},{1,1,100}
+    };
+    for (const auto& target : targets) {
+        v.numerator=target.n;v.denominator=target.d;
+        assert(ccm_wire::volumePercent(v,percent)&&percent==target.expected);++checks;
+    }
+    v.numerator=1;v.denominator=3;
+    assert(!ccm_wire::volumePercent(v,percent));++checks;
     request[16]=24;assert(!ccm_wire::parseVolumeSet(request,16,v));++checks;
     request[16]=0;assert(ccm_wire::parseVolumeSet(request,17,v)&&!ccm_wire::volumePercent(v,percent));++checks;
     assert(ccm_wire::result(42,true,0,b,sizeof b)==11&&b[0]==8&&b[9]==1&&b[10]==0);++checks;

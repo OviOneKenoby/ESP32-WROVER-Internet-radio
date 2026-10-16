@@ -207,12 +207,18 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         if (!ccm_wire::parseVolumeSet(p,n,command)) return 0;
         if (!ccm_wire::volumePercent(command,percent))
             return ccm_wire::result(command.request,false,1,out,cap);
+        const uint32_t started = micros();
         audio.setVolume(percent);
+        timing_.lastApplyUs = micros() - started;
+        if (timing_.lastApplyUs > timing_.maxApplyUs)
+            timing_.maxApplyUs = timing_.lastApplyUs;
+        if (timing_.commands != UINT32_MAX) ++timing_.commands;
         return ccm_wire::result(command.request,true,0,out,cap);
     }
     return 0;
 }
 bool Server::processRecord(AudioPlayer& audio) {
+    const uint32_t started = micros();
     if (rx_used_ < kRecordHeader) return true;
     if (rx_needed_ == kRecordHeader) {
         if (memcmp(rx_.data(), "RTCR\x01\x01\x00\x00", 8) != 0 ||
@@ -234,6 +240,9 @@ bool Server::processRecord(AudioPlayer& audio) {
     const size_t response_size = handleApplication(audio, plain.data(), length, response.data(), response.size());
     memset(plain.data(), 0, plain.size());
     if (!response_size || !sendApplication(response.data(), response_size)) return false;
+    timing_.lastResponseUs = micros() - started;
+    if (timing_.lastResponseUs > timing_.maxResponseUs)
+        timing_.maxResponseUs = timing_.lastResponseUs;
     memset(response.data(), 0, response.size()); rx_used_ = 0; rx_needed_ = kRecordHeader;
     deadline_ms_ = millis() + 5000; return true;
 }
