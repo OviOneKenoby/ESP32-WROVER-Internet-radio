@@ -123,6 +123,7 @@ void printCurrentScreen();
 void printDiagnosticSnapshot();
 void showVolumeOverlay();
 void applyLocalEncoderVolume(int8_t firstDetent);
+void serviceRtcpWhileDisplayBusy(const void* context);
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -228,6 +229,13 @@ void setup() {
     
     // Try to connect to WiFi
     setupWiFi();
+
+    // GxEPD2 waits synchronously for the panel BUSY signal. A full refresh can
+    // otherwise prevent the main-loop-owned RTCP server from running beyond
+    // both peers' bounded deadlines. The library invokes this hook only while
+    // waiting for BUSY; service the same owner cooperatively, without a task,
+    // queue, allocation, or protocol change.
+    display.setBusyService(serviceRtcpWhileDisplayBusy);
     
     // Load default stations and switch to station selection
     currentMode = MODE_STATION_SELECT;
@@ -249,6 +257,11 @@ void setup() {
     Serial.println("  x       = read-only network/audio/runtime diagnostic snapshot");
     Serial.println("==========================================");
     Serial.println();
+}
+
+void serviceRtcpWhileDisplayBusy(const void*) {
+    rtcpServer.poll(audioPlayer);
+    delay(1);
 }
 
 // ============================================

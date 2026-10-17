@@ -279,10 +279,13 @@ bool Server::processRecord(AudioPlayer& audio) {
 void Server::poll(AudioPlayer& audio) {
     if (!enabled_) { if (WiFi.status() == WL_CONNECTED) begin(); return; }
     if (state_ == State::listening) { acceptClient(); return; }
-    if (state_ == State::records && int32_t(millis() - deadline_ms_) >= 0) {
+    if (!readBounded()) { closeClient(CloseReason::peer_eof); return; }
+    // Process a complete buffered record before evaluating the idle deadline.
+    // An incomplete or absent record still expires at the original deadline.
+    if (state_ == State::records && rx_used_ != rx_needed_ &&
+        int32_t(millis() - deadline_ms_) >= 0) {
         closeClient(CloseReason::timeout); return;
     }
-    if (!readBounded()) { closeClient(CloseReason::peer_eof); return; }
     const bool ok = state_ == State::records ? processRecord(audio) : processHandshake();
     if (!ok) {
         CloseReason reason = diagnostics_.close_reason;

@@ -1,5 +1,12 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-17 - A-REMOTE-012 RTCP service during e-paper refresh
+
+Repeated connection evidence demonstrated main-loop starvation rather than a memory or protocol failure: 24 server idle timeouts and 79 peer EOFs accumulated while authenticated snapshots otherwise completed, and the measured 5,983 ms maximum loop turn exceeded the unchanged 3,000 ms REMOTE response deadline and 5,000 ms TUNER idle deadline. The synchronous GxEPD2 panel path waits on BUSY in the same application loop; the panel driver provides a cooperative busy callback.
+
+The display now uses that existing callback to service the nonblocking RTCP server and yield while the panel is busy. RTCP remains on its existing main-loop owner, with no new task, queue, allocation, buffer, timeout or protocol change. Complete application records already buffered at the idle boundary are processed before timeout classification; incomplete input retains the original deadline. Focused scheduling, timeout, latency and diagnostic checks passed 54 assertions/checks, and the `esp32-lwip-psram` production build passed. Hardware validation remains required; no device was accessed or flashed.
+
+
 ## 2026-10-17 - A-REMOTE-012 post-identity snapshot diagnostics
 
 Added a fixed 60-byte, secret-free RTCP server diagnostic state exposed only
