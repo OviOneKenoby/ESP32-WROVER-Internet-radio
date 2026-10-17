@@ -1,5 +1,21 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-17 - A-REMOTE-012 post-identity snapshot diagnostics
+
+Added a fixed 60-byte, secret-free RTCP server diagnostic state exposed only
+through the existing read-only serial snapshot. It records bounded request
+type and progression, snapshot completion, response requested/written bytes,
+partial and failed writes, close classification, internal heap/largest block
+at relevant stages and allocation-failure deltas. It stores no payload, key,
+nonce, pairing identifier or device identity and performs no dynamic diagnostic
+allocation. Protocol, crypto, pairing, audio, timing and response behavior are
+unchanged.
+
+Focused diagnostics passed 11 model checks and 14 integration/redaction checks.
+The existing RTCP scheduling policy passed 9 assertions and CCM wire regression
+passed 16/16. Hardware diagnosis remains NOT RUN and no root-cause correction
+is claimed.
+
 ## 2026-10-17 - A-REMOTE-012 local and RTCP volume latency candidates
 
 Prioritized the owner-reported local encoder lag and demonstrated that each

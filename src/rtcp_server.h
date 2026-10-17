@@ -5,6 +5,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include "rtcp_diagnostics.h"
 
 class AudioPlayer;
 
@@ -41,6 +42,7 @@ public:
     bool authenticated() const { return state_ == State::records; }
     size_t staticBufferBytes() const { return rx_.size() + tx_.size(); }
     const Timing& timing() const { return timing_; }
+    const Diagnostics& diagnostics() const { return diagnostics_; }
 
 private:
     enum class State { disabled, listening, client_hello, client_finish, records };
@@ -69,9 +71,10 @@ private:
     uint64_t media_generation_{1};
     int last_source_{-1};
     Timing timing_{};
+    Diagnostics diagnostics_{};
 
     void acceptClient();
-    void closeClient();
+    void closeClient(CloseReason reason);
     bool readBounded();
     bool processHandshake();
     bool processRecord(AudioPlayer& audio);

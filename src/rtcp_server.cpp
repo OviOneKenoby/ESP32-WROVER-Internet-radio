@@ -3,7 +3,9 @@
 #include "audio.h"
 #include "ccm_wire.h"
 #include "config.h"
+#include "system_info.h"
 #include <Preferences.h>
+#include <esp_heap_caps.h>
 #include <esp_system.h>
 #include <mbedtls/gcm.h>
 #include <mbedtls/md.h>
@@ -15,6 +17,13 @@ constexpr uint8_t kVersion = 1;
 constexpr uint8_t kApplication = 1;
 constexpr uint8_t kIdentityRequest = 1, kCapabilityRequest = 3;
 constexpr uint8_t kSnapshotRequest = 5, kVolumeSet = 7;
+
+uint32_t freeInternal() {
+    return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+}
+uint32_t largestInternal() {
+    return heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+}
 
 uint16_t get16(const uint8_t* p) { return uint16_t(p[0]) << 8 | p[1]; }
 uint64_t get64(const uint8_t* p) {
@@ -116,7 +125,8 @@ bool Server::begin() {
     listener_.begin(); listener_.setNoDelay(true);
     enabled_ = true; state_ = State::listening; return true;
 }
-void Server::closeClient() {
+void Server::closeClient(CloseReason reason) {
+    diagnostics_.closed(reason, freeInternal(), largestInternal());
     if (client_) client_.stop();
     memset(c2s_key_.data(), 0, c2s_key_.size()); memset(s2c_key_.data(), 0, s2c_key_.size());
     memset(c2s_prefix_.data(), 0, c2s_prefix_.size()); memset(s2c_prefix_.data(), 0, s2c_prefix_.size());
@@ -129,6 +139,7 @@ void Server::acceptClient() {
     if (!candidate) return;
     if (client_) { candidate.stop(); return; }
     client_ = candidate; client_.setNoDelay(true); rx_used_ = 0; rx_needed_ = 40;
+    diagnostics_.accepted(freeInternal(), largestInternal());
     deadline_ms_ = millis() + 3000; state_ = State::client_hello;
 }
 bool Server::readBounded() {
@@ -141,7 +152,10 @@ bool Server::readBounded() {
     return true;
 }
 bool Server::processHandshake() {
-    if (int32_t(millis() - deadline_ms_) >= 0) return false;
+    if (int32_t(millis() - deadline_ms_) >= 0) {
+        diagnostics_.close_reason = CloseReason::timeout;
+        return false;
+    }
     if (rx_used_ != rx_needed_) return true;
     if (state_ == State::client_hello) {
         if (memcmp(rx_.data(), "RTCP\x01\x01\x00\x20", 8) != 0 ||
@@ -169,6 +183,7 @@ bool Server::processHandshake() {
     if (!derive(pairing_, client_nonce_.data(), server_nonce_.data(), transcript.data(), transcript.size(),
                 c2s_key_.data(), s2c_key_.data(), c2s_prefix_.data(), s2c_prefix_.data(), session_id_.data())) return false;
     memset(transcript.data(), 0, transcript.size());
+    diagnostics_.clientFinish();
     rx_used_ = 0; rx_needed_ = kRecordHeader; deadline_ms_ = millis() + 5000;
     state_ = State::records; return true;
 }
@@ -181,7 +196,13 @@ bool Server::sendApplication(const uint8_t* data, size_t size) {
     if (!gcmEncrypt(s2c_key_.data(), nonce, h, kRecordHeader, data, size,
                     h + kRecordHeader, h + kRecordHeader + size)) return false;
     const size_t wire = kRecordHeader + size + kTagBytes;
-    if (client_.write(tx_.data(), wire) != wire) return false;
+    diagnostics_.responseBuilt(wire);
+    const uint32_t allocation_before = SystemInfo::allocationFailureCount();
+    const size_t written = client_.write(tx_.data(), wire);
+    const uint32_t allocation_after = SystemInfo::allocationFailureCount();
+    diagnostics_.responseWrite(written, allocation_after >= allocation_before
+                                            ? allocation_after - allocation_before : 0);
+    if (written != wire) return false;
     ++tx_counter_; return true;
 }
 size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
@@ -235,11 +256,20 @@ bool Server::processRecord(AudioPlayer& audio) {
     std::array<uint8_t, kMaxPlaintext> plain{}, response{};
     if (!gcmDecrypt(c2s_key_.data(), nonce, rx_.data(), kRecordHeader,
                     rx_.data() + kRecordHeader, length,
-                    rx_.data() + kRecordHeader + length, plain.data())) return false;
+                    rx_.data() + kRecordHeader + length, plain.data())) {
+        diagnostics_.close_reason = CloseReason::authentication_failed;
+        return false;
+    }
     ++rx_counter_;
+    diagnostics_.received(length ? diagnosticRequest(plain[0]) : DiagnosticRequest::unknown,
+                          freeInternal(), largestInternal());
     const size_t response_size = handleApplication(audio, plain.data(), length, response.data(), response.size());
     memset(plain.data(), 0, plain.size());
-    if (!response_size || !sendApplication(response.data(), response_size)) return false;
+    if (!response_size) {
+        diagnostics_.close_reason = CloseReason::application_invalid;
+        return false;
+    }
+    if (!sendApplication(response.data(), response_size)) return false;
     timing_.lastResponseUs = micros() - started;
     if (timing_.lastResponseUs > timing_.maxResponseUs)
         timing_.maxResponseUs = timing_.lastResponseUs;
@@ -249,10 +279,18 @@ bool Server::processRecord(AudioPlayer& audio) {
 void Server::poll(AudioPlayer& audio) {
     if (!enabled_) { if (WiFi.status() == WL_CONNECTED) begin(); return; }
     if (state_ == State::listening) { acceptClient(); return; }
-    if (state_ == State::records && int32_t(millis() - deadline_ms_) >= 0) { closeClient(); return; }
-    if (!readBounded()) { closeClient(); return; }
+    if (state_ == State::records && int32_t(millis() - deadline_ms_) >= 0) {
+        closeClient(CloseReason::timeout); return;
+    }
+    if (!readBounded()) { closeClient(CloseReason::peer_eof); return; }
     const bool ok = state_ == State::records ? processRecord(audio) : processHandshake();
-    if (!ok) closeClient();
+    if (!ok) {
+        CloseReason reason = diagnostics_.close_reason;
+        if (reason == CloseReason::none)
+            reason = state_ == State::records ? CloseReason::framing_invalid
+                                              : CloseReason::handshake_invalid;
+        closeClient(reason);
+    }
 }
 }  // namespace rtcp
 

@@ -1349,6 +1349,7 @@ void printDiagnosticSnapshot() {
     WebPortalDiagnostics web{};
     webPortal.getDiagnostics(web);
     const auto rtcpTiming = rtcpServer.timing();
+    const auto rtcpDiagnostic = rtcpServer.diagnostics();
 
     Serial.println("=== DIAGNOSTIC SNAPSHOT (read-only) ===");
     Serial.printf("[SNAPSHOT] firmware=%s build_git_id=%s uptime_ms=%lu\n",
@@ -1427,6 +1428,22 @@ void printDiagnosticSnapshot() {
         (unsigned long)rtcpTiming.maxApplyUs,
         (unsigned long)rtcpTiming.lastResponseUs,
         (unsigned long)rtcpTiming.maxResponseUs);
+    Serial.printf("[SNAPSHOT] rtcp_diag stage=%u request=%u close=%u connections=%lu client_finishes=%lu records=%lu snapshot_requests=%lu snapshot_completions=%lu response=%u/%u partial=%lu failed=%lu timeouts=%lu eofs=%lu heap=%lu/%lu alloc_delta=%lu\n",
+        unsigned(rtcpDiagnostic.stage), unsigned(rtcpDiagnostic.request),
+        unsigned(rtcpDiagnostic.close_reason),
+        (unsigned long)rtcpDiagnostic.connections,
+        (unsigned long)rtcpDiagnostic.client_finishes,
+        (unsigned long)rtcpDiagnostic.records,
+        (unsigned long)rtcpDiagnostic.snapshot_requests,
+        (unsigned long)rtcpDiagnostic.snapshot_completions,
+        unsigned(rtcpDiagnostic.response_written), unsigned(rtcpDiagnostic.response_size),
+        (unsigned long)rtcpDiagnostic.partial_writes,
+        (unsigned long)rtcpDiagnostic.failed_writes,
+        (unsigned long)rtcpDiagnostic.timeouts,
+        (unsigned long)rtcpDiagnostic.eofs,
+        (unsigned long)rtcpDiagnostic.free_internal,
+        (unsigned long)rtcpDiagnostic.largest_internal,
+        (unsigned long)rtcpDiagnostic.allocation_failure_delta);
     Serial.printf("[SNAPSHOT] local_volume_commands=%lu detents=%lu last_apply_us=%lu max_apply_us=%lu overlay_deferred=%s\n",
         (unsigned long)localVolumeCommands,
         (unsigned long)localVolumeDetents,
