@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "volume_target.h"
 #include "config.h"
 #include "correctness_guards.h"
 #include <driver/i2s.h> // legacy I2S API - still needed here for
@@ -523,6 +524,13 @@ void AudioPlayer::volumeUp() {
 void AudioPlayer::volumeDown() {
     if (currentVolume > 0) {
         setVolume(CorrectnessGuards::volumeDown(currentVolume));
+    }
+}
+
+void AudioPlayer::adjustVolumeSteps(int32_t detents) {
+    const uint8_t target = VolumeTarget::afterDetents(currentVolume, detents);
+    if (target != currentVolume) {
+        setVolume(target);
     }
 }
 

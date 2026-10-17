@@ -1,5 +1,21 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-17 - A-REMOTE-012 local and RTCP volume latency candidates
+
+Prioritized the owner-reported local encoder lag and demonstrated that each
+detent was drained one per main-loop turn and followed by a synchronous e-paper
+partial refresh. The local path now runs before network/web service, atomically
+coalesces queued detents into one bounded absolute 5% target, applies audio once,
+and defers one authoritative overlay until 250 ms of encoder quiet. Menus retain
+their existing one-event navigation. Fixed diagnostics distinguish local audio
+apply duration from deferred display work. RTCP remains serviced before and
+after web handling with bounded apply/response timing; CCM/RTCP wire, crypto,
+pairing, audio backends, MP3, A2DP and web-manager semantics are unchanged.
+
+Focused local target tests passed 10/10, the local scheduling policy passed
+10/10 assertions and the RTCP scheduling policy passed 9/9 assertions. Hardware
+timing remains NOT RUN; no device was accessed or flashed.
+
 ## 2026-10-11 - PSRAM lwIP policy accepted after hardware recovery tests
 
 Added an explicit `esp32-lwip-psram` build profile that prefers PSRAM for lwIP

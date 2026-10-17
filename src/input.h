@@ -34,6 +34,8 @@ public:
     bool hasEvent() { return lastEvent != EVENT_NONE; }
 
     int8_t getEncoderDelta();
+    int16_t takePendingEncoderSteps();
+    bool hasPendingEncoderSteps();
 
 private:
     Bounce2::Button buttonPlay;

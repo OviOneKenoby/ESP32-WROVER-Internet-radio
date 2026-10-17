@@ -71,6 +71,7 @@ public:
     uint8_t getVolume() { return currentVolume; }
     void volumeUp();
     void volumeDown();
+    void adjustVolumeSteps(int32_t detents);
 
     // State queries
     PlaybackState getState() { return playbackState; }

@@ -43,6 +43,9 @@ uint8_t selectedStation = 0;
 PlaybackState lastKnownPlaybackState = STATE_STOPPED;
 bool lastKnownBluetoothConnected = false;
 uint32_t volumeDisplayUntil = 0; // 0 = not currently showing volume overlay
+bool volumeOverlayPending = false;
+uint32_t volumeOverlayRequestedMs = 0;
+static const uint32_t VOLUME_OVERLAY_QUIET_MS = 250;
 char lastBluetoothMetadata[256] = "";
 uint32_t lastUserInteraction = 0;
 char lastIdleClockMinute[6] = "";
@@ -51,6 +54,10 @@ uint32_t currentLoopStartedMs = 0;
 uint32_t lastLoopCompletedMs = 0;
 uint32_t lastLoopDurationMs = 0;
 uint32_t maxLoopDurationMs = 0;
+uint32_t localVolumeCommands = 0;
+uint32_t localVolumeDetents = 0;
+uint32_t localVolumeLastApplyUs = 0;
+uint32_t localVolumeMaxApplyUs = 0;
 
 // Shared cursor for all the browse-mode list screens (country/tag/results/
 // favorites/recent) - these are always mutually exclusive (only one such
@@ -115,6 +122,7 @@ void checkSerialCommands();
 void printCurrentScreen();
 void printDiagnosticSnapshot();
 void showVolumeOverlay();
+void applyLocalEncoderVolume(int8_t firstDetent);
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -249,6 +257,20 @@ void setup() {
 void loop() {
     currentLoopStartedMs = millis();
     loopIterationCount++;
+    // Physical controls own the shortest path to audible response. Encoder
+    // detents are interrupt-buffered, then handled before network/web work.
+    inputControl.update();
+    InputEvent event = inputControl.getEvent();
+    if (event != EVENT_NONE) {
+        lastUserInteraction = millis();
+        if (currentMode == MODE_IDLE_CLOCK) {
+            currentMode = MODE_STATION_SELECT;
+            refreshStationListDisplay();
+        } else {
+            handleInput(event);
+        }
+    }
+
     // Drain framework events on the application task before serving web
     // requests, so status/IP diagnostics cannot expose stale connection data.
     wifiManager.update();
@@ -261,19 +283,17 @@ void loop() {
     rtcpServer.poll(audioPlayer);
     timeService.update();
 
-    // Update input controls
-    inputControl.update();
-    
-    // Handle any input events
-    InputEvent event = inputControl.getEvent();
-    if (event != EVENT_NONE) {
-        lastUserInteraction = millis();
-        if (currentMode == MODE_IDLE_CLOCK) {
-            currentMode = MODE_STATION_SELECT;
-            refreshStationListDisplay();
-        } else {
-            handleInput(event);
-        }
+    // E-paper refresh is synchronous and was previously performed after every
+    // detent, serializing audible changes behind panel latency. Render one
+    // authoritative value only after the encoder has been quiet.
+    const uint32_t overlayNow = millis();
+    if (volumeOverlayPending && !inputControl.hasPendingEncoderSteps() &&
+        overlayNow - volumeOverlayRequestedMs >= VOLUME_OVERLAY_QUIET_MS) {
+        volumeOverlayPending = false;
+        display.updateVolume(audioPlayer.getVolume());
+        volumeDisplayUntil = millis() + 2000;
+        Serial.printf("[SCREEN] Volume overlay shown: %d%% (clears in 2s)\n",
+                      audioPlayer.getVolume());
     }
     
     // Remote/headless testing - lets you drive the whole UI from the
@@ -538,13 +558,11 @@ void handlePlayingInput(InputEvent event) {
             break;
             
         case EVENT_ENCODER_UP:
-            audioPlayer.volumeUp();
-            showVolumeOverlay();
+            applyLocalEncoderVolume(+1);
             break;
             
         case EVENT_ENCODER_DOWN:
-            audioPlayer.volumeDown();
-            showVolumeOverlay();
+            applyLocalEncoderVolume(-1);
             break;
             
         case EVENT_ENCODER_CLICK:
@@ -582,13 +600,11 @@ void handleBluetoothInput(InputEvent event) {
             break;
             
         case EVENT_ENCODER_UP:
-            audioPlayer.volumeUp();
-            showVolumeOverlay();
+            applyLocalEncoderVolume(+1);
             break;
             
         case EVENT_ENCODER_DOWN:
-            audioPlayer.volumeDown();
-            showVolumeOverlay();
+            applyLocalEncoderVolume(-1);
             break;
             
         default:
@@ -1246,10 +1262,21 @@ void refreshStationListDisplay() {
 // happening when you can't see the physical e-paper panel directly (e.g.
 // testing over remote desktop via the serial command interface).
 void showVolumeOverlay() {
-    uint8_t vol = audioPlayer.getVolume();
-    display.updateVolume(vol);
-    volumeDisplayUntil = millis() + 2000;
-    Serial.printf("[SCREEN] Volume overlay shown: %d%% (clears in 2s)\n", vol);
+    volumeOverlayPending = true;
+    volumeOverlayRequestedMs = millis();
+}
+
+void applyLocalEncoderVolume(int8_t firstDetent) {
+    const int32_t detents = static_cast<int32_t>(firstDetent) +
+                            inputControl.takePendingEncoderSteps();
+    const uint32_t startedUs = micros();
+    audioPlayer.adjustVolumeSteps(detents);
+    const uint32_t elapsedUs = micros() - startedUs;
+    localVolumeCommands++;
+    localVolumeDetents += static_cast<uint32_t>(detents < 0 ? -detents : detents);
+    localVolumeLastApplyUs = elapsedUs;
+    if (elapsedUs > localVolumeMaxApplyUs) localVolumeMaxApplyUs = elapsedUs;
+    showVolumeOverlay();
 }
 
 // ============================================
@@ -1400,6 +1427,12 @@ void printDiagnosticSnapshot() {
         (unsigned long)rtcpTiming.maxApplyUs,
         (unsigned long)rtcpTiming.lastResponseUs,
         (unsigned long)rtcpTiming.maxResponseUs);
+    Serial.printf("[SNAPSHOT] local_volume_commands=%lu detents=%lu last_apply_us=%lu max_apply_us=%lu overlay_deferred=%s\n",
+        (unsigned long)localVolumeCommands,
+        (unsigned long)localVolumeDetents,
+        (unsigned long)localVolumeLastApplyUs,
+        (unsigned long)localVolumeMaxApplyUs,
+        volumeOverlayPending ? "yes" : "no");
     Serial.printf(
         "[SNAPSHOT] web_handle_count=%lu last_handle_ms=%lu max_handle_ms=%lu last_handle_age_ms=%lu\n",
         (unsigned long)web.handleCount,

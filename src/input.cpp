@@ -350,3 +350,18 @@ InputEvent InputControl::getEvent() {
 int8_t InputControl::getEncoderDelta() {
     return 0;
 }
+
+int16_t InputControl::takePendingEncoderSteps() {
+    noInterrupts();
+    const int16_t steps = encoderPendingSteps;
+    encoderPendingSteps = 0;
+    interrupts();
+    return steps;
+}
+
+bool InputControl::hasPendingEncoderSteps() {
+    noInterrupts();
+    const bool pending = encoderPendingSteps != 0;
+    interrupts();
+    return pending;
+}
