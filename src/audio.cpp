@@ -205,6 +205,57 @@ public:
 
 protected:
     int init_bluetooth() override {
+        // Arduino-ESP32 2.x is built with the controller in BTDM mode and its
+        // IDF 4.x btStart() entry point ignores the A2DP library's requested
+        // Classic-only mode.  Starting through that path reserves the BLE
+        // controller region even though this product only uses Classic A2DP.
+        // Release that unused region before the first controller init and
+        // bring the controller up explicitly in Classic-only mode.  The
+        // restartable stop path deliberately keeps this controller enabled,
+        // so subsequent A2DP entries take the already-enabled branch below.
+        esp_bt_controller_status_t status = esp_bt_controller_get_status();
+        if (status == ESP_BT_CONTROLLER_STATUS_IDLE) {
+            if (!bleControllerMemoryReleased) {
+                const esp_err_t releaseResult =
+                    esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+                if (releaseResult != ESP_OK) {
+                    Serial.printf("[AUDIO] BLE controller memory release failed: %s (%d)\n",
+                                  esp_err_to_name(releaseResult),
+                                  (int)releaseResult);
+                    return false;
+                }
+                bleControllerMemoryReleased = true;
+            }
+
+            esp_bt_controller_config_t config = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+            config.mode = ESP_BT_MODE_CLASSIC_BT;
+            const esp_err_t initResult = esp_bt_controller_init(&config);
+            if (initResult != ESP_OK) {
+                Serial.printf("[AUDIO] Classic Bluetooth controller init failed: %s (%d)\n",
+                              esp_err_to_name(initResult), (int)initResult);
+                return false;
+            }
+            status = esp_bt_controller_get_status();
+        }
+
+        if (status == ESP_BT_CONTROLLER_STATUS_INITED) {
+            const esp_err_t enableResult =
+                esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT);
+            if (enableResult != ESP_OK) {
+                Serial.printf("[AUDIO] Classic Bluetooth controller enable failed: %s (%d)\n",
+                              esp_err_to_name(enableResult),
+                              (int)enableResult);
+                return false;
+            }
+            status = esp_bt_controller_get_status();
+        }
+
+        if (status != ESP_BT_CONTROLLER_STATUS_ENABLED) {
+            Serial.printf("[AUDIO] Classic Bluetooth controller has unexpected state: %d\n",
+                          (int)status);
+            return false;
+        }
+
         const int result = BluetoothA2DPSink::init_bluetooth();
         bluetoothInitSucceeded = result;
         return result;
@@ -241,6 +292,7 @@ private:
     bool bluetoothInitSucceeded = false;
     bool i2sInitSucceeded = false;
     volatile bool stackEventCompleted = false;
+    bool bleControllerMemoryReleased = false;
 };
 
 CheckedBluetoothOutput a2dp_output;
