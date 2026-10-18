@@ -6,6 +6,7 @@
 #include "audio.h"
 #include "system_info.h"
 #include "correctness_guards.h"
+#include "rtcp_server.h"
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <esp_heap_caps.h>
@@ -147,6 +148,12 @@ void WebPortal::handleDiagnostics() {
     doc["firmware_version"] = FIRMWARE_VERSION;
     doc["build_git_id"] = BUILD_GIT_ID;
     doc["uptime_ms"] = millis();
+    const auto rtcpTiming = rtcpServer.timing();
+    doc["rtcp_volume_commands"] = rtcpTiming.commands;
+    doc["rtcp_last_apply_us"] = rtcpTiming.lastApplyUs;
+    doc["rtcp_max_apply_us"] = rtcpTiming.maxApplyUs;
+    doc["rtcp_last_response_us"] = rtcpTiming.lastResponseUs;
+    doc["rtcp_max_response_us"] = rtcpTiming.maxResponseUs;
     doc["reset_reason"] = SystemInfo::resetReasonName(esp_reset_reason());
     doc["free_internal_heap"] = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     doc["largest_internal_heap_block"] = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);

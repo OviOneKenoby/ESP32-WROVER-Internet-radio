@@ -1,5 +1,44 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-17 - A-REMOTE-012 RTCP service during e-paper refresh
+
+Repeated connection evidence demonstrated main-loop starvation rather than a memory or protocol failure: 24 server idle timeouts and 79 peer EOFs accumulated while authenticated snapshots otherwise completed, and the measured 5,983 ms maximum loop turn exceeded the unchanged 3,000 ms REMOTE response deadline and 5,000 ms TUNER idle deadline. The synchronous GxEPD2 panel path waits on BUSY in the same application loop; the panel driver provides a cooperative busy callback.
+
+The display now uses that existing callback to service the nonblocking RTCP server and yield while the panel is busy. RTCP remains on its existing main-loop owner, with no new task, queue, allocation, buffer, timeout or protocol change. Complete application records already buffered at the idle boundary are processed before timeout classification; incomplete input retains the original deadline. Focused scheduling, timeout, latency and diagnostic checks passed 54 assertions/checks, and the `esp32-lwip-psram` production build passed. Hardware validation remains required; no device was accessed or flashed.
+
+
+## 2026-10-17 - A-REMOTE-012 post-identity snapshot diagnostics
+
+Added a fixed 60-byte, secret-free RTCP server diagnostic state exposed only
+through the existing read-only serial snapshot. It records bounded request
+type and progression, snapshot completion, response requested/written bytes,
+partial and failed writes, close classification, internal heap/largest block
+at relevant stages and allocation-failure deltas. It stores no payload, key,
+nonce, pairing identifier or device identity and performs no dynamic diagnostic
+allocation. Protocol, crypto, pairing, audio, timing and response behavior are
+unchanged.
+
+Focused diagnostics passed 11 model checks and 14 integration/redaction checks.
+The existing RTCP scheduling policy passed 9 assertions and CCM wire regression
+passed 16/16. Hardware diagnosis remains NOT RUN and no root-cause correction
+is claimed.
+
+## 2026-10-17 - A-REMOTE-012 local and RTCP volume latency candidates
+
+Prioritized the owner-reported local encoder lag and demonstrated that each
+detent was drained one per main-loop turn and followed by a synchronous e-paper
+partial refresh. The local path now runs before network/web service, atomically
+coalesces queued detents into one bounded absolute 5% target, applies audio once,
+and defers one authoritative overlay until 250 ms of encoder quiet. Menus retain
+their existing one-event navigation. Fixed diagnostics distinguish local audio
+apply duration from deferred display work. RTCP remains serviced before and
+after web handling with bounded apply/response timing; CCM/RTCP wire, crypto,
+pairing, audio backends, MP3, A2DP and web-manager semantics are unchanged.
+
+Focused local target tests passed 10/10, the local scheduling policy passed
+10/10 assertions and the RTCP scheduling policy passed 9/9 assertions. Hardware
+timing remains NOT RUN; no device was accessed or flashed.
+
 ## 2026-10-11 - PSRAM lwIP policy accepted after hardware recovery tests
 
 Added an explicit `esp32-lwip-psram` build profile that prefers PSRAM for lwIP
@@ -2368,3 +2407,9 @@ Status:
 Everything else - AAC-aware browsing, Recent/Favorites, the browse flow,
 memory management - is pure software untouched by this hardware switch,
 confirmed still intact.
+# A-REMOTE-011 Phase 3 candidate — 2026-10-13
+
+- Added the bounded RTCP/1 server on the existing main-loop owner: one client, fixed 556-byte RX/TX buffers, no new task, no automatic command retry, and fail-closed authenticated framing.
+- Added read-only pairing lookup from a dedicated NVS namespace. With no privately commissioned pairing record the listener remains disabled; no operational PSK is present in source or logs.
+- Added the first CCM binding slice: exact 1.1.0 identity negotiation, bounded capability snapshot, fresh volume/playback snapshot, exact-grid `volume.set`, and correlated result IDs.
+- Added focused host tests for the bounded application codec. No AAC, station, playback-command, UI, MQTT, SmartThings, hardware or flash behavior changed.

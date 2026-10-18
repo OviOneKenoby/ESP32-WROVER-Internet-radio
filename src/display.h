@@ -29,6 +29,7 @@ public:
     ~Display();
     
     bool init();
+    void setBusyService(void (*callback)(const void*), const void* context = nullptr);
     void update();
     
     // Display updates

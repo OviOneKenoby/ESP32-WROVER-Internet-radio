@@ -30,6 +30,10 @@ bool Display::init() {
     return true;
 }
 
+void Display::setBusyService(void (*callback)(const void*), const void* context) {
+    epd.epd2.setBusyCallback(callback, context);
+}
+
 void Display::update() {
     // Handle periodic updates and screen refresh
     uint32_t now = millis();
