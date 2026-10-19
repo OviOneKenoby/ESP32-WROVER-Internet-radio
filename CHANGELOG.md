@@ -1,5 +1,23 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-19 - A-REMOTE-013 frozen RTCP D-009 TUNER implementation
+
+Implemented the owner-approved RTCP/1 D-009 playback-control and now-playing
+profile without changing IDs 1-8, record crypto, pairing, session counters,
+timeouts, partitions, or existing volume behavior. Capability revision 2 now
+advertises the four playback operations and bounded metadata observation.
+The main-loop owner publishes a fixed projection and executes one guarded
+mailbox command at a time; discovered-station Next cannot invoke the local
+Favorites mutation. Station transitions invalidate stale StreamTitle data
+before publishing the successor context.
+
+Focused and relevant regressions passed 368 assertions/checks. The pinned
+`esp32-lwip-psram` production build passed at source `6a58c036e848`, producing
+a 2,040,704-byte private candidate with SHA-256
+`1e6c5968f539170656e833d023086c57986b1aa73a6c2fe982dee2b31b1ff1f6a`.
+Static RAM is 87,904 bytes and application-slot headroom is 1,105,024 bytes.
+Hardware validation has not been performed; no firmware was flashed.
+
 ## 2026-10-17 - A-REMOTE-012 RTCP service during e-paper refresh
 
 Repeated connection evidence demonstrated main-loop starvation rather than a memory or protocol failure: 24 server idle timeouts and 79 peer EOFs accumulated while authenticated snapshots otherwise completed, and the measured 5,983 ms maximum loop turn exceeded the unchanged 3,000 ms REMOTE response deadline and 5,000 ms TUNER idle deadline. The synchronous GxEPD2 panel path waits on BUSY in the same application loop; the panel driver provides a cooperative busy callback.
