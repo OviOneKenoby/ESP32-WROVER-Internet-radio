@@ -57,6 +57,8 @@ int main() {
            diagnosticRequest(3) == DiagnosticRequest::capabilities &&
            diagnosticRequest(5) == DiagnosticRequest::snapshot &&
            diagnosticRequest(7) == DiagnosticRequest::volume_set &&
+           diagnosticRequest(9) == DiagnosticRequest::playback_command &&
+           diagnosticRequest(10) == DiagnosticRequest::now_playing &&
            diagnosticRequest(0x42) == DiagnosticRequest::unknown,
            "request type is bounded and payload-free");
     expect(sizeof(Diagnostics) <= 64, "diagnostic budget");
