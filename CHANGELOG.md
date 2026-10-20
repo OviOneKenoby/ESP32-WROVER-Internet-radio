@@ -1,5 +1,22 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-20 - A-REMOTE-013 D-009 hardware checkpoint
+
+Installed the verified 2,040,704-byte D-009 TUNER candidate application-only
+at `0x10000`; independent full-span readback matched SHA-256
+`1e6c5968f539170656e833d023086c57986b1aa73a6c2fe982dee2b31b1ff1f6a`.
+Boot/build identity, retained Wi-Fi, MP3 playback, bounded HTTP access, and
+proportionate internal heap passed. Local and separate-USB rollback evidence
+remained verified.
+
+RTCP hardware compatibility remains BLOCKED, not failed: DHCP changed both
+device addresses while the existing REMOTE association retained the TUNER's
+former literal IPv4 address. Source confirms that neither endpoint implements
+automatic discovery. No authentication, pairing, NVS, partition, D-009
+wire-format, or application-source defect was demonstrated. Station switching,
+Bluetooth A2DP, and D-009 IDs 9-11 end-to-end remain NOT TESTED pending a
+separately reviewed dynamic-endpoint mechanism.
+
 ## 2026-10-19 - A-REMOTE-013 frozen RTCP D-009 TUNER implementation
 
 Implemented the owner-approved RTCP/1 D-009 playback-control and now-playing

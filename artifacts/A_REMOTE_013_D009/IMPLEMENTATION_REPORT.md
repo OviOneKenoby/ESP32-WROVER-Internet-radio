@@ -1,7 +1,7 @@
 # A-REMOTE-013 / D-009 TUNER implementation report
 
-Date: 2026-10-19
-Status: SOFTWARE READY / HARDWARE NOT YET VALIDATED
+Date: 2026-10-20
+Status: HARDWARE PARTIAL PASS / RTCP VALIDATION BLOCKED BY STATIC ENDPOINT
 
 ## Authority and baseline
 
@@ -91,7 +91,15 @@ alias. No D-009 source warning was observed.
   Favorites mutation, and artwork remain outside D-009.
 - A disconnect after command transmission remains ambiguous delivery. Neither
   endpoint retries playback commands automatically.
-- This candidate has not been installed or exercised on hardware.
+- The candidate was installed application-only and independently read back on
+  2026-10-20. The exact 2,040,704-byte readback matched the candidate SHA-256.
+  Boot identity, retained Wi-Fi, MP3 playback, and bounded HTTP diagnostics
+  passed. RTCP compatibility testing could not proceed because the existing
+  REMOTE association stores the TUNER's former literal DHCP address while the
+  TUNER received a different address after reboot. Neither endpoint currently
+  implements discovery. This is an endpoint-lifecycle limitation rather than
+  a D-009 wire-format or authentication failure. See
+  `HARDWARE_VALIDATION_2026-10-20.md`.
 
 ## Minimum hardware validation
 
@@ -111,5 +119,5 @@ alias. No D-009 source warning was observed.
    closed, audio remains uninterrupted, and runtime internal heap/stack remain
    proportionate to the accepted v1.1.12 baseline.
 
-No hardware access, flash, NVS/pairing change, merge, tag, or release occurred
-during this implementation phase.
+No NVS, pairing, bootloader, partition-table, or non-application write
+occurred. D-009 end-to-end playback control and now-playing remain untested.
