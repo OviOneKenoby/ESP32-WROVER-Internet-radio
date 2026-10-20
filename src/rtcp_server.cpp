@@ -125,7 +125,9 @@ bool Server::begin() {
     if (enabled_) return true;
     if (!loadPairing(pairing_)) { state_ = State::disabled; return false; }
     listener_.begin(); listener_.setNoDelay(true);
-    enabled_ = true; state_ = State::listening; return true;
+    enabled_ = true; state_ = State::listening;
+    discovery_.poll(true, millis());
+    return true;
 }
 void Server::closeClient(CloseReason reason) {
     diagnostics_.closed(reason, freeInternal(), largestInternal());
@@ -313,7 +315,9 @@ bool Server::servicePlayback() {
     memset(response,0,sizeof response);deadline_ms_=millis()+5000;return sent;
 }
 void Server::poll(AudioPlayer& audio) {
-    if (!enabled_) { if (WiFi.status() == WL_CONNECTED) begin(); return; }
+    const bool wifi_connected = WiFi.status() == WL_CONNECTED;
+    discovery_.poll(enabled_ && wifi_connected, millis());
+    if (!enabled_) { if (wifi_connected) begin(); return; }
     if (state_ == State::listening) { acceptClient(); return; }
     if (!readBounded()) { closeClient(CloseReason::peer_eof); return; }
     // Process a complete buffered record before evaluating the idle deadline.
