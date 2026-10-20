@@ -112,7 +112,7 @@ const char* nowPlayingFooter() {
 void handleInput(InputEvent event);
 void updateUI();
 void setupWiFi();
-void playStation(uint8_t stationIdx);
+bool playStation(uint8_t stationIdx, bool updateDisplay = true);
 void handleStationSelectInput(InputEvent event);
 void handlePlayingInput(InputEvent event);
 void handleBluetoothInput(InputEvent event);
@@ -124,6 +124,8 @@ void printDiagnosticSnapshot();
 void showVolumeOverlay();
 void applyLocalEncoderVolume(int8_t firstDetent);
 void serviceRtcpWhileDisplayBusy(const void* context);
+void publishRtcpProjection();
+uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targetStation);
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -208,6 +210,7 @@ void setup() {
         Serial.println("[MAIN] ERROR: Audio initialization failed");
         while (1) delay(1000);
     }
+    rtcpServer.setPlaybackOwner(executeRtcpPlayback);
     
     // Load default radio stations
     Serial.println("[MAIN] Loading radio stations...");
@@ -264,6 +267,51 @@ void serviceRtcpWhileDisplayBusy(const void*) {
     delay(1);
 }
 
+void publishRtcpProjection() {
+    const AudioSource source = audioPlayer.getSource();
+    const PlaybackState state = audioPlayer.getState();
+    rtcp_d009::Input input;
+    input.source_identity = uint8_t(source);
+    input.playback_state = state == STATE_PLAYING ? 0
+                         : state == STATE_PAUSED ? 1
+                         : state == STATE_BUFFERING ? 3 : 2;
+    input.selected_station = selectedStation;
+    input.station_count = stationManager.getStationCount();
+    if (source == AUDIO_SOURCE_INTERNET_RADIO) {
+        input.context = nowPlayingContext.discovered
+                      ? rtcp_d009::Context::discovered_radio
+                      : rtcp_d009::Context::fixed_radio;
+        input.station = nowPlayingName;
+        char combined[256];
+        combined[0] = '\0';
+        audioPlayer.getNowPlaying(combined, sizeof combined);
+        input.combined = combined;
+    } else if (source == AUDIO_SOURCE_BLUETOOTH) {
+        input.context = rtcp_d009::Context::bluetooth;
+    }
+    rtcpServer.publishNowPlaying(input);
+}
+
+uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targetStation) {
+    bool applied = false;
+    switch (operation) {
+        case ccm_wire::PlaybackOperation::play:
+            audioPlayer.resume();
+            applied = audioPlayer.getState() == STATE_PLAYING;
+            break;
+        case ccm_wire::PlaybackOperation::pause:
+            audioPlayer.pause();
+            applied = audioPlayer.getState() == STATE_PAUSED;
+            break;
+        case ccm_wire::PlaybackOperation::previous:
+        case ccm_wire::PlaybackOperation::next:
+            applied = playStation(targetStation, false);
+            break;
+    }
+    publishRtcpProjection();
+    return applied ? rtcp_d009::success : rtcp_d009::execution_failed;
+}
+
 // ============================================
 // Main Loop
 // ============================================
@@ -287,6 +335,9 @@ void loop() {
     // Drain framework events on the application task before serving web
     // requests, so status/IP diagnostics cannot expose stale connection data.
     wifiManager.update();
+    // Publish a copied, fixed-size D-009 view from the application owner.
+    // RTCP request handling never reads UI/browser state or allocates metadata.
+    publishRtcpProjection();
     // Bounded, nonblocking service on the existing application/main-loop
     // owner. It stays disabled until a private pairing record exists.
     rtcpServer.poll(audioPlayer);
@@ -628,9 +679,9 @@ void handleBluetoothInput(InputEvent event) {
 // ============================================
 // Play Station
 // ============================================
-void playStation(uint8_t stationIdx) {
+bool playStation(uint8_t stationIdx, bool updateDisplay) {
     if (stationIdx >= stationManager.getStationCount()) {
-        return;
+        return false;
     }
     
     selectedStation = stationIdx;
@@ -642,17 +693,20 @@ void playStation(uint8_t stationIdx) {
     AudioCodec codec = (stationCodec == STATION_CODEC_AAC) ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
     
     Serial.printf("[MAIN] Playing: %s\n", stationName);
-    
+    // Make stale metadata unavailable before beginning the new station.
+    rtcpServer.invalidateMediaContext();
     if (audioPlayer.play(stationURL, codec)) {
         currentMode = MODE_PLAYING_RADIO;
         lastKnownPlaybackState = STATE_BUFFERING;
         strncpy(nowPlayingName, stationName, MAX_NAME_LENGTH - 1);
         nowPlayingName[MAX_NAME_LENGTH - 1] = '\0';
         nowPlayingContext.set(stationCodec, false);
-        display.showPlaying(stationName, "Buffering...", nowPlayingFooter());
+        if (updateDisplay) display.showPlaying(stationName, "Buffering...", nowPlayingFooter());
+        return true;
     } else {
         currentMode = MODE_ERROR;
-        display.showError("Failed to play station");
+        if (updateDisplay) display.showError("Failed to play station");
+        return false;
     }
 }
 
@@ -696,7 +750,8 @@ void playDiscoveredStation(const char* name, const char* url, StationCodec codec
     
     AudioCodec audioCodec = (codec == STATION_CODEC_AAC) ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
     Serial.printf("[MAIN] Playing (discovered): %s (%s)\n", stationName, codec == STATION_CODEC_AAC ? "AAC" : "MP3");
-    
+    // Invalidate the prior station's title before the new context is visible.
+    rtcpServer.invalidateMediaContext();
     if (audioPlayer.play(stationURL, audioCodec)) {
         currentMode = MODE_PLAYING_RADIO;
         lastKnownPlaybackState = STATE_BUFFERING;

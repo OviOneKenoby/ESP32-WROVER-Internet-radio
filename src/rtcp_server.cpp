@@ -17,6 +17,8 @@ constexpr uint8_t kVersion = 1;
 constexpr uint8_t kApplication = 1;
 constexpr uint8_t kIdentityRequest = 1, kCapabilityRequest = 3;
 constexpr uint8_t kSnapshotRequest = 5, kVolumeSet = 7;
+constexpr uint8_t kPlaybackCommand = 9, kNowPlayingRequest = 10;
+constexpr size_t kDeferredResponse = SIZE_MAX;
 
 uint32_t freeInternal() {
     return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -132,6 +134,7 @@ void Server::closeClient(CloseReason reason) {
     memset(c2s_prefix_.data(), 0, c2s_prefix_.size()); memset(s2c_prefix_.data(), 0, s2c_prefix_.size());
     memset(session_id_.data(), 0, session_id_.size());
     rx_used_ = 0; rx_needed_ = 40; rx_counter_ = tx_counter_ = 1;
+    playback_mailbox_.clear(); last_playback_request_ = 0;
     state_ = enabled_ ? State::listening : State::disabled;
 }
 void Server::acceptClient() {
@@ -212,16 +215,13 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         return ccm_wire::identity(FIRMWARE_VERSION, out, cap);
     if (p[0] == kCapabilityRequest && n == 1) return ccm_wire::capabilities(out, cap);
     if (p[0] == kSnapshotRequest && n == 1) {
-        const int source = int(audio.getSource());
-        if (last_source_ >= 0 && source != last_source_ && media_generation_ != UINT64_MAX) ++media_generation_;
-        last_source_ = source;
         if (sample_sequence_ == UINT64_MAX) return 0;
         const PlaybackState state = audio.getState();
         const uint8_t ccm_state = state == STATE_PLAYING ? 0
                                   : state == STATE_PAUSED ? 1
                                   : state == STATE_BUFFERING ? 3 : 2;
         return ccm_wire::snapshot(audio.getVolume(), ccm_state,
-                                  ++sample_sequence_, media_generation_, out, cap);
+                                  ++sample_sequence_, projection_.mediaGeneration(), out, cap);
     }
     if (p[0] == kVolumeSet && n == 17) {
         ccm_wire::VolumeSet command; uint8_t percent=0;
@@ -235,6 +235,24 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
             timing_.maxApplyUs = timing_.lastApplyUs;
         if (timing_.commands != UINT32_MAX) ++timing_.commands;
         return ccm_wire::result(command.request,true,0,out,cap);
+    }
+    if (p[0] == kPlaybackCommand && n == 19) {
+        ccm_wire::PlaybackCommand command;
+        if (!ccm_wire::parsePlaybackCommand(p,n,command)) return 0;
+        if (command.request == last_playback_request_)
+            return ccm_wire::result(command.request,false,rtcp_d009::busy,out,cap);
+        const rtcp_d009::Decision decision=projection_.admit(command);
+        if (decision.error!=rtcp_d009::success)
+            return ccm_wire::result(command.request,false,decision.error,out,cap);
+        if (!playback_mailbox_.put(command,decision.target_station))
+            return ccm_wire::result(command.request,false,rtcp_d009::busy,out,cap);
+        last_playback_request_=command.request;
+        playback_started_us_=micros();
+        return kDeferredResponse;
+    }
+    if (p[0] == kNowPlayingRequest && n == 1) {
+        if (sample_sequence_ == UINT64_MAX) return 0;
+        return ccm_wire::nowPlaying(projection_.wire(++sample_sequence_),out,cap);
     }
     return 0;
 }
@@ -265,6 +283,10 @@ bool Server::processRecord(AudioPlayer& audio) {
                           freeInternal(), largestInternal());
     const size_t response_size = handleApplication(audio, plain.data(), length, response.data(), response.size());
     memset(plain.data(), 0, plain.size());
+    if (response_size == kDeferredResponse) {
+        rx_used_ = 0; rx_needed_ = kRecordHeader; deadline_ms_ = millis() + 5000;
+        return true;
+    }
     if (!response_size) {
         diagnostics_.close_reason = CloseReason::application_invalid;
         return false;
@@ -275,6 +297,20 @@ bool Server::processRecord(AudioPlayer& audio) {
         timing_.maxResponseUs = timing_.lastResponseUs;
     memset(response.data(), 0, response.size()); rx_used_ = 0; rx_needed_ = kRecordHeader;
     deadline_ms_ = millis() + 5000; return true;
+}
+bool Server::servicePlayback() {
+    ccm_wire::PlaybackCommand command;uint8_t target_station=0;
+    if (!playback_mailbox_.take(command,target_station)) return true;
+    const uint8_t error=playback_owner_
+        ?playback_owner_(ccm_wire::PlaybackOperation(command.operation),target_station)
+        :rtcp_d009::internal;
+    uint8_t response[11]{};
+    const size_t response_size=ccm_wire::result(command.request,error==rtcp_d009::success,
+                                                 error,response,sizeof response);
+    const bool sent=response_size&&sendApplication(response,response_size);
+    timing_.lastResponseUs=micros()-playback_started_us_;
+    if(timing_.lastResponseUs>timing_.maxResponseUs)timing_.maxResponseUs=timing_.lastResponseUs;
+    memset(response,0,sizeof response);deadline_ms_=millis()+5000;return sent;
 }
 void Server::poll(AudioPlayer& audio) {
     if (!enabled_) { if (WiFi.status() == WL_CONNECTED) begin(); return; }
@@ -287,7 +323,8 @@ void Server::poll(AudioPlayer& audio) {
         closeClient(CloseReason::timeout); return;
     }
     const bool ok = state_ == State::records ? processRecord(audio) : processHandshake();
-    if (!ok) {
+    const bool owner_ok = ok && state_ == State::records ? servicePlayback() : ok;
+    if (!owner_ok) {
         CloseReason reason = diagnostics_.close_reason;
         if (reason == CloseReason::none)
             reason = state_ == State::records ? CloseReason::framing_invalid

@@ -12,6 +12,8 @@ enum class DiagnosticRequest : uint8_t {
     capabilities = 3,
     snapshot = 5,
     volume_set = 7,
+    playback_command = 9,
+    now_playing = 10,
     unknown = 255,
 };
 
@@ -122,6 +124,8 @@ inline DiagnosticRequest diagnosticRequest(uint8_t value) {
         case 3: return DiagnosticRequest::capabilities;
         case 5: return DiagnosticRequest::snapshot;
         case 7: return DiagnosticRequest::volume_set;
+        case 9: return DiagnosticRequest::playback_command;
+        case 10: return DiagnosticRequest::now_playing;
         default: return DiagnosticRequest::unknown;
     }
 }

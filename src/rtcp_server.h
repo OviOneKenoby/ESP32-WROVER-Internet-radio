@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include "rtcp_diagnostics.h"
+#include "rtcp_d009.h"
 
 class AudioPlayer;
 
@@ -36,8 +37,12 @@ bool loadPairing(Pairing& out);
 
 class Server {
 public:
+    using PlaybackOwner = uint8_t (*)(ccm_wire::PlaybackOperation, uint8_t target_station);
     bool begin();
     void poll(AudioPlayer& audio);
+    void setPlaybackOwner(PlaybackOwner owner) { playback_owner_ = owner; }
+    void publishNowPlaying(const rtcp_d009::Input& input) { projection_.publish(input); }
+    void invalidateMediaContext() { projection_.invalidateMediaContext(); }
     bool enabled() const { return enabled_; }
     bool authenticated() const { return state_ == State::records; }
     size_t staticBufferBytes() const { return rx_.size() + tx_.size(); }
@@ -68,8 +73,11 @@ private:
     uint64_t rx_counter_{1};
     uint64_t tx_counter_{1};
     uint64_t sample_sequence_{0};
-    uint64_t media_generation_{1};
-    int last_source_{-1};
+    uint64_t last_playback_request_{0};
+    uint32_t playback_started_us_{0};
+    rtcp_d009::Projection projection_{};
+    rtcp_d009::Mailbox playback_mailbox_{};
+    PlaybackOwner playback_owner_{nullptr};
     Timing timing_{};
     Diagnostics diagnostics_{};
 
@@ -78,6 +86,7 @@ private:
     bool readBounded();
     bool processHandshake();
     bool processRecord(AudioPlayer& audio);
+    bool servicePlayback();
     bool sendApplication(const uint8_t* data, size_t size);
     size_t handleApplication(AudioPlayer& audio, const uint8_t* data, size_t size,
                              uint8_t* output, size_t capacity);
@@ -86,3 +95,6 @@ private:
 }  // namespace rtcp
 
 extern rtcp::Server rtcpServer;
+
+static_assert(sizeof(rtcp_d009::Projection) + sizeof(rtcp_d009::Mailbox) <= 512,
+              "D-009 persistent projection and mailbox exceed the approved budget");
