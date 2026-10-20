@@ -1,5 +1,27 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-20 - A-REMOTE-014 bounded RTCP DNS-SD advertisement
+
+Added a native `ESPmDNS` `_rtcp._tcp` advertisement for the existing RTCP
+listener on TCP port 46411. Advertisement follows Wi-Fi and listener
+availability, stops on disconnect, and retries failed startup at a bounded
+five-second cadence. The generated hostname contains only a device-local
+hardware suffix; no pairing identifier, PSK, token, credential, metadata, or
+TXT record is published. RTCP mutual authentication remains the sole identity
+authority.
+
+Focused advertisement lifecycle tests passed 9/9 and source-policy checks
+passed 6/6. Existing D-009 focused tests passed 23/23 and integration-policy
+checks passed 12/12. The pinned `esp32-lwip-psram` production build passed at
+source `63ff6770fe4f0d7a46cb547ddc8f14abaec7f0fc`, producing a 2,069,152-byte
+private candidate with SHA-256
+`d2c89edd1e5aa25a01c7f88ce787ccdcfa2e708a89d6fb402d0326a519ec896e`.
+Static RAM is 89,832 bytes and application-slot headroom is 1,076,576 bytes;
+relative to the D-009 candidate this is +28,448 binary bytes, +1,928 static
+RAM bytes, and -28,448 headroom bytes. Hardware discovery and coexistence
+validation remain NOT RUN. A-REMOTE-014 is software-ready only, and this
+stacked branch depends on the unmerged D-009 branch without changing PR #7.
+
 ## 2026-10-20 - A-REMOTE-013 D-009 hardware checkpoint
 
 Installed the verified 2,040,704-byte D-009 TUNER candidate application-only
