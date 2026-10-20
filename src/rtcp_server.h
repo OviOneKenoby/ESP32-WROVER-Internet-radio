@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include "rtcp_diagnostics.h"
+#include "rtcp_discovery.h"
 #include "rtcp_d009.h"
 
 class AudioPlayer;
@@ -48,6 +49,9 @@ public:
     size_t staticBufferBytes() const { return rx_.size() + tx_.size(); }
     const Timing& timing() const { return timing_; }
     const Diagnostics& diagnostics() const { return diagnostics_; }
+    const DiscoveryAdvertisementModel& discoveryDiagnostics() const {
+        return discovery_.diagnostics();
+    }
 
 private:
     enum class State { disabled, listening, client_hello, client_finish, records };
@@ -80,6 +84,7 @@ private:
     PlaybackOwner playback_owner_{nullptr};
     Timing timing_{};
     Diagnostics diagnostics_{};
+    DiscoveryAdvertisement discovery_{};
 
     void acceptClient();
     void closeClient(CloseReason reason);

@@ -149,6 +149,11 @@ void WebPortal::handleDiagnostics() {
     doc["build_git_id"] = BUILD_GIT_ID;
     doc["uptime_ms"] = millis();
     const auto rtcpTiming = rtcpServer.timing();
+    const auto& rtcpDiscovery = rtcpServer.discoveryDiagnostics();
+    doc["rtcp_mdns_active"] = rtcpDiscovery.active;
+    doc["rtcp_mdns_starts"] = rtcpDiscovery.starts;
+    doc["rtcp_mdns_stops"] = rtcpDiscovery.stops;
+    doc["rtcp_mdns_failures"] = rtcpDiscovery.failures;
     doc["rtcp_volume_commands"] = rtcpTiming.commands;
     doc["rtcp_last_apply_us"] = rtcpTiming.lastApplyUs;
     doc["rtcp_max_apply_us"] = rtcpTiming.maxApplyUs;
