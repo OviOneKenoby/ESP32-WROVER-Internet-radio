@@ -13,6 +13,8 @@
 #include <AudioGeneratorMP3a.h>
 #include <AudioGeneratorAAC.h>
 #include <AudioOutputI2S.h>
+#include <esp_a2dp_api.h>
+#include "rtcp_btx.h"
 
 enum AudioCodec {
     AUDIO_CODEC_MP3,
@@ -93,6 +95,8 @@ public:
     void bluetoothPlayPause();
     void bluetoothNext();
     void bluetoothPrevious();
+    bool getBluetoothRtcpState(rtcp_btx::Snapshot& snapshot);
+    uint8_t executeBluetoothRtcp(const rtcp_btx::Command& command);
 
 private:
     // Real MP3 decoding pipeline (ESP8266Audio library):
@@ -150,6 +154,8 @@ private:
     static void metadataCallback(void* cbData, const char* type, bool isUnicode, const char* str);
     static void statusCallback(void* cbData, int code, const char* str);
     static void bluetoothMetadataCallback(uint8_t attribute, const uint8_t* value);
+    static void bluetoothConnectionCallback(esp_a2d_connection_state_t state, void* object);
+    static void bluetoothAudioCallback(esp_a2d_audio_state_t state, void* object);
 
     // State variables
     PlaybackState playbackState;
@@ -173,6 +179,9 @@ private:
     char bluetoothNowPlayingSnapshot[256];
     portMUX_TYPE bluetoothMetadataMux = portMUX_INITIALIZER_UNLOCKED;
     void setBluetoothMetadata(uint8_t attribute, const char* value);
+    void setBluetoothRtcpSource(rtcp_btx::Source source);
+    void clearBluetoothMetadataLocked();
+    rtcp_btx::SourceState bluetoothRtcpState{};
 
     // Task handle
     TaskHandle_t audioTaskHandle;
