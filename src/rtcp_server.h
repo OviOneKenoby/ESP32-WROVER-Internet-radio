@@ -8,6 +8,7 @@
 #include "rtcp_diagnostics.h"
 #include "rtcp_discovery.h"
 #include "rtcp_d009.h"
+#include "rtcp_btx.h"
 
 class AudioPlayer;
 
@@ -39,9 +40,11 @@ bool loadPairing(Pairing& out);
 class Server {
 public:
     using PlaybackOwner = uint8_t (*)(ccm_wire::PlaybackOperation, uint8_t target_station);
+    using BluetoothOwner = uint8_t (*)(const rtcp_btx::Command& command);
     bool begin();
     void poll(AudioPlayer& audio);
     void setPlaybackOwner(PlaybackOwner owner) { playback_owner_ = owner; }
+    void setBluetoothOwner(BluetoothOwner owner) { bluetooth_owner_ = owner; }
     void publishNowPlaying(const rtcp_d009::Input& input) { projection_.publish(input); }
     void invalidateMediaContext() { projection_.invalidateMediaContext(); }
     bool enabled() const { return enabled_; }
@@ -82,6 +85,9 @@ private:
     rtcp_d009::Projection projection_{};
     rtcp_d009::Mailbox playback_mailbox_{};
     PlaybackOwner playback_owner_{nullptr};
+    rtcp_btx::Session btx_session_{};
+    rtcp_btx::Mailbox btx_mailbox_{};
+    BluetoothOwner bluetooth_owner_{nullptr};
     Timing timing_{};
     Diagnostics diagnostics_{};
     DiscoveryAdvertisement discovery_{};
@@ -92,6 +98,7 @@ private:
     bool processHandshake();
     bool processRecord(AudioPlayer& audio);
     bool servicePlayback();
+    bool serviceBluetooth();
     bool sendApplication(const uint8_t* data, size_t size);
     size_t handleApplication(AudioPlayer& audio, const uint8_t* data, size_t size,
                              uint8_t* output, size_t capacity);
@@ -103,3 +110,6 @@ extern rtcp::Server rtcpServer;
 
 static_assert(sizeof(rtcp_d009::Projection) + sizeof(rtcp_d009::Mailbox) <= 512,
               "D-009 persistent projection and mailbox exceed the approved budget");
+static_assert(sizeof(rtcp_btx::SourceState) + sizeof(rtcp_btx::Session) +
+                  sizeof(rtcp_btx::Mailbox) + sizeof(rtcp::Server::BluetoothOwner) <= 64,
+              "BTX persistent scalar/session state exceeds the approved budget");

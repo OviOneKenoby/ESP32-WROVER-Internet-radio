@@ -126,6 +126,7 @@ void applyLocalEncoderVolume(int8_t firstDetent);
 void serviceRtcpWhileDisplayBusy(const void* context);
 void publishRtcpProjection();
 uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targetStation);
+uint8_t executeRtcpBluetooth(const rtcp_btx::Command& command);
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -211,6 +212,7 @@ void setup() {
         while (1) delay(1000);
     }
     rtcpServer.setPlaybackOwner(executeRtcpPlayback);
+    rtcpServer.setBluetoothOwner(executeRtcpBluetooth);
     
     // Load default radio stations
     Serial.println("[MAIN] Loading radio stations...");
@@ -310,6 +312,10 @@ uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targe
     }
     publishRtcpProjection();
     return applied ? rtcp_d009::success : rtcp_d009::execution_failed;
+}
+
+uint8_t executeRtcpBluetooth(const rtcp_btx::Command& command) {
+    return audioPlayer.executeBluetoothRtcp(command);
 }
 
 // ============================================

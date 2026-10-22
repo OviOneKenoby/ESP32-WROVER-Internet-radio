@@ -18,6 +18,7 @@ constexpr uint8_t kApplication = 1;
 constexpr uint8_t kIdentityRequest = 1, kCapabilityRequest = 3;
 constexpr uint8_t kSnapshotRequest = 5, kVolumeSet = 7;
 constexpr uint8_t kPlaybackCommand = 9, kNowPlayingRequest = 10;
+constexpr uint8_t kBluetoothStateRequest = 13, kBluetoothCommand = 15;
 constexpr size_t kDeferredResponse = SIZE_MAX;
 
 uint32_t freeInternal() {
@@ -137,6 +138,7 @@ void Server::closeClient(CloseReason reason) {
     memset(session_id_.data(), 0, session_id_.size());
     rx_used_ = 0; rx_needed_ = 40; rx_counter_ = tx_counter_ = 1;
     playback_mailbox_.clear(); last_playback_request_ = 0;
+    btx_mailbox_.clear(); btx_session_.clear();
     state_ = enabled_ ? State::listening : State::disabled;
 }
 void Server::acceptClient() {
@@ -144,6 +146,7 @@ void Server::acceptClient() {
     if (!candidate) return;
     if (client_) { candidate.stop(); return; }
     client_ = candidate; client_.setNoDelay(true); rx_used_ = 0; rx_needed_ = 40;
+    btx_mailbox_.clear(); btx_session_.clear();
     diagnostics_.accepted(freeInternal(), largestInternal());
     deadline_ms_ = millis() + 3000; state_ = State::client_hello;
 }
@@ -213,9 +216,17 @@ bool Server::sendApplication(const uint8_t* data, size_t size) {
 size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
                                  uint8_t* out, size_t cap) {
     if (!n || cap < 32) return 0;
+    if (p[0] != kCapabilityRequest) btx_session_.observeNonCapability();
     if (p[0] == kIdentityRequest && n == 4 && p[1] == 1 && p[2] == 1 && p[3] == 0)
         return ccm_wire::identity(FIRMWARE_VERSION, out, cap);
-    if (p[0] == kCapabilityRequest && n == 1) return ccm_wire::capabilities(out, cap);
+    if (p[0] == kCapabilityRequest && n == 1) {
+        const rtcp_btx::CapabilityReply reply = btx_session_.capabilityRequest();
+        if (reply == rtcp_btx::CapabilityReply::legacy)
+            return ccm_wire::capabilities(out, cap);
+        if (reply == rtcp_btx::CapabilityReply::btx)
+            return rtcp_btx::capabilities(out, cap);
+        return 0;
+    }
     if (p[0] == kSnapshotRequest && n == 1) {
         if (sample_sequence_ == UINT64_MAX) return 0;
         const PlaybackState state = audio.getState();
@@ -255,6 +266,26 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
     if (p[0] == kNowPlayingRequest && n == 1) {
         if (sample_sequence_ == UINT64_MAX) return 0;
         return ccm_wire::nowPlaying(projection_.wire(++sample_sequence_),out,cap);
+    }
+    if (p[0] == kBluetoothStateRequest && n == 1 && btx_session_.negotiated()) {
+        if (sample_sequence_ == UINT64_MAX) return 0;
+        rtcp_btx::Snapshot snapshot;
+        if (!audio.getBluetoothRtcpState(snapshot)) return 0;
+        return rtcp_btx::stateResponse(snapshot, ++sample_sequence_, out, cap);
+    }
+    if (p[0] == kBluetoothCommand && n == 19 && btx_session_.negotiated()) {
+        rtcp_btx::Command command;
+        if (!rtcp_btx::parseCommand(p, n, command)) return 0;
+        rtcp_btx::Snapshot snapshot;
+        if (!audio.getBluetoothRtcpState(snapshot))
+            return ccm_wire::result(command.request, false, rtcp_btx::internal, out, cap);
+        const rtcp_btx::Decision decision = rtcp_btx::admit(snapshot, command);
+        if (decision.error != rtcp_btx::success)
+            return ccm_wire::result(command.request, false, decision.error, out, cap);
+        if (!btx_mailbox_.put(command))
+            return ccm_wire::result(command.request, false, rtcp_btx::busy, out, cap);
+        btx_session_.commandStarted(micros());
+        return kDeferredResponse;
     }
     return 0;
 }
@@ -314,6 +345,23 @@ bool Server::servicePlayback() {
     if(timing_.lastResponseUs>timing_.maxResponseUs)timing_.maxResponseUs=timing_.lastResponseUs;
     memset(response,0,sizeof response);deadline_ms_=millis()+5000;return sent;
 }
+bool Server::serviceBluetooth() {
+    rtcp_btx::Command command;
+    if (!btx_mailbox_.take(command)) return true;
+    const uint8_t error = bluetooth_owner_
+        ? bluetooth_owner_(command)
+        : rtcp_btx::internal;
+    uint8_t response[11]{};
+    const size_t response_size = ccm_wire::result(command.request,
+        error == rtcp_btx::success, error, response, sizeof response);
+    const bool sent = response_size && sendApplication(response, response_size);
+    timing_.lastResponseUs = micros() - btx_session_.commandStartedUs();
+    if (timing_.lastResponseUs > timing_.maxResponseUs)
+        timing_.maxResponseUs = timing_.lastResponseUs;
+    memset(response, 0, sizeof response);
+    deadline_ms_ = millis() + 5000;
+    return sent;
+}
 void Server::poll(AudioPlayer& audio) {
     const bool wifi_connected = WiFi.status() == WL_CONNECTED;
     discovery_.poll(enabled_ && wifi_connected, millis());
@@ -327,7 +375,8 @@ void Server::poll(AudioPlayer& audio) {
         closeClient(CloseReason::timeout); return;
     }
     const bool ok = state_ == State::records ? processRecord(audio) : processHandshake();
-    const bool owner_ok = ok && state_ == State::records ? servicePlayback() : ok;
+    const bool playback_ok = ok && state_ == State::records ? servicePlayback() : ok;
+    const bool owner_ok = playback_ok && state_ == State::records ? serviceBluetooth() : playback_ok;
     if (!owner_ok) {
         CloseReason reason = diagnostics_.close_reason;
         if (reason == CloseReason::none)

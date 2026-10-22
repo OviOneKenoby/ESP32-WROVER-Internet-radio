@@ -470,6 +470,7 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
     }
 
     currentSource = AUDIO_SOURCE_INTERNET_RADIO;
+    setBluetoothRtcpSource(rtcp_btx::Source::radio);
     playbackState = STATE_PLAYING;
 
     xSemaphoreGive(audioMutex);
@@ -541,6 +542,7 @@ void AudioPlayer::stop() {
     playbackState = STATE_STOPPED;
     teardownRadioPlayback();
     currentSource = AUDIO_SOURCE_NONE;
+    setBluetoothRtcpSource(rtcp_btx::Source::none);
     currentCodec = AUDIO_CODEC_NONE;
     if (audioMutex) xSemaphoreGive(audioMutex);
     Serial.println("[AUDIO] Stopped");
@@ -619,6 +621,9 @@ bool AudioPlayer::enableBluetooth() {
     // callback is registered before start(), as required by this library.
     a2dp_sink.set_avrc_metadata_attribute_mask(ESP_AVRC_MD_ATTR_TITLE | ESP_AVRC_MD_ATTR_ARTIST);
     a2dp_sink.set_avrc_metadata_callback(bluetoothMetadataCallback);
+    a2dp_sink.set_on_connection_state_changed(bluetoothConnectionCallback, this);
+    a2dp_sink.set_on_audio_state_changed(bluetoothAudioCallback, this);
+    setBluetoothRtcpSource(rtcp_btx::Source::bluetooth);
 
     const bool started = a2dp_sink.startChecked(BT_DEVICE_NAME);
 
@@ -627,6 +632,7 @@ bool AudioPlayer::enableBluetooth() {
         btEnabled = false;
         bluetoothPlaybackPaused = false;
         currentSource = AUDIO_SOURCE_NONE;
+        setBluetoothRtcpSource(rtcp_btx::Source::none);
         currentCodec = AUDIO_CODEC_NONE;
         playbackState = STATE_STOPPED;
         bluetoothLifecycle = cleaned
@@ -674,6 +680,7 @@ bool AudioPlayer::disableBluetooth() {
     const bool cleaned = a2dp_sink.stopRestartableChecked();
     btEnabled = false;
     currentSource = AUDIO_SOURCE_NONE;
+    setBluetoothRtcpSource(rtcp_btx::Source::none);
     currentCodec = AUDIO_CODEC_NONE;
     playbackState = STATE_STOPPED;
     bluetoothLifecycle = cleaned
@@ -844,6 +851,70 @@ const char* AudioPlayer::getBluetoothNowPlaying() {
     return bluetoothNowPlayingSnapshot[0] ? bluetoothNowPlayingSnapshot : "Waiting for metadata";
 }
 
+void AudioPlayer::clearBluetoothMetadataLocked() {
+    bluetoothTitle[0] = 0;
+    bluetoothArtist[0] = 0;
+    bluetoothNowPlaying[0] = 0;
+}
+
+void AudioPlayer::setBluetoothRtcpSource(rtcp_btx::Source source) {
+    portENTER_CRITICAL(&bluetoothMetadataMux);
+    if (bluetoothRtcpState.source != source) {
+        rtcp_btx::advance(bluetoothRtcpState.source_generation);
+        rtcp_btx::advance(bluetoothRtcpState.metadata_revision);
+        bluetoothRtcpState.source = source;
+        bluetoothRtcpState.connection = source == rtcp_btx::Source::bluetooth
+            ? rtcp_btx::Connection::unknown
+            : rtcp_btx::Connection::not_applicable;
+        bluetoothRtcpState.playback = rtcp_btx::Playback::unknown;
+        clearBluetoothMetadataLocked();
+    }
+    portEXIT_CRITICAL(&bluetoothMetadataMux);
+}
+
+bool AudioPlayer::getBluetoothRtcpState(rtcp_btx::Snapshot& snapshot) {
+    snapshot = rtcp_btx::Snapshot{};
+    portENTER_CRITICAL(&bluetoothMetadataMux);
+    snapshot.state = bluetoothRtcpState;
+    snapshot.artist_size = uint8_t(strnlen(bluetoothArtist, rtcp_btx::kMaxArtistBytes));
+    snapshot.title_size = uint8_t(strnlen(bluetoothTitle, rtcp_btx::kMaxTitleBytes));
+    if (snapshot.artist_size) {
+        memcpy(snapshot.artist, bluetoothArtist, snapshot.artist_size);
+        snapshot.artist[snapshot.artist_size] = 0;
+    }
+    if (snapshot.title_size) {
+        memcpy(snapshot.title, bluetoothTitle, snapshot.title_size);
+        snapshot.title[snapshot.title_size] = 0;
+    }
+    portEXIT_CRITICAL(&bluetoothMetadataMux);
+    return snapshot.state.source_generation && snapshot.state.metadata_revision;
+}
+
+uint8_t AudioPlayer::executeBluetoothRtcp(const rtcp_btx::Command& command) {
+    rtcp_btx::Snapshot snapshot;
+    if (!getBluetoothRtcpState(snapshot)) return rtcp_btx::internal;
+    const rtcp_btx::Decision decision = rtcp_btx::admit(snapshot, command);
+    if (decision.error != rtcp_btx::success) return decision.error;
+    if (!btEnabled || !a2dp_sink.is_connected()) return rtcp_btx::unavailable;
+    switch (command.operation) {
+        case rtcp_btx::Operation::play:
+            a2dp_sink.play();
+            bluetoothPlaybackPaused = false;
+            break;
+        case rtcp_btx::Operation::pause:
+            a2dp_sink.pause();
+            bluetoothPlaybackPaused = true;
+            break;
+        case rtcp_btx::Operation::previous:
+            a2dp_sink.previous();
+            break;
+        case rtcp_btx::Operation::next:
+            a2dp_sink.next();
+            break;
+    }
+    return rtcp_btx::success;
+}
+
 void AudioPlayer::bluetoothPlayPause() {
     if (!btEnabled) return;
     // AVRCP commands control the connected phone/source; they do not mute
@@ -867,17 +938,73 @@ void AudioPlayer::bluetoothMetadataCallback(uint8_t attribute, const uint8_t* va
     audioPlayer.setBluetoothMetadata(attribute, reinterpret_cast<const char*>(value));
 }
 
+void AudioPlayer::bluetoothConnectionCallback(esp_a2d_connection_state_t state, void* object) {
+    AudioPlayer* self = static_cast<AudioPlayer*>(object);
+    if (!self) return;
+    rtcp_btx::Connection observed = rtcp_btx::Connection::unknown;
+    if (state == ESP_A2D_CONNECTION_STATE_CONNECTED)
+        observed = rtcp_btx::Connection::connected;
+    else if (state == ESP_A2D_CONNECTION_STATE_DISCONNECTED)
+        observed = rtcp_btx::Connection::disconnected;
+    portENTER_CRITICAL(&self->bluetoothMetadataMux);
+    if (self->bluetoothRtcpState.source == rtcp_btx::Source::bluetooth &&
+        self->bluetoothRtcpState.connection != observed) {
+        const bool epoch = observed == rtcp_btx::Connection::connected ||
+                           observed == rtcp_btx::Connection::disconnected;
+        if (epoch) {
+            rtcp_btx::advance(self->bluetoothRtcpState.source_generation);
+            rtcp_btx::advance(self->bluetoothRtcpState.metadata_revision);
+            self->clearBluetoothMetadataLocked();
+        }
+        self->bluetoothRtcpState.connection = observed;
+        self->bluetoothRtcpState.playback = rtcp_btx::Playback::unknown;
+    }
+    portEXIT_CRITICAL(&self->bluetoothMetadataMux);
+}
+
+void AudioPlayer::bluetoothAudioCallback(esp_a2d_audio_state_t state, void* object) {
+    AudioPlayer* self = static_cast<AudioPlayer*>(object);
+    if (!self) return;
+    rtcp_btx::Playback observed = rtcp_btx::Playback::unknown;
+    if (state == ESP_A2D_AUDIO_STATE_STARTED)
+        observed = rtcp_btx::Playback::playing;
+    else if (state == ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND)
+        observed = rtcp_btx::Playback::paused;
+    else if (state == ESP_A2D_AUDIO_STATE_STOPPED)
+        observed = rtcp_btx::Playback::stopped;
+    portENTER_CRITICAL(&self->bluetoothMetadataMux);
+    if (self->bluetoothRtcpState.source == rtcp_btx::Source::bluetooth &&
+        self->bluetoothRtcpState.connection == rtcp_btx::Connection::connected)
+        self->bluetoothRtcpState.playback = observed;
+    portEXIT_CRITICAL(&self->bluetoothMetadataMux);
+}
+
 void AudioPlayer::setBluetoothMetadata(uint8_t attribute, const char* value) {
+    char bounded[rtcp_btx::kMaxTitleBytes + 1]{};
+    uint8_t bounded_size = 0;
+    const size_t maximum = attribute == ESP_AVRC_MD_ATTR_ARTIST
+        ? rtcp_btx::kMaxArtistBytes : rtcp_btx::kMaxTitleBytes;
+    const bool supported = attribute == ESP_AVRC_MD_ATTR_TITLE ||
+                           attribute == ESP_AVRC_MD_ATTR_ARTIST;
+    if (!supported) return;
+    const bool valid = rtcp_btx::copyLocalText(value, maximum, bounded,
+                                                sizeof bounded, bounded_size);
     portENTER_CRITICAL(&bluetoothMetadataMux);
-    if (attribute == ESP_AVRC_MD_ATTR_TITLE) {
-        strncpy(bluetoothTitle, value, sizeof(bluetoothTitle) - 1);
-        bluetoothTitle[sizeof(bluetoothTitle) - 1] = '\0';
-    } else if (attribute == ESP_AVRC_MD_ATTR_ARTIST) {
-        strncpy(bluetoothArtist, value, sizeof(bluetoothArtist) - 1);
-        bluetoothArtist[sizeof(bluetoothArtist) - 1] = '\0';
-    } else {
+    if (bluetoothRtcpState.source != rtcp_btx::Source::bluetooth ||
+        bluetoothRtcpState.connection != rtcp_btx::Connection::connected) {
         portEXIT_CRITICAL(&bluetoothMetadataMux);
         return;
+    }
+    char* target = attribute == ESP_AVRC_MD_ATTR_TITLE ? bluetoothTitle : bluetoothArtist;
+    const size_t target_capacity = attribute == ESP_AVRC_MD_ATTR_TITLE
+        ? sizeof bluetoothTitle : sizeof bluetoothArtist;
+    const bool changed = valid ? strncmp(target, bounded, target_capacity) != 0
+                               : target[0] != 0;
+    if (valid) {
+        memcpy(target, bounded, bounded_size);
+        target[bounded_size] = 0;
+    } else {
+        target[0] = 0;
     }
     if (bluetoothArtist[0] && bluetoothTitle[0]) {
         snprintf(bluetoothNowPlaying, sizeof(bluetoothNowPlaying), "%s - %s", bluetoothArtist, bluetoothTitle);
@@ -886,8 +1013,9 @@ void AudioPlayer::setBluetoothMetadata(uint8_t attribute, const char* value) {
                 sizeof(bluetoothNowPlaying) - 1);
         bluetoothNowPlaying[sizeof(bluetoothNowPlaying) - 1] = '\0';
     }
+    if (changed) rtcp_btx::advance(bluetoothRtcpState.metadata_revision);
     portEXIT_CRITICAL(&bluetoothMetadataMux);
-    Serial.printf("[BT] Metadata: %s\n", bluetoothNowPlaying);
+    Serial.println(valid ? "[BT] Metadata fields updated" : "[BT] Invalid metadata field cleared");
 }
 
 void AudioPlayer::metadataCallback(void* cbData, const char* type, bool isUnicode, const char* str) {

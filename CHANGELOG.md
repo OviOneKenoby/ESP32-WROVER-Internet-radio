@@ -1,5 +1,30 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-22 - Owner-approved BTX/1.0 TUNER implementation
+
+Implemented frozen BTX/1.0 (D-011) on top of the accepted D-009 plus mDNS
+source. The first authenticated ID 3 request remains the exact legacy ID 4
+response; an immediate second ID 3 negotiates the new ID 12 capability.
+IDs 13/14 provide bounded authoritative Bluetooth source, connection,
+playback, artist and title state, and ID 15 carries explicit Play, Pause,
+Previous and Next commands. Commands use the existing main-loop owner and
+correlated ID 8 result, with source/phone-generation and playback fencing.
+
+The pinned A2DP callbacks now own connection and playback authority. Existing
+artist/title storage is reused with strict UTF-8 validation, code-point-safe
+96/127-byte limits and stale-metadata clearing. No new task, transport buffer,
+dynamic callback allocation, NVS state or D-009 semantic change was added.
+
+Focused BTX and relevant compatibility checks passed 183 assertions/checks.
+The `esp32-lwip-psram` build passed at source
+`bc9c148a942732c890fcba6e6b15769bc4cd9067`. The private application is
+2,072,960 bytes with SHA-256
+`67fbeb56082fffddb6104f5ed948395bc862262cf5bcb10602292b08cb3ad590`;
+the ELF SHA-256 is
+`e4807c7929941cf0a0255a24b98633342ed9a435d6da31a4973ca31e2eaace99`.
+Static RAM is 89,904 bytes and application-slot headroom is 1,072,768 bytes.
+Hardware validation remains NOT RUN; no firmware was flashed.
+
 ## 2026-10-20 - A-REMOTE-014 bounded RTCP DNS-SD advertisement
 
 Added a native `ESPmDNS` `_rtcp._tcp` advertisement for the existing RTCP
