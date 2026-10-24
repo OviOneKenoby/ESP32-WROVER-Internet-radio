@@ -162,6 +162,20 @@ succeeded, Wi-Fi recorded no disconnect, web diagnostics returned HTTP 200,
 the RTCP listener accepted a bounded connection, and no unexpected reset was
 observed.
 
-Hardware validation remains partial pending explicit known HTTP and HTTPS MP3
-classification, Bluetooth restartability, and a final post-restart
-web/RTCP/allocation-failure checkpoint.
+Bluetooth restartability subsequently passed with A2DP audio and metadata
+restored. West City Radio and 80s80s provided stable owner-observed HTTP MP3
+playback; web diagnostics returned HTTP 200 and the RTCP listener remained
+reachable during West City playback.
+
+The saved Sports Radio Brila FM HTTPS MP3 attempt stopped immediately. The
+immediate snapshot retained zero allocation failures and zero internal-cap
+failures, completed generator, Helix, and I2S initialization, but no stable
+playback phase. Wi-Fi and RTCP remained healthy and no reset occurred. This is
+not evidence of the prior TLS record-buffer defect. Its precise cause is
+unproven because the exact stream error was not retained; endpoint availability,
+content/codec mismatch, or a later source/decoder failure remain possible.
+
+The stop condition was applied. TLS PSRAM remediation is verified for the
+targeted constrained-heap Radio Browser case, but overall hardware status is
+PARTIAL PASS until a different owner-established, currently working HTTPS MP3
+endpoint passes.

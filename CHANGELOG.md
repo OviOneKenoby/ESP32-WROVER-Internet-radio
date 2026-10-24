@@ -24,10 +24,23 @@ largest block, and 4,144,135 PSRAM bytes free. All eight Helix allocations
 succeeded. Wi-Fi recorded no disconnect, HTTP diagnostics and the RTCP
 listener remained responsive, and no unexpected reset occurred.
 
-Status remains PARTIAL pending explicit known HTTP and HTTPS MP3 stream
-classification, Bluetooth restartability, and the final post-restart
-web/RTCP/allocation-failure checkpoint. No REMOTE access or additional flash
-operation occurred.
+Bluetooth restartability subsequently passed with A2DP audio and metadata
+restored. West City Radio and 80s80s passed as owner-observed HTTP MP3 streams;
+web diagnostics and the RTCP listener remained responsive during West City
+playback.
+
+The saved Sports Radio Brila FM HTTPS MP3 attempt stopped immediately. The
+immediate snapshot retained zero allocation and internal-cap failures, reached
+generator, Helix, and I2S initialization, but did not record stable playback.
+Wi-Fi and RTCP remained healthy and no reset occurred. The failure is not the
+previous 16,717-byte TLS allocation defect, but its exact cause is unproven
+because no stream-specific serial error was retained. Endpoint availability,
+content/codec mismatch, or a later source/decoder error remain possible.
+
+The hardware stop condition was applied. Status is PARTIAL PASS: the targeted
+TLS PSRAM remediation is hardware-verified, while HTTPS MP3 remains unverified
+until a different owner-established, currently working endpoint passes. No
+REMOTE access or additional flash operation occurred.
 
 ## 2026-10-24 - BTX TLS record buffers prefer PSRAM
 
