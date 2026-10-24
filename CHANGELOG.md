@@ -1,5 +1,35 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-24 - Wi-Fi TX probe-removal hardware validation failed
+
+The 2,071,424-byte production candidate from `0e30003fcbd6`, SHA-256
+`2970cc09d62431e5385bcdb74bbba3702398a775c9e4f652ed3092a67e54f083`,
+was installed application-only and independently read back with an exact hash
+match. It booted normally with retained Wi-Fi and configuration. The idle
+baseline reported zero allocation failures and 102,708/98,292 bytes of
+INTERNAL/DMA free/largest memory.
+
+Bluetooth A2DP SBC audio and metadata passed with zero allocation failures,
+zero Wi-Fi disconnects and 11,632/7,156 DMA bytes free/largest. The known HTTPS
+MP3 validation stream then started normally; all eight Helix allocations
+succeeded and the initial stream snapshot still had zero allocation failures,
+with 2,840/1,716 DMA bytes free/largest.
+
+The bounded HTTP/RTCP coexistence observation failed. Four 698-byte
+`INTERNAL|DMA|8BIT` allocations failed in task `wifi` at uptimes
+955,243-955,285 ms while a diagnostics response was being transmitted. The
+matching ELF resolves the path as Wi-Fi `ppTask` through
+`ieee80211_output_process`, `ic_ebuf_alloc`, `esf_buf_alloc_dynamic` and the
+original `malloc_internal_wrapper` to `heap_caps_malloc`. Wi-Fi remained
+associated with zero disconnect events and no reset, but TX refusals reached
+884, later HTTP and RTCP probes timed out, and playback stopped.
+
+The production build correctly removed the intrusive probe and recovered
+static DRAM, but that reduction was insufficient for this workload. Hardware
+verdict: **FAIL**. No rollback or additional device operation was performed.
+The temporary validation station remains stored because the mandatory stop
+condition prohibited cleanup after service loss.
+
 ## 2026-10-24 - Production Wi-Fi TX probe removed
 
 The production `esp32-lwip-psram` environment now inherits directly from the

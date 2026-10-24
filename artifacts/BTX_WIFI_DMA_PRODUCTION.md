@@ -61,6 +61,24 @@ dynamic conversion followed by driver requeue. A zero generic failure-count
 delta is valid evidence of no observed heap-capability allocation failures; the
 absence of probe-specific fields alone is not.
 
+## Hardware validation result
+
+Application-only installation and exact readback passed. Idle boot and
+Bluetooth A2DP passed with zero allocation failures. The HTTPS MP3 stream also
+started successfully with all Helix allocations complete and zero failures.
+
+The coexistence interval then recorded four 698-byte
+`INTERNAL|DMA|8BIT` allocation failures in the Wi-Fi task during diagnostics
+response transmission. Wi-Fi remained associated, but transmit refusals
+accumulated, HTTP and RTCP became unreachable, and playback stopped. The
+probe-specific diagnostics were absent as intended; generic retained failure
+records and matching-ELF decoding established the same Wi-Fi dynamic TX
+allocation path.
+
+Hardware verdict: **FAIL**. Probe removal alone did not provide adequate
+contiguous DMA-capable headroom for the validated HTTPS/audio/web workload.
+No rollback was performed automatically.
+
 ## Bounded hardware-validation plan
 
 After separate owner authorization:
