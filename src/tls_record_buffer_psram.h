@@ -12,8 +12,8 @@ namespace TlsRecordBufferPsram {
 // against both mbedTLS internal record-buffer macros.
 constexpr std::size_t kResolvedRecordBufferBytes = 16717;
 
-constexpr bool requestSize(std::size_t count, std::size_t size,
-                           std::size_t& bytes) {
+inline bool requestSize(std::size_t count, std::size_t size,
+                        std::size_t& bytes) {
     if (count != 0 && size > std::numeric_limits<std::size_t>::max() / count) {
         return false;
     }
@@ -21,7 +21,7 @@ constexpr bool requestSize(std::size_t count, std::size_t size,
     return true;
 }
 
-constexpr bool isRecordBufferRequest(std::size_t count, std::size_t size) {
+inline bool isRecordBufferRequest(std::size_t count, std::size_t size) {
     std::size_t bytes = 0;
     return requestSize(count, size, bytes) &&
            bytes == kResolvedRecordBufferBytes;
