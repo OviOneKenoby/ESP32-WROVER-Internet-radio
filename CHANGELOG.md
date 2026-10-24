@@ -1,5 +1,40 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-24 - Production Wi-Fi TX probe removed
+
+The production `esp32-lwip-psram` environment now inherits directly from the
+normal `esp32-dev` environment instead of the manual `esp32-uart-probe`
+diagnostic profile. This removes the copied Wi-Fi OS adapter, allocator
+interception, stack unwinding, and bounded `SW_TX`/`SW_CONVERT`/`SW_TRACE`
+storage from production while leaving the separate diagnostic environment
+available. Normal Wi-Fi initialization receives the original SDK
+configuration unchanged.
+
+The generic bounded allocation-failure callback and retained failure records
+remain active. Production can therefore still report allocation size,
+capabilities, task, timestamp, and bounded call stack, but it no longer exposes
+the probe-specific dynamic-conversion and requeue classifications. Absence of
+those probe fields must not be reported as evidence that Wi-Fi allocations
+cannot fail.
+
+All 11 Python policy suites and 12 native C++ suites passed. A clean pinned
+`esp32-lwip-psram` build from source commit
+`0e30003fcbd6284d74eb1184aac8390b70477232` passed. The application is
+2,071,424 bytes with SHA-256
+`2970cc09d62431e5385bcdb74bbba3702398a775c9e4f652ed3092a67e54f083`;
+the ELF is 30,311,348 bytes with SHA-256
+`0525e2b41d383b3eae2a3d73d153de0d66a8f2b0f09363a44c7b14fbf47f6f2e`.
+The 3 MiB application partition retains 1,074,304 bytes.
+
+Linked static DRAM fell from 90,264 to 88,792 bytes, a measured reduction of
+1,472 bytes. The removed probe accounted for 1,380 verified symbol bytes; the
+additional 92-byte net reduction comes from related link/alignment effects.
+This predicts up to 1,472 additional internal/DMA-capable bytes after static
+initialization, but no offline result can guarantee the runtime largest-block
+improvement. Post-link checks found no `SoftwareTxProbe` symbols, retained the
+generic heap-failure callback, and verified the TLS record-buffer and lwIP
+PSRAM wrappers. Hardware validation remains pending; no device was accessed.
+
 ## 2026-10-24 - BTX TLS PSRAM hardware checkpoint
 
 Installed the 2,075,920-byte candidate application-only and independently
