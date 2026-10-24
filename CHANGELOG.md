@@ -1,5 +1,93 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-24 - BTX TLS record buffers prefer PSRAM
+
+Started from diagnostic documentation commit
+`7af6aced423fab1d77a911aeeaa7e64e8922f431` on the dedicated
+`tuner/btx-tls-psram-remediation` branch, while preserving the diagnostic
+branch and its uncommitted hardware checkpoint.
+
+The exact diagnostic ELF proved that Arduino-ESP32 2.0.17's precompiled
+`esp_mbedtls_mem_calloc()` calls `heap_caps_calloc(...,
+MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)`. The resolved mbedTLS input and output
+record buffers are both 16,717 bytes: 16,384 bytes of configured TLS content,
+13 bytes of internal record header, and 320 bytes of maximum protocol
+overhead. The pinned SDK has `CONFIG_MBEDTLS_INTERNAL_MEM_ALLOC=y`, external
+allocation disabled, and no asymmetric content lengths. Changing application
+preprocessor flags cannot change that already-linked framework object.
+
+The correction wraps only `esp_mbedtls_mem_calloc`. Requests whose checked
+`count * size` product exactly equals the statically verified mbedTLS record
+buffer size first request byte-addressable PSRAM. If PSRAM is unavailable or
+exhausted, the wrapper calls the original internal allocator. Every other
+mbedTLS allocation goes directly to the original allocator. Existing
+`heap_caps_free` handling is valid for either heap. No global allocator hook,
+record-size change, TLS setting, certificate policy, timeout, protocol,
+Bluetooth lifecycle, audio allocation, RTCP/BTX behavior, or diagnostic
+failure handling changes.
+
+Framework-wide `CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC` was rejected because the
+framework is precompiled, the flag would require a framework rebuild, and the
+resolved implementation moves every mbedTLS allocation to PSRAM without this
+fix's internal fallback. Smaller record buffers were rejected because they
+also require rebuilding mbedTLS and can reject legal server records unless
+peer behavior is constrained. Releasing more Bluetooth memory or moving other
+services was rejected because it risks restartability and does not guarantee
+a 16,717-byte contiguous block. The selected wrapper changes only the two
+record-buffer allocations implicated by the hardware stack.
+
+Focused pre-build checks passed: 10/10 allocation-selection checks, 10/10
+source-policy checks, 21/21 BTX integration checks, 10/10 Classic Bluetooth
+memory-policy checks, 12/12 D-009 integration checks, and 21/21 MP3 memory
+instrumentation checks. Production build, ELF binding verification, binary
+identity, and hardware validation remain pending at this checkpoint.
+
+## 2026-10-24 - BTX/1.0 memory diagnostic hardware checkpoint
+
+The diagnostic application was installed and independently read back as
+2,075,824 bytes with SHA-256
+`621db1555f782c405bb1b31f8acebdbff4d584683d970220a4c8ef990c2714bc`;
+embedded build ID `7acd006e9184` booted normally. The previously installed
+2,072,960-byte BTX application remains the verified rollback image, SHA-256
+`67fbeb56082fffddb6104f5ed948395bc862262cf5bcb10602292b08cb3ad590`.
+
+During the direct Bluetooth-to-Radio sequence the retained allocation hook
+recorded two 16,717-byte `INTERNAL|8BIT` failures at 566,567 ms and 566,688 ms.
+The matching diagnostic ELF decoded both stacks as
+`heap_caps_alloc_failed -> heap_caps_calloc -> esp_mbedtls_mem_calloc ->
+mbedtls_calloc -> mbedtls_ssl_setup -> start_ssl_client ->
+WiFiClientSecure::connect -> HTTPClient::connect -> HTTPClient::sendRequest`.
+The failures therefore came from an outbound TLS setup. They preceded the MP3
+`before_construction` sample at 584,579 ms by about 18 seconds; all eight
+Helix allocations subsequently succeeded and the failure counter stayed at
+two through stable MP3 playback. The preceding inbound diagnostics response
+recorded no allocation-failure delta, so `/api/diagnostics` was not the caller.
+
+The owner also observed `Browse All Stations -> Fetching countries -> HTTP
+error`; the exact error text was not captured. The TLS failure and this browse
+regression are both verified observations, but the bounded 12-frame backtrace
+ends inside `HTTPClient::sendRequest` and does not retain the application
+caller. Attribution to `StationBrowser` therefore remains probable rather
+than proven; a secure non-MP3 stream attempt shares the same lower stack.
+
+The diagnostic model adds 360 bytes of static RAM, no task, and no dynamic
+allocation. It exposed an existing contiguous internal-memory risk rather
+than creating the TLS request. Bluetooth-active memory reached 8,920 bytes
+free with a 6,900-byte largest block; before MP3 construction the largest
+block was 8,692 bytes, below the 16,717-byte TLS request. Five of six MP3
+lifecycle stages and all eight Helix records were retained. The teardown stage
+was intentionally not captured after the allocation-failure stop condition.
+Existing BTX and D-009 validation evidence remains unchanged and was not
+repeated.
+
+Next checkpoint: retain the diagnostic firmware and evidence. Under separate
+authorization, capture one passive UART log around a single controlled
+Bluetooth-to-Radio reproduction, without concurrent web requests, so existing
+`[BROWSER]` and `[AUDIO]` messages identify the application caller. Only after
+that attribution should remediation compare releasing retained Bluetooth
+memory, reducing TLS contiguous-buffer demand, or moving eligible TLS storage
+to PSRAM. No remediation is approved by this checkpoint.
+
 ## 2026-10-24 - BTX/1.0 memory diagnostic hardware preflight blocked
 
 The authorized diagnostic installation stopped before serial access or any
