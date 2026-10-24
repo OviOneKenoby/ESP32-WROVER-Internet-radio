@@ -1,5 +1,34 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-24 - BTX TLS PSRAM hardware checkpoint
+
+Installed the 2,075,920-byte candidate application-only and independently
+read it back with SHA-256
+`7e25aaf27e6c78ad75eb563bc58f17d798d9a691f7284cb88da8b99d8b3b0976`.
+Build ID `cbcd90cb23a1` booted normally with retained configuration, Wi-Fi,
+PSRAM, web diagnostics, and the RTCP listener available.
+
+Cold-boot Radio Browser retrieval, Bluetooth A2DP audio and metadata, direct
+Bluetooth-to-Radio MP3 transition, and the critical post-Bluetooth Radio
+Browser retrieval passed. The largest internal block was 6,388 bytes during
+Bluetooth, 7,924 bytes immediately before the post-Bluetooth HTTPS test, and
+12,788 bytes at the subsequent MP3 pre-construction checkpoint: each is below
+the 16,717-byte mbedTLS record-buffer request. HTTPS succeeded while allocation
+and internal-cap failure counters remained zero. Combined with the verified
+linked allocator binding, this verifies the TLS record-buffer PSRAM path with
+the existing instrumentation rather than relying on an internal fallback.
+
+The latest stable MP3 checkpoint retained 14,888 internal bytes free with a
+3,316-byte largest block, 16,576 DMA-capable bytes free with an 8,180-byte
+largest block, and 4,144,135 PSRAM bytes free. All eight Helix allocations
+succeeded. Wi-Fi recorded no disconnect, HTTP diagnostics and the RTCP
+listener remained responsive, and no unexpected reset occurred.
+
+Status remains PARTIAL pending explicit known HTTP and HTTPS MP3 stream
+classification, Bluetooth restartability, and the final post-restart
+web/RTCP/allocation-failure checkpoint. No REMOTE access or additional flash
+operation occurred.
+
 ## 2026-10-24 - BTX TLS record buffers prefer PSRAM
 
 Started from diagnostic documentation commit

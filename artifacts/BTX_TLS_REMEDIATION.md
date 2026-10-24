@@ -138,3 +138,30 @@ verified 2,072,960-byte BTX application at `0x10000`, then read back exactly
 `67fbeb56082fffddb6104f5ed948395bc862262cf5bcb10602292b08cb3ad590`.
 Bootloader, partition table, NVS, pairing, credentials, and every other flash
 region must remain untouched.
+
+## Hardware checkpoint
+
+The candidate was installed application-only and independently read back as
+2,075,920 bytes with the expected SHA-256. Build ID `cbcd90cb23a1` booted
+normally with Wi-Fi, PSRAM, web diagnostics, and the RTCP listener available.
+
+Cold-boot Radio Browser retrieval, A2DP audio and metadata, direct
+Bluetooth-to-Radio MP3 transition, and post-Bluetooth Radio Browser retrieval
+all passed. During active Bluetooth the largest internal block was 6,388
+bytes; immediately before the post-Bluetooth HTTPS retrieval it was 7,924
+bytes, and the subsequent MP3 pre-construction checkpoint recorded 12,788
+bytes. The 16,717-byte internal fallback could not fit under these observed
+limits. The HTTPS request completed and both allocation-failure counters
+remained zero. Together with the verified ELF allocator binding, this verifies
+the TLS record-buffer PSRAM path using the existing bounded instrumentation.
+
+At the latest stable MP3 checkpoint, internal heap was 14,888 bytes free with
+a 3,316-byte largest block, DMA heap was 16,576 bytes free with an 8,180-byte
+largest block, and PSRAM free was 4,144,135 bytes. All eight Helix allocations
+succeeded, Wi-Fi recorded no disconnect, web diagnostics returned HTTP 200,
+the RTCP listener accepted a bounded connection, and no unexpected reset was
+observed.
+
+Hardware validation remains partial pending explicit known HTTP and HTTPS MP3
+classification, Bluetooth restartability, and a final post-restart
+web/RTCP/allocation-failure checkpoint.
