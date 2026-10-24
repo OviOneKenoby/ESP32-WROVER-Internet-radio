@@ -120,17 +120,14 @@ Post-link inspection passed: `mbedtls_calloc_func` points to
 expected pinned platform, framework, and library revisions. The candidate and
 ELF are preserved privately; neither is published by this report.
 
-## Hardware validation gate
+## Original hardware validation gate (completed)
 
-No flash is authorized. Software status is BUILT / HARDWARE VALIDATION
-PENDING. A later application-only test must preserve rollback images, verify
-exact readback, then test cold-boot Radio Browser HTTPS, Bluetooth A2DP,
+The software-only checkpoint did not authorize a flash. A later, separately
+authorized application-only test preserved rollback images, verified exact
+readback, then tested cold-boot Radio Browser HTTPS, Bluetooth A2DP,
 direct Bluetooth-to-Radio Browse Countries, HTTPS and HTTP MP3, web/RTCP
 coexistence, allocation-failure counters, and repeatable Bluetooth restart.
-It must confirm that the two 16,717-byte TLS buffers are served from PSRAM,
-that no corresponding internal-allocation failure occurs, and that no reset,
-audio regression, HTTPS interoperability issue, or network-security change
-occurs.
+The resulting evidence is recorded below.
 
 If that test fails and rollback is separately authorized, restore only the
 verified 2,072,960-byte BTX application at `0x10000`, then read back exactly
@@ -175,7 +172,24 @@ not evidence of the prior TLS record-buffer defect. Its precise cause is
 unproven because the exact stream error was not retained; endpoint availability,
 content/codec mismatch, or a later source/decoder failure remain possible.
 
-The stop condition was applied. TLS PSRAM remediation is verified for the
-targeted constrained-heap Radio Browser case, but overall hardware status is
-PARTIAL PASS until a different owner-established, currently working HTTPS MP3
-endpoint passes.
+The owner then independently verified the exact Radio ABF endpoint as HTTP
+200 and `audio/mpeg` from Windows. Because the firmware exposes no transient
+direct-URL path and Radio Browser resolves Radio ABF to a different AAC URL,
+explicit owner authorization allowed one temporary saved station containing
+the exact HTTPS MP3 URL. It was selected physically and produced clear, stable
+audio. The retained session reached stable playback with all eight Helix
+allocations successful, zero allocation/internal-cap failures, Wi-Fi and RTCP
+healthy, web HTTP 200, and no reset. The temporary station was removed and the
+saved-station/Favorites JSON matched the pre-test state.
+
+Resource headroom remains a blocker: during stable Radio ABF playback the
+snapshot recorded 5,524 internal bytes free with a 1,652-byte largest block,
+and only 2,132 DMA-capable bytes free with a 236-byte largest block. PSRAM had
+4,105,271 bytes free. The stable-playback phase itself retained only a
+1,332-byte largest internal/DMA block. The stop condition was applied after
+cleanup.
+
+TLS PSRAM placement, Radio Browser HTTPS, HTTP MP3, and HTTPS MP3 are hardware
+PASS. Overall status remains PARTIAL PASS due to dangerously low contiguous
+internal/DMA headroom; REMOTE BTX installation is not approved by this
+checkpoint.

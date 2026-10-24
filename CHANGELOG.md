@@ -37,10 +37,26 @@ previous 16,717-byte TLS allocation defect, but its exact cause is unproven
 because no stream-specific serial error was retained. Endpoint availability,
 content/codec mismatch, or a later source/decoder error remain possible.
 
-The hardware stop condition was applied. Status is PARTIAL PASS: the targeted
-TLS PSRAM remediation is hardware-verified, while HTTPS MP3 remains unverified
-until a different owner-established, currently working endpoint passes. No
-REMOTE access or additional flash operation occurred.
+The owner then independently verified the exact Radio ABF HTTPS MP3 endpoint
+as HTTP 200 and `audio/mpeg` from Windows. With explicit approval, the exact
+URL was added as one temporary saved station because the firmware has no
+transient direct-URL interface and Radio Browser exposes a different AAC URL.
+Radio ABF produced clear, stable audio and a retained stable-playback phase.
+All Helix allocations succeeded, allocation/internal-cap failures remained
+zero, Wi-Fi, web and RTCP remained healthy, and no reset occurred. The
+temporary station was removed and saved stations/Favorites matched their
+pre-test state.
+
+The final snapshot also exposed dangerously low contiguous headroom: 5,524
+internal bytes free with a 1,652-byte largest block, and 2,132 DMA-capable
+bytes free with a 236-byte largest block; PSRAM free was 4,105,271 bytes. The
+stable-playback phase retained a 1,332-byte largest internal/DMA block. The
+stop condition was applied after cleanup.
+
+TLS PSRAM placement plus Radio Browser HTTPS, HTTP MP3 and HTTPS MP3 are
+hardware PASS. Overall status is PARTIAL PASS because internal/DMA headroom
+remains a material risk. REMOTE BTX installation is not approved by this
+checkpoint. No REMOTE access or additional flash operation occurred.
 
 ## 2026-10-24 - BTX TLS record buffers prefer PSRAM
 
