@@ -7,9 +7,14 @@
 #include "system_info.h"
 #include "correctness_guards.h"
 #include "rtcp_server.h"
+#include "diagnostics_psram_allocator.h"
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <esp_heap_caps.h>
+
+namespace {
+DiagnosticsPsramAllocator diagnosticsPsramAllocator;
+}  // namespace
 
 WebPortal webPortal;
 
@@ -144,7 +149,11 @@ void WebPortal::handleDiagnostics() {
     WiFiDiagnostics wifi{};
     wifiManager.getDiagnostics(wifi);
 
-    JsonDocument doc;
+    // The full diagnostic schema needs multiple ArduinoJson pools. Keep those
+    // non-DMA objects in PSRAM so observing a low-memory audio session does not
+    // consume the contiguous INTERNAL|DMA storage needed by the Wi-Fi driver.
+    // No internal fallback: overflow retains the existing bounded 503 path.
+    JsonDocument doc(&diagnosticsPsramAllocator);
     doc["firmware_version"] = FIRMWARE_VERSION;
     doc["build_git_id"] = BUILD_GIT_ID;
     doc["uptime_ms"] = millis();
