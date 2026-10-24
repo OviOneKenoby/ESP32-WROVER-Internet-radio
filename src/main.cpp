@@ -2,6 +2,7 @@
 #include "config.h"
 #include "display.h"
 #include "audio.h"
+#include "mp3_memory_diagnostics.h"
 #include "rtcp_server.h"
 #include "input.h"
 #include "net_manager.h"
@@ -1603,6 +1604,7 @@ void printDiagnosticSnapshot() {
     }
     Serial.printf("[SNAPSHOT] alloc_detail_omitted=%lu (first_four_and_latest_retained)\n",
         records.total > 5 ? (unsigned long)(records.total - 5) : 0UL);
+    Mp3MemoryDiagnostics::printSnapshot();
     Serial.println("=== END DIAGNOSTIC SNAPSHOT ===");
 }
 

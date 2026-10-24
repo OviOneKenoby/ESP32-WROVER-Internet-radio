@@ -188,6 +188,10 @@ private:
 
     // Mutex for thread safety
     SemaphoreHandle_t audioMutex;
+
+    // One-shot diagnostic milestone; it does not alter decoder scheduling.
+    bool mp3DiagnosticStablePending;
+    uint32_t mp3DiagnosticStableAfterMs;
 };
 
 extern AudioPlayer audioPlayer;

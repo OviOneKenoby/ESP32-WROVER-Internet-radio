@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "mp3_memory_diagnostics.h"
 #include "volume_target.h"
 #include "config.h"
 #include "correctness_guards.h"
@@ -315,7 +316,9 @@ AudioPlayer::AudioPlayer()
       btEnabled(false),
       bluetoothLifecycle(BT_LIFECYCLE_INACTIVE),
       audioTaskHandle(nullptr),
-      audioMutex(nullptr) {
+      audioMutex(nullptr),
+      mp3DiagnosticStablePending(false),
+      mp3DiagnosticStableAfterMs(0) {
 
     memset(nowPlaying, 0, sizeof(nowPlaying));
     memset(currentURL, 0, sizeof(currentURL));
@@ -380,6 +383,12 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
 
     // Clean up any previous playback before starting a new one.
     teardownRadioPlayback();
+    mp3DiagnosticStablePending = false;
+    if (codec == AUDIO_CODEC_MP3) {
+        Mp3MemoryDiagnostics::beginSession(
+            static_cast<uint8_t>(currentSource),
+            static_cast<uint8_t>(bluetoothLifecycle));
+    }
 
     strncpy(currentURL, streamURL, sizeof(currentURL) - 1);
     currentURL[sizeof(currentURL) - 1] = '\0';
@@ -468,10 +477,23 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
         xSemaphoreGive(audioMutex);
         return false;
     }
+    if (codec == AUDIO_CODEC_MP3) {
+        Mp3MemoryDiagnostics::setContext(
+            static_cast<uint8_t>(currentSource),
+            static_cast<uint8_t>(bluetoothLifecycle));
+        Mp3MemoryDiagnostics::capture(TUNER_MP3_MEMORY_AFTER_I2S_INITIALIZATION);
+    }
 
     currentSource = AUDIO_SOURCE_INTERNET_RADIO;
     setBluetoothRtcpSource(rtcp_btx::Source::radio);
     playbackState = STATE_PLAYING;
+    if (codec == AUDIO_CODEC_MP3) {
+        Mp3MemoryDiagnostics::setContext(
+            static_cast<uint8_t>(currentSource),
+            static_cast<uint8_t>(bluetoothLifecycle));
+        mp3DiagnosticStableAfterMs = millis() + 5000;
+        mp3DiagnosticStablePending = true;
+    }
 
     xSemaphoreGive(audioMutex);
 
@@ -483,6 +505,7 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
 // Teardown helper - stops and frees the radio playback chain
 // ============================================
 void AudioPlayer::teardownRadioPlayback() {
+    mp3DiagnosticStablePending = false;
     if (mp3Decoder) {
         if (mp3Decoder->isRunning()) {
             mp3Decoder->stop();
@@ -510,6 +533,10 @@ void AudioPlayer::teardownRadioPlayback() {
         audioSource = nullptr;
     }
     currentURL[0] = '\0';
+    Mp3MemoryDiagnostics::setContext(
+        static_cast<uint8_t>(currentSource),
+        static_cast<uint8_t>(bluetoothLifecycle));
+    Mp3MemoryDiagnostics::capture(TUNER_MP3_MEMORY_AFTER_TEARDOWN);
 }
 
 // ============================================
@@ -741,14 +768,30 @@ void AudioPlayer::audioTaskFunc() {
         bool isDecoding = currentSource == AUDIO_SOURCE_INTERNET_RADIO &&
                           playbackState == STATE_PLAYING &&
                           mp3Decoder && mp3Decoder->isRunning();
+        bool captureStableMp3 = false;
+        uint8_t diagnosticSource = 0;
+        uint8_t diagnosticBluetooth = 0;
         if (isDecoding) {
             if (!mp3Decoder->loop()) {
                 Serial.println("[AUDIO] Stream ended or decode error, stopping");
                 playbackState = STATE_STOPPED;
                 mp3Decoder->stop();
             }
+            const uint32_t diagnosticNow = millis();
+            if (mp3DiagnosticStablePending && mp3Decoder->isRunning() &&
+                static_cast<int32_t>(diagnosticNow - mp3DiagnosticStableAfterMs) >= 0) {
+                mp3DiagnosticStablePending = false;
+                captureStableMp3 = true;
+                diagnosticSource = static_cast<uint8_t>(currentSource);
+                diagnosticBluetooth = static_cast<uint8_t>(bluetoothLifecycle);
+            }
         }
         xSemaphoreGive(audioMutex);
+
+        if (captureStableMp3) {
+            Mp3MemoryDiagnostics::setContext(diagnosticSource, diagnosticBluetooth);
+            Mp3MemoryDiagnostics::capture(TUNER_MP3_MEMORY_STABLE_PLAYBACK);
+        }
 
         if (isDecoding) {
             // Time-bounded yield, not a per-call one. The decoder's
