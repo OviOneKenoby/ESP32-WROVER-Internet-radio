@@ -36,11 +36,37 @@ services was rejected because it risks restartability and does not guarantee
 a 16,717-byte contiguous block. The selected wrapper changes only the two
 record-buffer allocations implicated by the hardware stack.
 
-Focused pre-build checks passed: 10/10 allocation-selection checks, 10/10
+Focused checks passed: 10/10 allocation-selection checks, 10/10
 source-policy checks, 21/21 BTX integration checks, 10/10 Classic Bluetooth
 memory-policy checks, 12/12 D-009 integration checks, and 21/21 MP3 memory
-instrumentation checks. Production build, ELF binding verification, binary
-identity, and hardware validation remain pending at this checkpoint.
+instrumentation checks. The new TLS checks also passed under the pinned
+target's C++11 mode after correcting a compile-time-only `constexpr`
+incompatibility.
+
+The clean `esp32-lwip-psram` build passed at source
+`cbcd90cb23a1db428fc8654beef5e28288680cbc` (embedded build ID
+`cbcd90cb23a1`). The application is 2,075,920 bytes, SHA-256
+`7e25aaf27e6c78ad75eb563bc58f17d798d9a691f7284cb88da8b99d8b3b0976`;
+the ELF is 30,379,460 bytes, SHA-256
+`aa1e8f0f2104e922446606317abc78c8c90e061e061487d44bf9011f5e654264`.
+Static RAM remains 90,264 bytes and the 3 MiB application slot retains
+1,069,808 bytes. Post-link inspection verified that the active mbedTLS calloc
+hook points to the wrapper and that the original internal allocator is retained
+for fallback. Compared with the installed diagnostic application this adds 96
+binary bytes and no static RAM.
+
+Status is BUILT / HARDWARE VALIDATION PENDING. No device was accessed or
+flashed. A separately authorized application-only test must verify exact
+readback, cold-boot and post-Bluetooth Radio Browser HTTPS, HTTP/HTTPS MP3,
+A2DP restartability, web/RTCP coexistence, PSRAM placement of both TLS record
+buffers, absence of the 16,717-byte internal-allocation failures, and no reset,
+audio, security, or HTTPS-compatibility regression.
+
+Rollback remains separately gated and application-only: restore the verified
+2,072,960-byte BTX image at `0x10000`, then require an exact-span readback with
+SHA-256 `67fbeb56082fffddb6104f5ed948395bc862262cf5bcb10602292b08cb3ad590`.
+Bootloader, partition table, NVS, pairing, credentials, and unrelated flash
+regions are excluded.
 
 ## 2026-10-24 - BTX/1.0 memory diagnostic hardware checkpoint
 

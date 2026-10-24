@@ -91,7 +91,7 @@ block. Rejected as broader and less deterministic.
 
 ## Verification
 
-Focused pre-build checks:
+Focused checks:
 
 - TLS allocation selection: 10/10 PASS
 - TLS source policy: 10/10 PASS
@@ -100,15 +100,41 @@ Focused pre-build checks:
 - D-009 integration policy: 12/12 PASS
 - MP3 instrumentation policy: 21/21 PASS
 
-Production build, ELF verification, size/hash/RAM budget and hardware proof are
-pending.
+The two new TLS tests were also rerun under C++11 after correcting a
+target-language-only `constexpr` incompatibility; both remained 10/10 PASS.
+The clean `esp32-lwip-psram` production build passed at firmware source commit
+`cbcd90cb23a1db428fc8654beef5e28288680cbc` with embedded build ID
+`cbcd90cb23a1`.
+
+The production application is 2,075,920 bytes, SHA-256
+`7e25aaf27e6c78ad75eb563bc58f17d798d9a691f7284cb88da8b99d8b3b0976`.
+The ELF is 30,379,460 bytes, SHA-256
+`aa1e8f0f2104e922446606317abc78c8c90e061e061487d44bf9011f5e654264`.
+The 3 MiB application partition retains 1,069,808 bytes. Linked static RAM is
+90,264 bytes, unchanged from the diagnostic build. The application grows by
+96 bytes relative to the installed diagnostic image.
+
+Post-link inspection passed: `mbedtls_calloc_func` points to
+`__wrap_esp_mbedtls_mem_calloc`, and the original
+`esp_mbedtls_mem_calloc` remains linked for fallback. The build used the
+expected pinned platform, framework, and library revisions. The candidate and
+ELF are preserved privately; neither is published by this report.
 
 ## Hardware validation gate
 
-No flash is authorized. A later application-only test must preserve rollback
-images, verify exact readback, then test cold-boot Radio Browser HTTPS,
-Bluetooth A2DP, direct Bluetooth-to-Radio Browse Countries, HTTPS and HTTP MP3,
-web/RTCP coexistence, allocation-failure counters, and repeatable Bluetooth
-restart. It must confirm that TLS no longer requests unavailable internal
-record buffers and that no reset, audio regression, or network-security change
+No flash is authorized. Software status is BUILT / HARDWARE VALIDATION
+PENDING. A later application-only test must preserve rollback images, verify
+exact readback, then test cold-boot Radio Browser HTTPS, Bluetooth A2DP,
+direct Bluetooth-to-Radio Browse Countries, HTTPS and HTTP MP3, web/RTCP
+coexistence, allocation-failure counters, and repeatable Bluetooth restart.
+It must confirm that the two 16,717-byte TLS buffers are served from PSRAM,
+that no corresponding internal-allocation failure occurs, and that no reset,
+audio regression, HTTPS interoperability issue, or network-security change
 occurs.
+
+If that test fails and rollback is separately authorized, restore only the
+verified 2,072,960-byte BTX application at `0x10000`, then read back exactly
+2,072,960 bytes and require SHA-256
+`67fbeb56082fffddb6104f5ed948395bc862262cf5bcb10602292b08cb3ad590`.
+Bootloader, partition table, NVS, pairing, credentials, and every other flash
+region must remain untouched.
