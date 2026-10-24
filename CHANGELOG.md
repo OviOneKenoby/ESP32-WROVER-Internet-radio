@@ -1,5 +1,61 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-24 - BTX/1.0 bounded MP3 memory instrumentation
+
+Created diagnostic branch `tuner/btx-memory-instrumentation` from the exact
+installed BTX implementation `bc9c148a942732c890fcba6e6b15769bc4cd9067`.
+This branch measures the placement and fragmentation previously inferred from
+hardware evidence; it does not change allocation sizes, allocator selection,
+audio ownership, Bluetooth restartability, RTCP/BTX messages, or timeouts.
+
+The fixed diagnostic model retains the latest MP3 session only: six 40-byte
+phase snapshots and eight 12-byte Helix allocation records in a 340-byte
+model. The phases are before source/decoder construction, after generator
+allocation, after Helix initialization, after I2S initialization, the first
+stable-playback sample after five seconds, and the first completed teardown.
+Each phase records separate `INTERNAL|8BIT` and `INTERNAL|DMA` heap information,
+free and largest block sizes, allocated/free block counts, PSRAM free bytes,
+the existing allocation-failure count, uptime, audio source, and Bluetooth
+lifecycle. The eight existing Helix `malloc` sites record sequence, request
+size, success, allocated size, and internal/PSRAM/other placement. No pointer
+value is retained or printed. Evidence is emitted only by the existing serial
+`x` snapshot command; no listener, task, queue, polling loop, or per-event
+dynamic allocation was added.
+
+Files changed: `src/audio.cpp`, `src/audio.h`, `src/main.cpp`, the new
+`src/mp3_memory_diagnostics.cpp/.h` and C hook header, and the existing pinned
+ESP8266Audio build patch. Focused model checks passed 13/13, instrumentation
+policy checks passed 21/21, and the existing BTX, Bluetooth-memory, D-009, and
+local-volume policy suites passed 53/53. The first clean build demonstrated
+that PlatformIO isolates dependency include paths; the build patch now exports
+the project source include directory without changing the pinned dependency.
+The subsequent clean `esp32-lwip-psram` production build passed at diagnostic
+commit `7acd006e9184f773e9944cbb06f985eebce81ba4`.
+
+The diagnostic application is 2,075,824 bytes, SHA-256
+`621db1555f782c405bb1b31f8acebdbff4d584683d970220a4c8ef990c2714bc`,
+and its ELF SHA-256 is
+`79a05788a5cd493ef373099891a214ace5e9f9892be7d4cc049b5e9c351afe03`.
+The 3 MiB application partition retains 1,069,904 bytes. Compared with the
+installed 2,072,960-byte BTX image, this is +2,864 binary bytes and a 2,864-byte
+reduction in slot headroom. Linked `.dram0.data` is 31,560 bytes (+352),
+`.dram0.bss` is 58,704 bytes (+8), and total static RAM is 90,264 bytes (+360)
+against the established 89,904-byte baseline. Diagnostics create no task or
+stack. The largest explicit diagnostic local is a 40-byte snapshot; no dynamic
+diagnostic allocation is introduced. Existing pinned-library warnings remain;
+no warning originates in the instrumentation sources.
+
+Limitations: runtime placement and recovery remain unverified until a separate
+diagnostic hardware installation is authorized. Block counts saturate at
+65,535, only the latest MP3 session is retained, and stable playback is one
+sample rather than a time series. The installed BTX image remains the rollback
+baseline: 2,072,960 bytes, SHA-256
+`67fbeb56082fffddb6104f5ed948395bc862262cf5bcb10602292b08cb3ad590`.
+Rollback, if separately authorized, is application-only at `0x10000`, followed
+by an exact-span readback/hash check; bootloader, partition table, NVS, pairing,
+and all other partitions must remain untouched. No device was accessed or
+flashed during this work.
+
 ## 2026-10-20 - A-REMOTE-014 bounded RTCP DNS-SD advertisement
 
 Added a native `ESPmDNS` `_rtcp._tcp` advertisement for the existing RTCP
