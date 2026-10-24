@@ -1,5 +1,20 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-24 - BTX/1.0 memory diagnostic hardware preflight blocked
+
+The authorized diagnostic installation stopped before serial access or any
+flash operation because the TUNER CH340 interface was not enumerated. The only
+present serial device was COM3, the established REMOTE ESP32-S3 USB
+Serial/JTAG interface, and it was deliberately not probed. Offline verification
+passed for the 2,075,824-byte diagnostic candidate and SHA-256
+`621db1555f782c405bb1b31f8acebdbff4d584683d970220a4c8ef990c2714bc`,
+the 3 MiB application region at `0x10000`, and three independent local copies
+of the installed 2,072,960-byte BTX rollback image with SHA-256
+`67fbeb56082fffddb6104f5ed948395bc862262cf5bcb10602292b08cb3ad590`.
+The separate USB disk was mounted and healthy, although it did not contain an
+exact BTX rollback image. TUNER chip identity, a fresh installed-image backup,
+installation, readback, boot, and runtime memory capture remain NOT RUN.
+
 ## 2026-10-24 - BTX/1.0 bounded MP3 memory instrumentation
 
 Created diagnostic branch `tuner/btx-memory-instrumentation` from the exact
