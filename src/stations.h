@@ -15,6 +15,12 @@ class StationManager {
 public:
     StationManager();
     ~StationManager();
+
+    // Allocate the fixed station/favorite/recent record block in PSRAM.
+    // Must be called once from setup() before any persistence load or record
+    // access. Failure is fail-closed: no internal-memory fallback is used.
+    bool begin();
+    bool isReady() const { return recordStorage != nullptr; }
     
     // Station management
     uint8_t addStation(const char* name, const char* url, StationCodec codec = STATION_CODEC_MP3);
@@ -52,15 +58,22 @@ public:
                                         // duplicates pile up
     
 private:
-    RadioStation stations[MAX_STATIONS];
+    static constexpr size_t RECORD_STORAGE_COUNT =
+        MAX_STATIONS + MAX_RECENT + MAX_FAVORITES;
+
+    RadioStation* stationRecords() { return recordStorage; }
+    RadioStation* recentRecords() { return recordStorage + MAX_STATIONS; }
+    RadioStation* favoriteRecords() {
+        return recordStorage + MAX_STATIONS + MAX_RECENT;
+    }
+
+    RadioStation* recordStorage;
     uint8_t stationCount;
     uint8_t currentStation;
-    
-    RadioStation recent[MAX_RECENT];
+
     uint8_t recentCount;
     void saveRecentToPrefs();
-    
-    RadioStation favorites[MAX_FAVORITES];
+
     uint8_t favoriteCount;
     void saveFavoritesToPrefs();
 

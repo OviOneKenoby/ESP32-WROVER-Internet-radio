@@ -217,8 +217,12 @@ void setup() {
     
     // Load default radio stations
     Serial.println("[MAIN] Loading radio stations...");
-    stationManager.loadDefaultStations();
-    stationManager.loadPersistedLists();
+    if (stationManager.begin()) {
+        stationManager.loadDefaultStations();
+        stationManager.loadPersistedLists();
+    } else {
+        Serial.println("[MAIN] ERROR: Station storage unavailable; persistence left untouched");
+    }
     
     // Load WiFi configuration
     Serial.println("[MAIN] Loading WiFi configuration...");

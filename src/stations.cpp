@@ -1,6 +1,14 @@
 #include "stations.h"
 #include "config.h"
 #include <Preferences.h>
+#include <esp_heap_caps.h>
+#include <new>
+#include <type_traits>
+
+static_assert(std::is_trivially_copyable<RadioStation>::value,
+              "RadioStation shifting relies on trivial copy semantics");
+static_assert(std::is_trivially_destructible<RadioStation>::value,
+              "StationManager owns a fixed raw-storage record block");
 
 // Global station manager
 StationManager stationManager;
@@ -9,19 +17,54 @@ StationManager stationManager;
 // Constructor
 // ============================================
 StationManager::StationManager()
-    : stationCount(0),
+    : recordStorage(nullptr),
+      stationCount(0),
       currentStation(0),
       recentCount(0),
       favoriteCount(0) {
 }
 
 StationManager::~StationManager() {
+    if (!recordStorage) return;
+    for (size_t i = 0; i < RECORD_STORAGE_COUNT; ++i) {
+        recordStorage[i].~RadioStation();
+    }
+    heap_caps_free(recordStorage);
+    recordStorage = nullptr;
+}
+
+bool StationManager::begin() {
+    if (recordStorage) return true;
+
+    constexpr size_t storageBytes =
+        RECORD_STORAGE_COUNT * sizeof(RadioStation);
+    void* raw = heap_caps_malloc(
+        storageBytes, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!raw) {
+        Serial.printf("[STATION] ERROR: PSRAM record allocation failed (%u bytes)\n",
+                      static_cast<unsigned>(storageBytes));
+        return false;
+    }
+
+    RadioStation* records = static_cast<RadioStation*>(raw);
+    for (size_t i = 0; i < RECORD_STORAGE_COUNT; ++i) {
+        ::new (static_cast<void*>(&records[i])) RadioStation{};
+    }
+    recordStorage = records;
+    Serial.printf("[STATION] PSRAM record storage ready: %u records, %u bytes\n",
+                  static_cast<unsigned>(RECORD_STORAGE_COUNT),
+                  static_cast<unsigned>(storageBytes));
+    return true;
 }
 
 // ============================================
 // Station Management
 // ============================================
 uint8_t StationManager::addStation(const char* name, const char* url, StationCodec codec) {
+    if (!recordStorage) {
+        Serial.println("[STATION] Record storage unavailable");
+        return 0xFF;
+    }
     if (stationCount >= MAX_STATIONS) {
         Serial.println("[STATION] Max stations reached");
         return 0xFF;
@@ -32,7 +75,7 @@ uint8_t StationManager::addStation(const char* name, const char* url, StationCod
         return 0xFF;
     }
     
-    RadioStation& station = stations[stationCount];
+    RadioStation& station = stationRecords()[stationCount];
     strncpy(station.name, name, MAX_NAME_LENGTH - 1);
     strncpy(station.url, url, MAX_URL_LENGTH - 1);
     station.codec = codec;
@@ -45,14 +88,14 @@ uint8_t StationManager::addStation(const char* name, const char* url, StationCod
 }
 
 bool StationManager::removeStation(uint8_t idx) {
-    if (idx >= stationCount) {
+    if (!recordStorage || idx >= stationCount) {
         Serial.println("[STATION] Invalid index");
         return false;
     }
     
     // Shift remaining stations
     for (uint8_t i = idx; i < stationCount - 1; i++) {
-        memcpy(&stations[i], &stations[i + 1], sizeof(RadioStation));
+        memcpy(&stationRecords()[i], &stationRecords()[i + 1], sizeof(RadioStation));
     }
     
     stationCount--;
@@ -70,37 +113,37 @@ bool StationManager::removeStation(uint8_t idx) {
 // Station Queries
 // ============================================
 RadioStation* StationManager::getStation(uint8_t idx) {
-    if (idx >= stationCount) {
+    if (!recordStorage || idx >= stationCount) {
         return nullptr;
     }
-    return &stations[idx];
+    return &stationRecords()[idx];
 }
 
 const char* StationManager::getStationName(uint8_t idx) {
-    if (idx >= stationCount) {
+    if (!recordStorage || idx >= stationCount) {
         return "";
     }
-    return stations[idx].name;
+    return stationRecords()[idx].name;
 }
 
 const char* StationManager::getStationURL(uint8_t idx) {
-    if (idx >= stationCount) {
+    if (!recordStorage || idx >= stationCount) {
         return "";
     }
-    return stations[idx].url;
+    return stationRecords()[idx].url;
 }
 
 StationCodec StationManager::getStationCodec(uint8_t idx) {
-    if (idx >= stationCount) {
+    if (!recordStorage || idx >= stationCount) {
         return STATION_CODEC_MP3;
     }
-    return stations[idx].codec;
+    return stationRecords()[idx].codec;
 }
 
 void StationManager::setCurrentStation(uint8_t idx) {
-    if (idx < stationCount) {
+    if (recordStorage && idx < stationCount) {
         currentStation = idx;
-        Serial.printf("[STATION] Current: %s\n", stations[idx].name);
+        Serial.printf("[STATION] Current: %s\n", stationRecords()[idx].name);
     }
 }
 
@@ -108,6 +151,10 @@ void StationManager::setCurrentStation(uint8_t idx) {
 // Default Stations
 // ============================================
 bool StationManager::loadDefaultStations() {
+    if (!recordStorage) {
+        Serial.println("[STATION] Cannot load saved stations: record storage unavailable");
+        return false;
+    }
     // Hardcoded stations removed per request - now using the Browse/
     // Favorites/Recent flow exclusively (see main.cpp's
     // enterBrowseCountry() and friends, and browser.h for the
@@ -237,10 +284,11 @@ bool StationManager::loadDefaultStations() {
         snprintf(nameKey, sizeof(nameKey), "n%d", i);
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
-        prefs.getString(nameKey, stations[i].name, MAX_NAME_LENGTH);
-        prefs.getString(urlKey, stations[i].url, MAX_URL_LENGTH);
-        stations[i].codec = stationCodecForURL(
-            stations[i].url, (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
+        prefs.getString(nameKey, stationRecords()[i].name, MAX_NAME_LENGTH);
+        prefs.getString(urlKey, stationRecords()[i].url, MAX_URL_LENGTH);
+        stationRecords()[i].codec = stationCodecForURL(
+            stationRecords()[i].url,
+            (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
     }
     prefs.end();
 
@@ -249,6 +297,7 @@ bool StationManager::loadDefaultStations() {
 }
 
 void StationManager::saveStationsToPrefs() {
+    if (!recordStorage) return;
     Preferences prefs;
     prefs.begin("stations", false);
     prefs.putUChar("count", stationCount);
@@ -257,9 +306,9 @@ void StationManager::saveStationsToPrefs() {
         snprintf(nameKey, sizeof(nameKey), "n%d", i);
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
-        prefs.putString(nameKey, stations[i].name);
-        prefs.putString(urlKey, stations[i].url);
-        prefs.putUChar(codecKey, stations[i].codec);
+        prefs.putString(nameKey, stationRecords()[i].name);
+        prefs.putString(urlKey, stationRecords()[i].url);
+        prefs.putUChar(codecKey, stationRecords()[i].codec);
     }
     prefs.end();
 }
@@ -268,6 +317,10 @@ void StationManager::saveStationsToPrefs() {
 // Recent / Favorites - persisted via Preferences (NVS)
 // ============================================
 void StationManager::loadPersistedLists() {
+    if (!recordStorage) {
+        Serial.println("[STATION] Cannot load persisted lists: record storage unavailable");
+        return;
+    }
     Preferences prefs;
 
     prefs.begin("recent", true); // read-only
@@ -278,10 +331,11 @@ void StationManager::loadPersistedLists() {
         snprintf(nameKey, sizeof(nameKey), "n%d", i);
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
-        prefs.getString(nameKey, recent[i].name, MAX_NAME_LENGTH);
-        prefs.getString(urlKey, recent[i].url, MAX_URL_LENGTH);
-        recent[i].codec = stationCodecForURL(
-            recent[i].url, (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
+        prefs.getString(nameKey, recentRecords()[i].name, MAX_NAME_LENGTH);
+        prefs.getString(urlKey, recentRecords()[i].url, MAX_URL_LENGTH);
+        recentRecords()[i].codec = stationCodecForURL(
+            recentRecords()[i].url,
+            (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
     }
     prefs.end();
 
@@ -293,10 +347,11 @@ void StationManager::loadPersistedLists() {
         snprintf(nameKey, sizeof(nameKey), "n%d", i);
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
-        prefs.getString(nameKey, favorites[i].name, MAX_NAME_LENGTH);
-        prefs.getString(urlKey, favorites[i].url, MAX_URL_LENGTH);
-        favorites[i].codec = stationCodecForURL(
-            favorites[i].url, (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
+        prefs.getString(nameKey, favoriteRecords()[i].name, MAX_NAME_LENGTH);
+        prefs.getString(urlKey, favoriteRecords()[i].url, MAX_URL_LENGTH);
+        favoriteRecords()[i].codec = stationCodecForURL(
+            favoriteRecords()[i].url,
+            (StationCodec)prefs.getUChar(codecKey, STATION_CODEC_MP3));
     }
     prefs.end();
 
@@ -304,13 +359,17 @@ void StationManager::loadPersistedLists() {
 }
 
 void StationManager::addToRecent(const char* name, const char* url, StationCodec codec) {
+    if (!recordStorage || !name || !url) {
+        Serial.println("[STATION] Recent record storage unavailable or invalid input");
+        return;
+    }
     codec = stationCodecForURL(url, codec);
     // If already present, remove the old entry first - it gets re-added
     // at the front below, avoiding duplicate entries piling up.
     for (uint8_t i = 0; i < recentCount; i++) {
-        if (strcmp(recent[i].url, url) == 0) {
+        if (strcmp(recentRecords()[i].url, url) == 0) {
             for (uint8_t j = i; j < recentCount - 1; j++) {
-                recent[j] = recent[j + 1];
+                recentRecords()[j] = recentRecords()[j + 1];
             }
             recentCount--;
             break;
@@ -321,14 +380,14 @@ void StationManager::addToRecent(const char* name, const char* url, StationCodec
     // oldest entry if already at capacity.
     uint8_t insertCount = (recentCount < MAX_RECENT) ? recentCount : (MAX_RECENT - 1);
     for (uint8_t i = insertCount; i > 0; i--) {
-        recent[i] = recent[i - 1];
+        recentRecords()[i] = recentRecords()[i - 1];
     }
 
-    strncpy(recent[0].name, name, MAX_NAME_LENGTH - 1);
-    recent[0].name[MAX_NAME_LENGTH - 1] = '\0';
-    strncpy(recent[0].url, url, MAX_URL_LENGTH - 1);
-    recent[0].url[MAX_URL_LENGTH - 1] = '\0';
-    recent[0].codec = codec;
+    strncpy(recentRecords()[0].name, name, MAX_NAME_LENGTH - 1);
+    recentRecords()[0].name[MAX_NAME_LENGTH - 1] = '\0';
+    strncpy(recentRecords()[0].url, url, MAX_URL_LENGTH - 1);
+    recentRecords()[0].url[MAX_URL_LENGTH - 1] = '\0';
+    recentRecords()[0].codec = codec;
 
     if (recentCount < MAX_RECENT) recentCount++;
 
@@ -336,11 +395,12 @@ void StationManager::addToRecent(const char* name, const char* url, StationCodec
 }
 
 RadioStation* StationManager::getRecent(uint8_t idx) {
-    if (idx >= recentCount) return nullptr;
-    return &recent[idx];
+    if (!recordStorage || idx >= recentCount) return nullptr;
+    return &recentRecords()[idx];
 }
 
 void StationManager::saveRecentToPrefs() {
+    if (!recordStorage) return;
     Preferences prefs;
     prefs.begin("recent", false); // read-write
     prefs.putUChar("count", recentCount);
@@ -349,14 +409,18 @@ void StationManager::saveRecentToPrefs() {
         snprintf(nameKey, sizeof(nameKey), "n%d", i);
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
-        prefs.putString(nameKey, recent[i].name);
-        prefs.putString(urlKey, recent[i].url);
-        prefs.putUChar(codecKey, recent[i].codec);
+        prefs.putString(nameKey, recentRecords()[i].name);
+        prefs.putString(urlKey, recentRecords()[i].url);
+        prefs.putUChar(codecKey, recentRecords()[i].codec);
     }
     prefs.end();
 }
 
 bool StationManager::addToFavorites(const char* name, const char* url, StationCodec codec) {
+    if (!recordStorage || !name || !url) {
+        Serial.println("[STATION] Favorite record storage unavailable or invalid input");
+        return false;
+    }
     codec = stationCodecForURL(url, codec);
     if (isFavorite(url)) {
         return false; // already there - caller can tell the user
@@ -365,20 +429,20 @@ bool StationManager::addToFavorites(const char* name, const char* url, StationCo
         Serial.println("[STATION] Favorites list full");
         return false;
     }
-    strncpy(favorites[favoriteCount].name, name, MAX_NAME_LENGTH - 1);
-    favorites[favoriteCount].name[MAX_NAME_LENGTH - 1] = '\0';
-    strncpy(favorites[favoriteCount].url, url, MAX_URL_LENGTH - 1);
-    favorites[favoriteCount].url[MAX_URL_LENGTH - 1] = '\0';
-    favorites[favoriteCount].codec = codec;
+    strncpy(favoriteRecords()[favoriteCount].name, name, MAX_NAME_LENGTH - 1);
+    favoriteRecords()[favoriteCount].name[MAX_NAME_LENGTH - 1] = '\0';
+    strncpy(favoriteRecords()[favoriteCount].url, url, MAX_URL_LENGTH - 1);
+    favoriteRecords()[favoriteCount].url[MAX_URL_LENGTH - 1] = '\0';
+    favoriteRecords()[favoriteCount].codec = codec;
     favoriteCount++;
     saveFavoritesToPrefs();
     return true;
 }
 
 bool StationManager::removeFavorite(uint8_t idx) {
-    if (idx >= favoriteCount) return false;
+    if (!recordStorage || idx >= favoriteCount) return false;
     for (uint8_t i = idx; i < favoriteCount - 1; i++) {
-        favorites[i] = favorites[i + 1];
+        favoriteRecords()[i] = favoriteRecords()[i + 1];
     }
     favoriteCount--;
     saveFavoritesToPrefs();
@@ -386,18 +450,20 @@ bool StationManager::removeFavorite(uint8_t idx) {
 }
 
 RadioStation* StationManager::getFavorite(uint8_t idx) {
-    if (idx >= favoriteCount) return nullptr;
-    return &favorites[idx];
+    if (!recordStorage || idx >= favoriteCount) return nullptr;
+    return &favoriteRecords()[idx];
 }
 
 bool StationManager::isFavorite(const char* url) {
+    if (!recordStorage || !url) return false;
     for (uint8_t i = 0; i < favoriteCount; i++) {
-        if (strcmp(favorites[i].url, url) == 0) return true;
+        if (strcmp(favoriteRecords()[i].url, url) == 0) return true;
     }
     return false;
 }
 
 void StationManager::saveFavoritesToPrefs() {
+    if (!recordStorage) return;
     Preferences prefs;
     prefs.begin("favorites", false);
     prefs.putUChar("count", favoriteCount);
@@ -406,9 +472,9 @@ void StationManager::saveFavoritesToPrefs() {
         snprintf(nameKey, sizeof(nameKey), "n%d", i);
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
-        prefs.putString(nameKey, favorites[i].name);
-        prefs.putString(urlKey, favorites[i].url);
-        prefs.putUChar(codecKey, favorites[i].codec);
+        prefs.putString(nameKey, favoriteRecords()[i].name);
+        prefs.putString(urlKey, favoriteRecords()[i].url);
+        prefs.putUChar(codecKey, favoriteRecords()[i].codec);
     }
     prefs.end();
 }
