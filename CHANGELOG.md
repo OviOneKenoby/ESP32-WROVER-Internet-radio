@@ -1,5 +1,38 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-25 - Web diagnostics JSON moved to PSRAM
+
+The `/api/diagnostics` `JsonDocument` now uses a dedicated ArduinoJson
+allocator backed exclusively by `MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT`.
+Allocation, reallocation and release use the matching ESP-IDF heap-capability
+APIs. There is no INTERNAL fallback: a PSRAM allocation failure preserves the
+existing bounded HTTP 503 `JSON allocation failed` response. The JSON schema,
+field types, fixed Content-Length response, bounded writer, and every other
+web endpoint are unchanged.
+
+Focused allocator and source-policy tests passed, including failure cleanup,
+exact capability selection, schema preservation and proof that no unrelated
+endpoint uses the allocator. Existing bounded-writer, allocation-record,
+audio-memory, Wi-Fi, RTCP, D-009, BTX and TLS-PSRAM regressions passed. A clean
+`esp32-lwip-psram` build from implementation commit
+`71a7ee9c59f78a6629b7d27c5b986bde9b1e8898` passed.
+
+The application is 2,071,584 bytes with SHA-256
+`247f7a097c76b664072c6d8a38aaf96e7f967b6bd818924b357b3eaadb8c3103`;
+the ELF is 30,314,124 bytes with SHA-256
+`8c73414f47354dde846e6c3e5ecd47baa12735f32f56741425fc0980619d5b2c`.
+The 3 MiB application partition retains 1,074,144 bytes. Linked static DRAM
+remains exactly 88,792 bytes (30,088 data + 58,704 BSS), unchanged from the
+installed production baseline. The allocator adds one 4-byte BSS symbol but
+does not increase the linked total because existing alignment absorbs it.
+
+Based on the prior measured `/api/diagnostics` request deltas, the runtime
+change is expected to recover approximately 1.0-1.6 KiB of transient INTERNAL
+memory while the response is constructed, with a similar transient PSRAM
+cost. This is an estimate until hardware measurement and does not imply an
+equal improvement in the largest contiguous DMA block. The candidate is not
+installed and hardware validation remains pending.
+
 ## 2026-10-24 - Wi-Fi TX probe-removal hardware validation failed
 
 The 2,071,424-byte production candidate from `0e30003fcbd6`, SHA-256
