@@ -43,11 +43,13 @@ public:
     using PlaybackOwner = uint8_t (*)(ccm_wire::PlaybackOperation, uint8_t target_station);
     using BluetoothOwner = uint8_t (*)(const rtcp_btx::Command& command);
     using SourceOwner = uint8_t (*)(rtcp_full_control::Source target);
+    using MenuOwner = bool (*)(rtcp_full_control::MenuView& view);
     bool begin();
     void poll(AudioPlayer& audio);
     void setPlaybackOwner(PlaybackOwner owner) { playback_owner_ = owner; }
     void setBluetoothOwner(BluetoothOwner owner) { bluetooth_owner_ = owner; }
     void setSourceOwner(SourceOwner owner) { source_owner_ = owner; }
+    void setMenuOwner(MenuOwner owner) { menu_owner_ = owner; }
     void publishNowPlaying(const rtcp_d009::Input& input) { projection_.publish(input); }
     void invalidateMediaContext() { projection_.invalidateMediaContext(); }
     bool enabled() const { return enabled_; }
@@ -94,6 +96,8 @@ private:
     rtcp_full_control::SourceState source_state_{};
     rtcp_full_control::SourceMailbox source_mailbox_{};
     SourceOwner source_owner_{nullptr};
+    rtcp_full_control::MenuRevision menu_revision_{};
+    MenuOwner menu_owner_{nullptr};
     uint32_t source_started_us_{0};
     Timing timing_{};
     Diagnostics diagnostics_{};
@@ -124,5 +128,7 @@ static_assert(sizeof(rtcp_btx::SourceState) + sizeof(rtcp_btx::Session) +
               "BTX persistent scalar/session state exceeds the approved budget");
 static_assert(sizeof(rtcp_full_control::SourceState) +
                   sizeof(rtcp_full_control::SourceMailbox) +
-                  sizeof(rtcp::Server::SourceOwner) <= 48,
+                  sizeof(rtcp::Server::SourceOwner) +
+                  sizeof(rtcp_full_control::MenuRevision) +
+                  sizeof(rtcp::Server::MenuOwner) <= 72,
               "full-control source state exceeds the approved budget");

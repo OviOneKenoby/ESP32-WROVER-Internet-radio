@@ -5,16 +5,19 @@
 TUNER remains the sole application owner. RTCP/1 authentication, record
 counters, replay protection, request correlation, and the existing D-009 and
 BTX records are unchanged. A bounded `+fc1` suffix in the existing identity
-text tells a new REMOTE that the separate Full-Control capability request is
-safe. Older clients already accept and ignore identity text; BTX feature bits
-remain unchanged. An older TUNER therefore never receives an unknown record.
+text tells the Milestone 1 REMOTE that the separate Full-Control capability
+request is safe. Milestone 2 advances that suffix to `+fc2`; a Milestone 1
+REMOTE therefore stays on the unchanged D-009/BTX records instead of parsing
+new feature bits. The current REMOTE recognizes both suffixes. Older clients
+accept and ignore identity text; BTX feature bits remain unchanged. An older
+TUNER therefore never receives an unknown record.
 
 ## Milestone matrix
 
 | Milestone | Status | Notes |
 | --- | --- | --- |
 | 1 Source switching | PASS (offline) | Capability/state/select records, generation fence, one-slot owner mailbox, idempotency, Radio/Bluetooth lifecycle. Hardware pending. |
-| 2 Read-only menu projection | PENDING | Not implemented. |
+| 2 Read-only menu projection | PASS (offline) | Fixed five-item authenticated window, canonical physical mode/cursor, stable revision, bounded UTF-8 names; hardware pending. |
 | 3 Semantic navigation | PENDING | Not implemented. |
 | 4 Saved/Favorites/Recent | PENDING | Not implemented. |
 | 5 Radio Browser | PENDING | Blocking HTTPS path must not be bridged synchronously. |
@@ -41,5 +44,23 @@ Select and does not resume a station. A physical source change advances the
 authoritative generation; stale REMOTE requests are rejected and never
 retried. Mailboxes are cleared on disconnect.
 
-Static extension storage is compile-time bounded to 48 bytes. Runtime DMA
+Milestone 1 static extension storage was compile-time bounded to 48 bytes.
+Milestone 2 raises the combined source/menu scalar budget to 72 bytes. Runtime DMA
 headroom remains hardware-only evidence and is not inferred from static size.
+
+## Read-only menu projection
+
+Full-Control version 1.1 adds feature bit 1 and two records:
+
+- `21` menu-state request: 1 byte.
+- `22` menu-state response: 28-byte header followed by at most five entries;
+  each entry contains a 16-bit opaque index, active flag and at most 48 bytes
+  of validated UTF-8 display text. The absolute maximum is 288 bytes.
+
+The projection reads the actual main-loop-owned mode, selection and underlying
+station/browser storage. It never injects an encoder event, allocates memory,
+transmits a URL, or mutates TUNER state. A 64-bit revision advances when mode,
+cursor, count, visible text or active identity changes. Empty lists are valid.
+Only an internal URL comparison determines active discovered/favorite/recent
+identity; URLs never leave TUNER. The fixed server-side revision tracker adds
+16 bytes; the ephemeral view is built on the existing request stack.

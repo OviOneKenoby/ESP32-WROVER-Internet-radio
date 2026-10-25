@@ -225,7 +225,7 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         // The suffix is inside the existing bounded identity text. Legacy
         // clients accept and ignore it; new clients use it only to decide
         // whether it is safe to send the separately negotiated ID 16 probe.
-        return ccm_wire::identity(FIRMWARE_VERSION "+fc1", out, cap);
+        return ccm_wire::identity(FIRMWARE_VERSION "+fc2", out, cap);
     if (p[0] == kCapabilityRequest && n == 1) {
         const rtcp_btx::CapabilityReply reply = btx_session_.capabilityRequest();
         if (reply == rtcp_btx::CapabilityReply::legacy)
@@ -322,6 +322,15 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
             : rtcp_full_control::Transition::switching_radio;
         source_started_us_ = micros();
         return kDeferredResponse;
+    }
+    if (p[0] == rtcp_full_control::kMenuStateRequest && n == 1 &&
+        btx_session_.negotiated() && menu_owner_) {
+        if (sample_sequence_ == UINT64_MAX) return 0;
+        rtcp_full_control::MenuView view{};
+        if (!menu_owner_(view)) return 0;
+        const uint64_t revision = menu_revision_.observe(view);
+        return rtcp_full_control::menuState(view, ++sample_sequence_, revision,
+                                            out, cap);
     }
     return 0;
 }

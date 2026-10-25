@@ -7,10 +7,11 @@
 using namespace rtcp_full_control;
 
 int main() {
-    uint8_t bytes[64]{};
+    uint8_t bytes[512]{};
     assert(capabilities(bytes, sizeof bytes) == 20);
     assert(bytes[0] == kCapabilityResponse && bytes[1] == kMajor);
-    assert(bytes[7] == kFeatureSourceSwitch);
+    assert(bytes[7] == (kFeatureSourceSwitch | kFeatureMenuProjection));
+    assert(bytes[2] == 1 && bytes[19] == kCapabilityRevision);
 
     SourceState state{};
     state.generation = 9;
@@ -48,5 +49,37 @@ int main() {
     command_bytes[9] = 99;
     assert(!parseSourceCommand(command_bytes, sizeof command_bytes, command));
     assert(sourceState(SourceState{}, 0, bytes, sizeof bytes) == 0);
-    std::puts("full-control source model: PASS");
+
+    MenuView menu{};
+    menu.mode = MenuMode::favorites;
+    menu.selected = 1;
+    menu.count = 3;
+    menu.window_count = 3;
+    menu.items[0] = {0, false, "Alpha"};
+    menu.items[1] = {1, true, "Béta"};
+    menu.items[2] = {2, false, "Gamma"};
+    MenuRevision revision;
+    assert(revision.observe(menu) == 1);
+    assert(revision.observe(menu) == 1);
+    menu.selected = 2;
+    assert(revision.observe(menu) == 2);
+    const size_t menu_size = menuState(menu, 12, revision.value(), bytes, sizeof bytes);
+    assert(menu_size == 28 + 9 + 9 + 9);
+    assert(bytes[0] == kMenuStateResponse && bytes[1] == kMajor);
+    assert(bytes[2] == uint8_t(MenuMode::favorites) && bytes[10] == 3);
+    assert(bytes[31] == 5 && bytes[40] == 5 && bytes[49] == 5);
+
+    MenuView empty{};
+    empty.mode = MenuMode::recent;
+    assert(menuState(empty, 1, 1, bytes, sizeof bytes) == 28);
+    empty.selected = 1;
+    assert(menuState(empty, 1, 1, bytes, sizeof bytes) == 0);
+
+    menu.selected = 1;
+    menu.items[1].name = "bad\x01text";
+    assert(menuState(menu, 1, 1, bytes, sizeof bytes) == 0);
+    menu.items[1].name = "Béta";
+    menu.window_count = kMenuWindowItems + 1;
+    assert(menuState(menu, 1, 1, bytes, sizeof bytes) == 0);
+    std::puts("full-control source/menu model: PASS");
 }

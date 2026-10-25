@@ -129,6 +129,7 @@ void publishRtcpProjection();
 uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targetStation);
 uint8_t executeRtcpBluetooth(const rtcp_btx::Command& command);
 uint8_t executeRtcpSource(rtcp_full_control::Source target);
+bool projectRtcpMenu(rtcp_full_control::MenuView& view);
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -216,6 +217,7 @@ void setup() {
     rtcpServer.setPlaybackOwner(executeRtcpPlayback);
     rtcpServer.setBluetoothOwner(executeRtcpBluetooth);
     rtcpServer.setSourceOwner(executeRtcpSource);
+    rtcpServer.setMenuOwner(projectRtcpMenu);
     
     // Load default radio stations
     Serial.println("[MAIN] Loading radio stations...");
@@ -350,6 +352,151 @@ uint8_t executeRtcpSource(rtcp_full_control::Source target) {
         return rtcp_full_control::success;
     }
     return rtcp_full_control::invalid_argument;
+}
+
+bool projectRtcpMenu(rtcp_full_control::MenuView& view) {
+    using rtcp_full_control::MenuMode;
+    view = {};
+    uint16_t cursor = 0;
+    switch (currentMode) {
+        case MODE_STATION_SELECT:
+            view.mode = MenuMode::station_select;
+            view.count = uint16_t(stationManager.getStationCount()) + 3;
+            cursor = selectedStation;
+            break;
+        case MODE_PLAYING_RADIO:
+            view.mode = MenuMode::playing_radio;
+            return true;
+        case MODE_BLUETOOTH:
+            view.mode = MenuMode::bluetooth;
+            return true;
+        case MODE_BROWSE_LETTER:
+            view.mode = MenuMode::browse_letter;
+            view.count = 27;
+            cursor = browseIndex;
+            break;
+        case MODE_BROWSE_COUNTRY:
+            view.mode = MenuMode::browse_country;
+            view.count = filteredCountryCount;
+            cursor = browseIndex;
+            break;
+        case MODE_BROWSE_STATION_LETTER:
+            view.mode = MenuMode::browse_station_letter;
+            view.count = 27;
+            cursor = browseIndex;
+            break;
+        case MODE_BROWSE_TAG:
+            view.mode = MenuMode::browse_tag;
+            view.count = uint16_t(stationBrowser.getTagCount()) + 1;
+            cursor = browseIndex;
+            break;
+        case MODE_BROWSE_RESULTS:
+            view.mode = MenuMode::browse_results;
+            view.count = stationBrowser.getResultCount();
+            cursor = browseIndex;
+            break;
+        case MODE_FAVORITES:
+            view.mode = MenuMode::favorites;
+            view.count = stationManager.getFavoriteCount();
+            cursor = browseIndex;
+            break;
+        case MODE_RECENT:
+            view.mode = MenuMode::recent;
+            view.count = stationManager.getRecentCount();
+            cursor = browseIndex;
+            break;
+        case MODE_IDLE_CLOCK:
+            view.mode = MenuMode::idle;
+            return true;
+        case MODE_ERROR:
+            view.mode = MenuMode::error;
+            view.flags = rtcp_full_control::menu_error;
+            view.error = rtcp_full_control::internal;
+            return true;
+        default:
+            view.mode = MenuMode::other;
+            return true;
+    }
+    view.selected = view.count ? (cursor < view.count ? cursor : view.count - 1) : 0;
+    if (!view.count) return true;
+    constexpr uint16_t window = rtcp_full_control::kMenuWindowItems;
+    view.window_start = view.selected > window / 2 ? view.selected - window / 2 : 0;
+    if (view.window_start + window > view.count)
+        view.window_start = view.count > window ? view.count - window : 0;
+    view.window_count = uint8_t(
+        view.count - view.window_start < window ? view.count - view.window_start : window);
+
+    static char letters[26][2]{};
+    static bool letters_ready = false;
+    if (!letters_ready) {
+        for (uint8_t i = 0; i < 26; ++i) {
+            letters[i][0] = char('A' + i);
+            letters[i][1] = '\0';
+        }
+        letters_ready = true;
+    }
+    const char* current_url = audioPlayer.getCurrentURL();
+    for (uint8_t slot = 0; slot < view.window_count; ++slot) {
+        const uint16_t index = view.window_start + slot;
+        auto& item = view.items[slot];
+        item.token = index;
+        switch (currentMode) {
+            case MODE_STATION_SELECT:
+                if (index == 0) item.name = "Browse All Stations";
+                else if (index == 1) item.name = "Favorites";
+                else if (index == 2) item.name = "Recent";
+                else {
+                    const uint8_t station = uint8_t(index - 3);
+                    item.name = stationManager.getStationName(station);
+                    item.active = audioPlayer.getSource() == AUDIO_SOURCE_INTERNET_RADIO &&
+                                  !nowPlayingContext.discovered &&
+                                  selectedStation == station;
+                }
+                break;
+            case MODE_BROWSE_LETTER:
+                item.name = index == 0 ? "Any Country" : letters[index - 1];
+                break;
+            case MODE_BROWSE_COUNTRY: {
+                const BrowseCountry* country =
+                    stationBrowser.getCountry(filteredCountryIndices[index]);
+                item.name = country ? country->name : nullptr;
+                break;
+            }
+            case MODE_BROWSE_STATION_LETTER:
+                item.name = index == 0 ? "Popular Stations" : letters[index - 1];
+                break;
+            case MODE_BROWSE_TAG: {
+                const BrowseTag* tag = index == 0 ? nullptr : stationBrowser.getTag(index - 1);
+                item.name = index == 0 ? "Any Genre" : (tag ? tag->name : nullptr);
+                break;
+            }
+            case MODE_BROWSE_RESULTS: {
+                const BrowseResult* result = stationBrowser.getResult(index);
+                item.name = result ? result->name : nullptr;
+                item.active = result && current_url && current_url[0] &&
+                              strcmp(current_url, result->url) == 0;
+                break;
+            }
+            case MODE_FAVORITES: {
+                const RadioStation* station = stationManager.getFavorite(index);
+                item.name = station ? station->name : nullptr;
+                item.active = station && current_url && current_url[0] &&
+                              strcmp(current_url, station->url) == 0;
+                break;
+            }
+            case MODE_RECENT: {
+                const RadioStation* station = stationManager.getRecent(index);
+                item.name = station ? station->name : nullptr;
+                item.active = station && current_url && current_url[0] &&
+                              strcmp(current_url, station->url) == 0;
+                break;
+            }
+            default:
+                return false;
+        }
+        if (!item.name || !item.name[0]) return false;
+    }
+    return true;
 }
 
 // ============================================

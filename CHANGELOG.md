@@ -1,5 +1,20 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-25 - REMOTE Full Control milestone 2 read-only projection (offline)
+
+Added capability-negotiated, authenticated read-only projection of the
+main-loop-owned TUNER mode, selection, item count and a maximum five-item
+visible window. Names are bounded to 48 validated UTF-8 bytes, empty lists are
+valid, active station identity is evaluated locally without transmitting
+URLs, and the complete response remains below 288 plaintext bytes. A stable
+revision changes when projected state changes. The implementation adds no
+dynamic allocation and no input or persistence mutation.
+
+Compatibility advances the identity marker from `+fc1` to `+fc2`: Milestone 1
+clients do not probe the newer extension and retain D-009/BTX operation; the
+current client accepts both generations. Focused source/menu model tests pass.
+Hardware rendering and semantic navigation remain later milestones.
+
 ## 2026-10-25 - REMOTE Full Control milestone 1 (offline)
 
 Added capability-negotiated authenticated source state and semantic Radio /
