@@ -101,4 +101,82 @@ largest contiguous blocks must be measured on hardware.
 6. Stop playback and capture recovery. Compare real largest-block values with
    the installed `71a7ee9c59f7` evidence; do not infer them from static savings.
 
-Hardware status: NOT INSTALLED / NOT HARDWARE VALIDATED.
+## Hardware checkpoint - 2026-10-25
+
+- Preflight: PASS. TUNER identified as ESP32-D0WDQ6-V3 revision 3.1 on its
+  CH340 interface with 4 MiB flash; live `app0` remained at `0x10000` with
+  `0x300000` capacity.
+- Candidate and rollback: exact size/SHA-256 PASS.
+- Application-only write at `0x10000`: PASS.
+- Independent 2,072,416-byte readback: PASS, SHA-256
+  `6f02cdfd1576831a5d4a40f54eff88dcc3960fcdf72545d0909b0525cbceabf6`.
+- Boot: build `dbf9896876a7`, PSRAM, Wi-Fi and web diagnostics PASS.
+- StationManager initialization: boot log confirms one 9,720-byte PSRAM
+  allocation for 30 records; 1 saved station, 5 Recent entries and 3
+  Favorites loaded. Saved/favorite web inventory and order matched pre-flash
+  evidence.
+- Initial HTTP sample: INTERNAL free/largest 110,188/106,484 bytes; PSRAM free
+  4,180,715 bytes; Wi-Fi connected with zero disconnects. This is not a
+  controlled like-for-like runtime delta against the long-lived baseline.
+- Stop condition: opening the CH340 port for `x` emitted a fresh complete
+  `power_on` boot sequence despite inactive DTR/RTS. Validation stopped without
+  further device operations.
+
+Not completed: serial allocation/TX counters, authenticated RTCP session,
+Recent UI ordering, station selection and previous/next wrap, controlled web
+CRUD/restore, Bluetooth, HTTPS MP3, five-minute HTTP/RTCP coexistence, and
+post-playback recovery.
+
+Private evidence:
+`C:\Users\RYZEN\Documents\BTX_PRIVATE_HARDWARE_EVIDENCE\20261025T082550Z-TUNER-BTX-stationmanager-psram`
+
+Hardware status: PARTIAL PASS. Candidate remains installed; no rollback was
+performed.
+
+## Resumed HTTP-only validation - 2026-10-25
+
+The owner authorized continuation without reopening COM5. Uptime increased
+monotonically from 271,674 to 1,352,316 ms; reset reason remained `power_on`,
+Wi-Fi disconnect count remained zero and all bounded HTTP requests completed.
+
+### StationManager
+
+- Saved Stations: retained Radio ABF HTTPS validation; selection and HTTPS
+  MP3 startup PASS.
+- Favorites: three entries retained in the expected order.
+- Recent: owner confirmed all five expected entries.
+- Web station list remained unchanged through the test.
+- REMOTE displayed the correct authoritative station/playback/volume state.
+- Temporary CRUD/restore: NOT TESTED because no explicit destructive-test
+  confirmation was given.
+- Previous-button wrap: NOT APPLICABLE; this TUNER has no Previous button.
+- Next-station navigation: NOT TESTED.
+
+### Audio, network and memory
+
+- Bluetooth A2DP SBC playback: PASS.
+- Bluetooth artist/title metadata: PASS.
+- Bluetooth-to-Radio ABF transition: PASS.
+- Radio ABF five-minute continuous playback: PASS by HTTP state and owner
+  audible observation.
+- Sparse HTTP diagnostics: 11/11 PASS at 30-second intervals.
+- RTCP coexistence: PASS; response timing remained active and REMOTE remained
+  synchronized throughout.
+- Wi-Fi: connected throughout, zero disconnects.
+- No spontaneous reset observed.
+
+| State | INTERNAL free | INTERNAL largest | PSRAM free |
+| --- | ---: | ---: | ---: |
+| Initial idle | 109,864 | 106,484 | 4,180,715 |
+| Radio immediately after Bluetooth | 17,988 | 10,740 | 4,099,851 |
+| Five-minute radio observed range | 6,828-15,844 | 2,292-8,692 | 4,099,851 |
+| Stopped recovery | 24,948 | 17,396 | 4,131,771 |
+
+The retained internal low-water mark reached 1,740 bytes. Runtime states are
+not sufficiently equivalent to claim that the 9,720-byte static recovery
+produced an equal contiguous-DMA improvement. DMA-specific free/largest,
+allocation-failure and Wi-Fi TX-refusal counters are not exposed over HTTP;
+they were not measured and are not claimed as zero.
+
+The earlier COM5-open boot observation remains unresolved. Serial-port reset
+safety is not verified. Final status: **PARTIAL PASS**.

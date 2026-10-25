@@ -1,5 +1,67 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-25 - StationManager PSRAM HTTP-only hardware validation resumed
+
+The owner authorized validation to resume without reopening COM5. Successive
+HTTP snapshots advanced monotonically from 271,674 to 1,352,316 ms uptime
+with reset reason `power_on`, zero Wi-Fi disconnects and no HTTP timeout.
+Saved Stations retained the Radio ABF entry; Favorites retained West City
+Radio, Kiss Fm and Sports Radio Brila FM in order; the owner confirmed all
+five expected Recent entries. No station or favorite changed. Temporary web
+CRUD was not authorized and was not performed. Previous-button wrap testing
+was not applicable because this TUNER has no Previous button; Next-station
+navigation remained untested.
+
+Saved Radio ABF HTTPS MP3 selection, Bluetooth A2DP SBC playback and metadata,
+Bluetooth-to-Radio transition, and five minutes of Radio ABF playback all
+passed. HTTP diagnostics completed at 30-second intervals, Wi-Fi remained
+connected, RTCP response timing remained active, and REMOTE continuously
+showed the authoritative station/playback/volume state. The owner confirmed
+audio remained uninterrupted. No spontaneous reset was observed.
+
+During the five-minute radio interval, HTTP-visible internal free memory
+ranged from 6,828 to 15,844 bytes and largest block from 2,292 to 8,692 bytes;
+PSRAM free remained 4,099,851 bytes. After stopping playback, internal memory
+recovered to 24,948 bytes free with a 17,396-byte largest block and PSRAM free
+was 4,131,771 bytes. The retained internal low-water mark reached 1,740 bytes.
+These constrained values remain a risk. DMA-specific, allocation-failure and
+Wi-Fi TX-refusal counters are serial-only and could not be checked under the
+no-COM5 rule; their absence from HTTP must not be reported as zero.
+
+The earlier COM5-open boot sequence remains unresolved and serial reset safety
+is not verified. Controlled station CRUD/restore also remains untested.
+Overall hardware status remains **PARTIAL PASS**.
+
+## 2026-10-25 - StationManager PSRAM hardware validation stopped after serial reset
+
+Mandatory preflight passed on the CH340-attached TUNER (ESP32-D0WDQ6-V3
+revision 3.1, 4 MiB flash). The live partition table confirmed the application
+slot at `0x10000` with capacity `0x300000`. The 2,072,416-byte candidate from
+`dbf9896876a7fe8c9b421bb1608dc9c2782e9cfe`, SHA-256
+`6f02cdfd1576831a5d4a40f54eff88dcc3960fcdf72545d0909b0525cbceabf6`, and
+the 2,071,584-byte rollback image, SHA-256
+`247f7a097c76b664072c6d8a38aaf96e7f967b6bd818924b357b3eaadb8c3103`,
+were independently verified.
+
+Only the application was written at `0x10000`. The write completed and an
+independent exact-span readback matched the candidate SHA-256. Build
+`dbf9896876a7` booted with PSRAM available, retained Wi-Fi configuration and
+the preserved station data: 1 saved station, 5 Recent entries and 3 Favorites.
+The boot log confirmed the StationManager's 30-record, 9,720-byte PSRAM
+allocation. The web station inventory retained the saved/favorite order. An
+initial HTTP diagnostic sample reported 110,188/106,484 bytes internal free /
+largest block and 4,180,715 bytes free PSRAM; Wi-Fi was connected with zero
+disconnects.
+
+Opening the CH340 serial interface for the requested `x` snapshot produced a
+new complete `power_on` boot sequence even with DTR/RTS held inactive. The
+mandatory unexpected-reset stop condition was therefore applied. No station
+CRUD, navigation, Bluetooth, HTTPS audio, five-minute coexistence or teardown
+test was attempted. Post-flash allocation-failure, TX-refusal and RTCP session
+counters were not captured and must not be inferred from the HTTP sample.
+Hardware status: **PARTIAL PASS**; the verified candidate remains installed
+and both rollback images remain preserved.
+
 ## 2026-10-25 - StationManager record storage moved to PSRAM
 
 The 15 saved-station, 5 recent and 10 favorite `RadioStation` records now
