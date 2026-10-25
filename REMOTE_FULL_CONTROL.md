@@ -64,3 +64,12 @@ cursor, count, visible text or active identity changes. Empty lists are valid.
 Only an internal URL comparison determines active discovered/favorite/recent
 identity; URLs never leave TUNER. The fixed server-side revision tracker adds
 16 bytes; the ephemeral view is built on the existing request stack.
+
+Implementation commit `4cf9b65e00e0a6c5a28f6833ec06a672a046a461`
+passes the pinned `esp32-lwip-psram` build. The application is 2,076,272 bytes
+(SHA-256 `d308d56a52f46241f0c2eae432eccf0bf2e542f4279cc34c57c9d614b292a982`),
+the 30,380,224-byte ELF SHA-256 is
+`3816b9cfcbdb14d0a7648c6a6e53f8914a1d2374fa5f99fbc2a8b88b6198a933`,
+linked static RAM is 79,208 bytes, and the 3 MiB application slot retains
+1,069,456 bytes by exact image length. Relative to Milestone 1 this adds
+2,176 application bytes and 80 static RAM bytes.
