@@ -130,6 +130,9 @@ uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targe
 uint8_t executeRtcpBluetooth(const rtcp_btx::Command& command);
 uint8_t executeRtcpSource(rtcp_full_control::Source target);
 bool projectRtcpMenu(rtcp_full_control::MenuView& view);
+bool projectRtcpCatalog(const rtcp_catalog::Query& query,
+                        rtcp_catalog::PageView& view);
+uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command);
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -164,7 +167,8 @@ void enterRecent();
 void handleRecentInput(InputEvent event);
 void refreshRecentDisplay();
 
-void playDiscoveredStation(const char* name, const char* url, StationCodec codec, bool addFavorite);
+bool playDiscoveredStation(const char* name, const char* url,
+                           StationCodec codec, bool addFavorite);
 
 // ============================================
 // Setup
@@ -218,6 +222,8 @@ void setup() {
     rtcpServer.setBluetoothOwner(executeRtcpBluetooth);
     rtcpServer.setSourceOwner(executeRtcpSource);
     rtcpServer.setMenuOwner(projectRtcpMenu);
+    rtcpServer.setCatalogOwner(projectRtcpCatalog);
+    rtcpServer.setCatalogCommandOwner(executeRtcpCatalog);
     
     // Load default radio stations
     Serial.println("[MAIN] Loading radio stations...");
@@ -497,6 +503,116 @@ bool projectRtcpMenu(rtcp_full_control::MenuView& view) {
         if (!item.name || !item.name[0]) return false;
     }
     return true;
+}
+
+bool projectRtcpCatalog(const rtcp_catalog::Query& query,
+                        rtcp_catalog::PageView& view) {
+    using rtcp_catalog::Collection;
+    view = {};
+    view.collection = query.collection;
+    view.revision = stationManager.getCatalogRevision();
+
+    switch (query.collection) {
+        case Collection::saved:
+            view.count = stationManager.getStationCount();
+            view.capacity = MAX_STATIONS;
+            break;
+        case Collection::favorites:
+            view.count = stationManager.getFavoriteCount();
+            view.capacity = MAX_FAVORITES;
+            break;
+        case Collection::recent:
+            view.count = stationManager.getRecentCount();
+            view.capacity = MAX_RECENT;
+            break;
+        default:
+            return false;
+    }
+    if (view.count == view.capacity) view.flags |= rtcp_catalog::full;
+    view.start = query.offset < view.count ? query.offset : view.count;
+    const uint16_t remaining = view.count - view.start;
+    view.item_count = uint8_t(remaining < query.limit ? remaining : query.limit);
+
+    const char* current_url = audioPlayer.getCurrentURL();
+    for (uint8_t slot = 0; slot < view.item_count; ++slot) {
+        const uint16_t token = view.start + slot;
+        const RadioStation* station = nullptr;
+        bool active = false;
+        switch (query.collection) {
+            case Collection::saved:
+                station = stationManager.getStation(uint8_t(token));
+                active = station && audioPlayer.getSource() == AUDIO_SOURCE_INTERNET_RADIO &&
+                         !nowPlayingContext.discovered && selectedStation == token;
+                break;
+            case Collection::favorites:
+                station = stationManager.getFavorite(uint8_t(token));
+                active = station && current_url && current_url[0] &&
+                         strcmp(current_url, station->url) == 0;
+                break;
+            case Collection::recent:
+                station = stationManager.getRecent(uint8_t(token));
+                active = station && current_url && current_url[0] &&
+                         strcmp(current_url, station->url) == 0;
+                break;
+            default:
+                return false;
+        }
+        if (!station || !station->name[0]) return false;
+        view.items[slot].token = token;
+        view.items[slot].active = active;
+        view.items[slot].name = station->name;
+    }
+    return true;
+}
+
+uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command) {
+    using rtcp_catalog::Collection;
+    using rtcp_catalog::Operation;
+    if (command.expected_revision != stationManager.getCatalogRevision())
+        return rtcp_catalog::stale;
+
+    RadioStation* station = nullptr;
+    switch (command.collection) {
+        case Collection::saved:
+            station = stationManager.getStation(uint8_t(command.token));
+            break;
+        case Collection::favorites:
+            station = stationManager.getFavorite(uint8_t(command.token));
+            break;
+        case Collection::recent:
+            station = stationManager.getRecent(uint8_t(command.token));
+            break;
+        default:
+            return rtcp_catalog::invalid_argument;
+    }
+    if (!station) return rtcp_catalog::unavailable;
+
+    if (command.operation == Operation::play) {
+        const bool played = command.collection == Collection::saved
+            ? playStation(uint8_t(command.token))
+            : playDiscoveredStation(station->name, station->url,
+                                    station->codec, false);
+        publishRtcpProjection();
+        return played ? rtcp_catalog::success : rtcp_catalog::execution_failed;
+    }
+    if (command.operation == Operation::remove) {
+        const bool removed = command.collection == Collection::saved
+            ? stationManager.removeStation(uint8_t(command.token))
+            : command.collection == Collection::favorites
+                ? stationManager.removeFavorite(uint8_t(command.token)) : false;
+        return removed ? rtcp_catalog::success : rtcp_catalog::execution_failed;
+    }
+    if (command.operation == Operation::add_favorite &&
+        command.collection == Collection::recent) {
+        if (stationManager.isFavorite(station->url))
+            return rtcp_catalog::already_present;
+        if (stationManager.getFavoriteCount() >= MAX_FAVORITES)
+            return rtcp_catalog::capacity_full;
+        return stationManager.addToFavorites(station->name, station->url,
+                                             station->codec)
+            ? rtcp_catalog::success : rtcp_catalog::execution_failed;
+    }
+    return rtcp_catalog::unsupported;
 }
 
 // ============================================
@@ -904,7 +1020,7 @@ bool playStation(uint8_t stationIdx, bool updateDisplay) {
 // through this one function rather than duplicating play logic three
 // times.
 // ============================================
-void playDiscoveredStation(const char* name, const char* url, StationCodec codec, bool addFavorite) {
+bool playDiscoveredStation(const char* name, const char* url, StationCodec codec, bool addFavorite) {
     // `name`/`url` may point into the Recent array. addToRecent() shifts
     // that array, so keep an independent copy before updating the list.
     char stationName[MAX_NAME_LENGTH];
@@ -946,9 +1062,11 @@ void playDiscoveredStation(const char* name, const char* url, StationCodec codec
         nowPlayingName[MAX_NAME_LENGTH - 1] = '\0';
         nowPlayingContext.set(codec, true);
         display.showPlaying(stationName, "Buffering...", nowPlayingFooter());
+        return true;
     } else {
         currentMode = MODE_ERROR;
         display.showError("Failed to play station");
+        return false;
     }
 }
 

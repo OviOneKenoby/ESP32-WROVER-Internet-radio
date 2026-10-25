@@ -21,7 +21,12 @@ StationManager::StationManager()
       stationCount(0),
       currentStation(0),
       recentCount(0),
-      favoriteCount(0) {
+      favoriteCount(0),
+      catalogRevision(1) {
+}
+
+void StationManager::advanceCatalogRevision() {
+    if (catalogRevision != UINT64_MAX) ++catalogRevision;
 }
 
 StationManager::~StationManager() {
@@ -83,6 +88,7 @@ uint8_t StationManager::addStation(const char* name, const char* url, StationCod
     Serial.printf("[STATION] Added: %s -> %s (%s)\n", name, url,
                   codec == STATION_CODEC_AAC ? "AAC" : "MP3");
     uint8_t addedIndex = stationCount++;
+    advanceCatalogRevision();
     saveStationsToPrefs();
     return addedIndex;
 }
@@ -99,6 +105,7 @@ bool StationManager::removeStation(uint8_t idx) {
     }
     
     stationCount--;
+    advanceCatalogRevision();
     
     if (currentStation >= stationCount) {
         currentStation = 0;
@@ -292,6 +299,7 @@ bool StationManager::loadDefaultStations() {
     }
     prefs.end();
 
+    advanceCatalogRevision();
     Serial.printf("[STATION] Loaded %d saved stations\n", stationCount);
     return true;
 }
@@ -355,6 +363,7 @@ void StationManager::loadPersistedLists() {
     }
     prefs.end();
 
+    advanceCatalogRevision();
     Serial.printf("[STATION] Loaded %d recent, %d favorites from flash\n", recentCount, favoriteCount);
 }
 
@@ -391,6 +400,7 @@ void StationManager::addToRecent(const char* name, const char* url, StationCodec
 
     if (recentCount < MAX_RECENT) recentCount++;
 
+    advanceCatalogRevision();
     saveRecentToPrefs();
 }
 
@@ -435,6 +445,7 @@ bool StationManager::addToFavorites(const char* name, const char* url, StationCo
     favoriteRecords()[favoriteCount].url[MAX_URL_LENGTH - 1] = '\0';
     favoriteRecords()[favoriteCount].codec = codec;
     favoriteCount++;
+    advanceCatalogRevision();
     saveFavoritesToPrefs();
     return true;
 }
@@ -445,6 +456,7 @@ bool StationManager::removeFavorite(uint8_t idx) {
         favoriteRecords()[i] = favoriteRecords()[i + 1];
     }
     favoriteCount--;
+    advanceCatalogRevision();
     saveFavoritesToPrefs();
     return true;
 }

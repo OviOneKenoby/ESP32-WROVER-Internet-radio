@@ -10,8 +10,9 @@ int main() {
     uint8_t bytes[512]{};
     assert(capabilities(bytes, sizeof bytes) == 20);
     assert(bytes[0] == kCapabilityResponse && bytes[1] == kMajor);
-    assert(bytes[7] == (kFeatureSourceSwitch | kFeatureMenuProjection));
-    assert(bytes[2] == 1 && bytes[19] == kCapabilityRevision);
+    assert(bytes[7] == (kFeatureSourceSwitch | kFeatureMenuProjection |
+                        kFeatureCatalogQuery | kFeatureCatalogCommand));
+    assert(bytes[2] == 2 && bytes[19] == kCapabilityRevision);
 
     SourceState state{};
     state.generation = 9;

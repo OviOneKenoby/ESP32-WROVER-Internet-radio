@@ -10,6 +10,7 @@
 #include "rtcp_d009.h"
 #include "rtcp_btx.h"
 #include "rtcp_full_control.h"
+#include "rtcp_catalog.h"
 
 class AudioPlayer;
 
@@ -44,12 +45,19 @@ public:
     using BluetoothOwner = uint8_t (*)(const rtcp_btx::Command& command);
     using SourceOwner = uint8_t (*)(rtcp_full_control::Source target);
     using MenuOwner = bool (*)(rtcp_full_control::MenuView& view);
+    using CatalogOwner = bool (*)(const rtcp_catalog::Query& query,
+                                  rtcp_catalog::PageView& view);
+    using CatalogCommandOwner = uint8_t (*)(const rtcp_catalog::Command& command);
     bool begin();
     void poll(AudioPlayer& audio);
     void setPlaybackOwner(PlaybackOwner owner) { playback_owner_ = owner; }
     void setBluetoothOwner(BluetoothOwner owner) { bluetooth_owner_ = owner; }
     void setSourceOwner(SourceOwner owner) { source_owner_ = owner; }
     void setMenuOwner(MenuOwner owner) { menu_owner_ = owner; }
+    void setCatalogOwner(CatalogOwner owner) { catalog_owner_ = owner; }
+    void setCatalogCommandOwner(CatalogCommandOwner owner) {
+        catalog_command_owner_ = owner;
+    }
     void publishNowPlaying(const rtcp_d009::Input& input) { projection_.publish(input); }
     void invalidateMediaContext() { projection_.invalidateMediaContext(); }
     bool enabled() const { return enabled_; }
@@ -98,7 +106,11 @@ private:
     SourceOwner source_owner_{nullptr};
     rtcp_full_control::MenuRevision menu_revision_{};
     MenuOwner menu_owner_{nullptr};
+    rtcp_catalog::Mailbox catalog_mailbox_{};
+    CatalogOwner catalog_owner_{nullptr};
+    CatalogCommandOwner catalog_command_owner_{nullptr};
     uint32_t source_started_us_{0};
+    uint32_t catalog_started_us_{0};
     Timing timing_{};
     Diagnostics diagnostics_{};
     DiscoveryAdvertisement discovery_{};
@@ -111,6 +123,7 @@ private:
     bool servicePlayback();
     bool serviceBluetooth();
     bool serviceSource(AudioPlayer& audio);
+    bool serviceCatalog();
     bool refreshSourceState(AudioPlayer& audio);
     bool sendApplication(const uint8_t* data, size_t size);
     size_t handleApplication(AudioPlayer& audio, const uint8_t* data, size_t size,
@@ -132,3 +145,7 @@ static_assert(sizeof(rtcp_full_control::SourceState) +
                   sizeof(rtcp_full_control::MenuRevision) +
                   sizeof(rtcp::Server::MenuOwner) <= 72,
               "full-control source state exceeds the approved budget");
+static_assert(sizeof(rtcp_catalog::Mailbox) +
+                  sizeof(rtcp::Server::CatalogOwner) +
+                  sizeof(rtcp::Server::CatalogCommandOwner) <= 48,
+              "catalog command state exceeds the approved budget");

@@ -142,6 +142,7 @@ void Server::closeClient(CloseReason reason) {
     playback_mailbox_.clear(); last_playback_request_ = 0;
     btx_mailbox_.clear(); btx_session_.clear();
     source_mailbox_.clear();
+    catalog_mailbox_.clear();
     state_ = enabled_ ? State::listening : State::disabled;
 }
 void Server::acceptClient() {
@@ -151,6 +152,7 @@ void Server::acceptClient() {
     client_ = candidate; client_.setNoDelay(true); rx_used_ = 0; rx_needed_ = 40;
     btx_mailbox_.clear(); btx_session_.clear();
     source_mailbox_.clear();
+    catalog_mailbox_.clear();
     diagnostics_.accepted(freeInternal(), largestInternal());
     deadline_ms_ = millis() + 3000; state_ = State::client_hello;
 }
@@ -225,7 +227,7 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         // The suffix is inside the existing bounded identity text. Legacy
         // clients accept and ignore it; new clients use it only to decide
         // whether it is safe to send the separately negotiated ID 16 probe.
-        return ccm_wire::identity(FIRMWARE_VERSION "+fc2", out, cap);
+        return ccm_wire::identity(FIRMWARE_VERSION "+fc3", out, cap);
     if (p[0] == kCapabilityRequest && n == 1) {
         const rtcp_btx::CapabilityReply reply = btx_session_.capabilityRequest();
         if (reply == rtcp_btx::CapabilityReply::legacy)
@@ -331,6 +333,37 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         const uint64_t revision = menu_revision_.observe(view);
         return rtcp_full_control::menuState(view, ++sample_sequence_, revision,
                                             out, cap);
+    }
+    if (p[0] == rtcp_catalog::kQueryRequest && n == 5 &&
+        btx_session_.negotiated() && catalog_owner_) {
+        if (sample_sequence_ == UINT64_MAX) return 0;
+        rtcp_catalog::Query query{};
+        rtcp_catalog::PageView view{};
+        if (!rtcp_catalog::parseQuery(p, n, query) ||
+            !catalog_owner_(query, view)) return 0;
+        return rtcp_catalog::page(view, ++sample_sequence_, out, cap);
+    }
+    if (p[0] == rtcp_catalog::kCommandRequest && n == 21 &&
+        btx_session_.negotiated() && catalog_owner_) {
+        rtcp_catalog::Command command{};
+        if (!rtcp_catalog::parseCommand(p, n, command)) return 0;
+        rtcp_catalog::PageView current{};
+        rtcp_catalog::Query query{};
+        query.collection = command.collection;
+        query.offset = 0;
+        query.limit = 1;
+        if (!catalog_owner_(query, current)) return 0;
+        const rtcp_catalog::Decision decision = rtcp_catalog::admit(
+            command, current.revision, current.count,
+            catalog_mailbox_.occupied());
+        if (decision.error != rtcp_catalog::success)
+            return ccm_wire::result(command.request, false, decision.error,
+                                    out, cap);
+        if (!catalog_mailbox_.put(command))
+            return ccm_wire::result(command.request, false,
+                                    rtcp_catalog::busy, out, cap);
+        catalog_started_us_ = micros();
+        return kDeferredResponse;
     }
     return 0;
 }
@@ -449,6 +482,24 @@ bool Server::serviceSource(AudioPlayer& audio) {
     deadline_ms_ = millis() + 5000;
     return sent;
 }
+bool Server::serviceCatalog() {
+    rtcp_catalog::Command command{};
+    if (!catalog_mailbox_.take(command)) return true;
+    const uint8_t error = catalog_command_owner_
+        ? catalog_command_owner_(command)
+        : rtcp_catalog::internal;
+    uint8_t response[11]{};
+    const size_t response_size = ccm_wire::result(
+        command.request, error == rtcp_catalog::success, error,
+        response, sizeof response);
+    const bool sent = response_size && sendApplication(response, response_size);
+    timing_.lastResponseUs = micros() - catalog_started_us_;
+    if (timing_.lastResponseUs > timing_.maxResponseUs)
+        timing_.maxResponseUs = timing_.lastResponseUs;
+    memset(response, 0, sizeof response);
+    deadline_ms_ = millis() + 5000;
+    return sent;
+}
 void Server::poll(AudioPlayer& audio) {
     const bool wifi_connected = WiFi.status() == WL_CONNECTED;
     discovery_.poll(enabled_ && wifi_connected, millis());
@@ -464,7 +515,8 @@ void Server::poll(AudioPlayer& audio) {
     const bool ok = state_ == State::records ? processRecord(audio) : processHandshake();
     const bool playback_ok = ok && state_ == State::records ? servicePlayback() : ok;
     const bool bluetooth_ok = playback_ok && state_ == State::records ? serviceBluetooth() : playback_ok;
-    const bool owner_ok = bluetooth_ok && state_ == State::records ? serviceSource(audio) : bluetooth_ok;
+    const bool source_ok = bluetooth_ok && state_ == State::records ? serviceSource(audio) : bluetooth_ok;
+    const bool owner_ok = source_ok && state_ == State::records ? serviceCatalog() : source_ok;
     if (!owner_ok) {
         CloseReason reason = diagnostics_.close_reason;
         if (reason == CloseReason::none)

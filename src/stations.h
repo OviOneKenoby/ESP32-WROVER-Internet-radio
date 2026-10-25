@@ -21,6 +21,7 @@ public:
     // access. Failure is fail-closed: no internal-memory fallback is used.
     bool begin();
     bool isReady() const { return recordStorage != nullptr; }
+    uint64_t getCatalogRevision() const { return catalogRevision; }
     
     // Station management
     uint8_t addStation(const char* name, const char* url, StationCodec codec = STATION_CODEC_MP3);
@@ -75,7 +76,9 @@ private:
     void saveRecentToPrefs();
 
     uint8_t favoriteCount;
+    uint64_t catalogRevision;
     void saveFavoritesToPrefs();
+    void advanceCatalogRevision();
 
     // User-managed station list, persisted separately from Favorites and
     // Recent so the web UI can safely manage it through NVS.
