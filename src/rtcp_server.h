@@ -9,6 +9,7 @@
 #include "rtcp_discovery.h"
 #include "rtcp_d009.h"
 #include "rtcp_btx.h"
+#include "rtcp_full_control.h"
 
 class AudioPlayer;
 
@@ -41,10 +42,12 @@ class Server {
 public:
     using PlaybackOwner = uint8_t (*)(ccm_wire::PlaybackOperation, uint8_t target_station);
     using BluetoothOwner = uint8_t (*)(const rtcp_btx::Command& command);
+    using SourceOwner = uint8_t (*)(rtcp_full_control::Source target);
     bool begin();
     void poll(AudioPlayer& audio);
     void setPlaybackOwner(PlaybackOwner owner) { playback_owner_ = owner; }
     void setBluetoothOwner(BluetoothOwner owner) { bluetooth_owner_ = owner; }
+    void setSourceOwner(SourceOwner owner) { source_owner_ = owner; }
     void publishNowPlaying(const rtcp_d009::Input& input) { projection_.publish(input); }
     void invalidateMediaContext() { projection_.invalidateMediaContext(); }
     bool enabled() const { return enabled_; }
@@ -88,6 +91,10 @@ private:
     rtcp_btx::Session btx_session_{};
     rtcp_btx::Mailbox btx_mailbox_{};
     BluetoothOwner bluetooth_owner_{nullptr};
+    rtcp_full_control::SourceState source_state_{};
+    rtcp_full_control::SourceMailbox source_mailbox_{};
+    SourceOwner source_owner_{nullptr};
+    uint32_t source_started_us_{0};
     Timing timing_{};
     Diagnostics diagnostics_{};
     DiscoveryAdvertisement discovery_{};
@@ -99,6 +106,8 @@ private:
     bool processRecord(AudioPlayer& audio);
     bool servicePlayback();
     bool serviceBluetooth();
+    bool serviceSource(AudioPlayer& audio);
+    bool refreshSourceState(AudioPlayer& audio);
     bool sendApplication(const uint8_t* data, size_t size);
     size_t handleApplication(AudioPlayer& audio, const uint8_t* data, size_t size,
                              uint8_t* output, size_t capacity);
@@ -113,3 +122,7 @@ static_assert(sizeof(rtcp_d009::Projection) + sizeof(rtcp_d009::Mailbox) <= 512,
 static_assert(sizeof(rtcp_btx::SourceState) + sizeof(rtcp_btx::Session) +
                   sizeof(rtcp_btx::Mailbox) + sizeof(rtcp::Server::BluetoothOwner) <= 64,
               "BTX persistent scalar/session state exceeds the approved budget");
+static_assert(sizeof(rtcp_full_control::SourceState) +
+                  sizeof(rtcp_full_control::SourceMailbox) +
+                  sizeof(rtcp::Server::SourceOwner) <= 48,
+              "full-control source state exceeds the approved budget");

@@ -68,7 +68,7 @@ int main() {
            "disconnect clears negotiation");
 
     expect(capabilities(output, sizeof output) == 16, "BTX capability size");
-    const uint8_t expected_btx[16] = {12,1,0,0x3f,96,127,0x07,0xd0,0,0,0,0,0,0,0,1};
+    const uint8_t expected_btx[16] = {12,1,0,kFeatures,96,127,0x07,0xd0,0,0,0,0,0,0,0,1};
     expect(memcmp(output, expected_btx, 16) == 0, "BTX capability vector");
 
     Snapshot radio;

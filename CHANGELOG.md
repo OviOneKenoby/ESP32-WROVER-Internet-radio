@@ -1,5 +1,16 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-25 - REMOTE Full Control milestone 1 (offline)
+
+Added capability-negotiated authenticated source state and semantic Radio /
+Bluetooth selection without changing RTCP/1 framing, cryptography or existing
+D-009/BTX record meanings. TUNER main-loop ownership, generation fencing,
+idempotent same-source handling, bounded one-slot admission and disconnect
+cleanup are preserved. Bluetooth-to-Radio uses the restartable cleanup and
+returns to Station Select without resuming audio. Portable source-model tests
+cover malformed records, stale/busy decisions, idempotency and no mailbox
+replay. Hardware installation and validation remain pending.
+
 ## 2026-10-25 - StationManager PSRAM HTTP-only hardware validation resumed
 
 The owner authorized validation to resume without reopening COM5. Successive

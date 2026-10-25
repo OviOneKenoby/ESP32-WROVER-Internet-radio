@@ -128,6 +128,7 @@ void serviceRtcpWhileDisplayBusy(const void* context);
 void publishRtcpProjection();
 uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targetStation);
 uint8_t executeRtcpBluetooth(const rtcp_btx::Command& command);
+uint8_t executeRtcpSource(rtcp_full_control::Source target);
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -214,6 +215,7 @@ void setup() {
     }
     rtcpServer.setPlaybackOwner(executeRtcpPlayback);
     rtcpServer.setBluetoothOwner(executeRtcpBluetooth);
+    rtcpServer.setSourceOwner(executeRtcpSource);
     
     // Load default radio stations
     Serial.println("[MAIN] Loading radio stations...");
@@ -321,6 +323,33 @@ uint8_t executeRtcpPlayback(ccm_wire::PlaybackOperation operation, uint8_t targe
 
 uint8_t executeRtcpBluetooth(const rtcp_btx::Command& command) {
     return audioPlayer.executeBluetoothRtcp(command);
+}
+
+uint8_t executeRtcpSource(rtcp_full_control::Source target) {
+    if (target == rtcp_full_control::Source::bluetooth) {
+        if (audioPlayer.getSource() == AUDIO_SOURCE_BLUETOOTH)
+            return rtcp_full_control::success;
+        if (!audioPlayer.enableBluetooth())
+            return rtcp_full_control::submission_failed;
+        currentMode = MODE_BLUETOOTH;
+        lastKnownBluetoothConnected = false;
+        display.showBluetooth(BT_DEVICE_NAME, false);
+        publishRtcpProjection();
+        return rtcp_full_control::success;
+    }
+    if (target == rtcp_full_control::Source::radio) {
+        if (audioPlayer.getSource() == AUDIO_SOURCE_INTERNET_RADIO &&
+            currentMode != MODE_BLUETOOTH)
+            return rtcp_full_control::success;
+        if (audioPlayer.getSource() == AUDIO_SOURCE_BLUETOOTH &&
+            !audioPlayer.disableBluetooth())
+            return rtcp_full_control::submission_failed;
+        currentMode = MODE_STATION_SELECT;
+        refreshStationListDisplay();
+        publishRtcpProjection();
+        return rtcp_full_control::success;
+    }
+    return rtcp_full_control::invalid_argument;
 }
 
 // ============================================

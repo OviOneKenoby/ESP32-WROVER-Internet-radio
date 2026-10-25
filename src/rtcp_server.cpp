@@ -19,6 +19,8 @@ constexpr uint8_t kIdentityRequest = 1, kCapabilityRequest = 3;
 constexpr uint8_t kSnapshotRequest = 5, kVolumeSet = 7;
 constexpr uint8_t kPlaybackCommand = 9, kNowPlayingRequest = 10;
 constexpr uint8_t kBluetoothStateRequest = 13, kBluetoothCommand = 15;
+constexpr uint8_t kFullControlCapabilityRequest = 16;
+constexpr uint8_t kSourceStateRequest = 18, kSourceSelectRequest = 20;
 constexpr size_t kDeferredResponse = SIZE_MAX;
 
 uint32_t freeInternal() {
@@ -139,6 +141,7 @@ void Server::closeClient(CloseReason reason) {
     rx_used_ = 0; rx_needed_ = 40; rx_counter_ = tx_counter_ = 1;
     playback_mailbox_.clear(); last_playback_request_ = 0;
     btx_mailbox_.clear(); btx_session_.clear();
+    source_mailbox_.clear();
     state_ = enabled_ ? State::listening : State::disabled;
 }
 void Server::acceptClient() {
@@ -147,6 +150,7 @@ void Server::acceptClient() {
     if (client_) { candidate.stop(); return; }
     client_ = candidate; client_.setNoDelay(true); rx_used_ = 0; rx_needed_ = 40;
     btx_mailbox_.clear(); btx_session_.clear();
+    source_mailbox_.clear();
     diagnostics_.accepted(freeInternal(), largestInternal());
     deadline_ms_ = millis() + 3000; state_ = State::client_hello;
 }
@@ -218,7 +222,10 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
     if (!n || cap < 32) return 0;
     if (p[0] != kCapabilityRequest) btx_session_.observeNonCapability();
     if (p[0] == kIdentityRequest && n == 4 && p[1] == 1 && p[2] == 1 && p[3] == 0)
-        return ccm_wire::identity(FIRMWARE_VERSION, out, cap);
+        // The suffix is inside the existing bounded identity text. Legacy
+        // clients accept and ignore it; new clients use it only to decide
+        // whether it is safe to send the separately negotiated ID 16 probe.
+        return ccm_wire::identity(FIRMWARE_VERSION "+fc1", out, cap);
     if (p[0] == kCapabilityRequest && n == 1) {
         const rtcp_btx::CapabilityReply reply = btx_session_.capabilityRequest();
         if (reply == rtcp_btx::CapabilityReply::legacy)
@@ -285,6 +292,35 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         if (!btx_mailbox_.put(command))
             return ccm_wire::result(command.request, false, rtcp_btx::busy, out, cap);
         btx_session_.commandStarted(micros());
+        return kDeferredResponse;
+    }
+    if (p[0] == kFullControlCapabilityRequest && n == 1 &&
+        btx_session_.negotiated()) {
+        return rtcp_full_control::capabilities(out, cap);
+    }
+    if (p[0] == kSourceStateRequest && n == 1 && btx_session_.negotiated()) {
+        if (sample_sequence_ == UINT64_MAX || !refreshSourceState(audio)) return 0;
+        return rtcp_full_control::sourceState(source_state_, ++sample_sequence_,
+                                              out, cap);
+    }
+    if (p[0] == kSourceSelectRequest && n == 18 && btx_session_.negotiated()) {
+        rtcp_full_control::SourceCommand command;
+        if (!rtcp_full_control::parseSourceCommand(p, n, command) ||
+            !refreshSourceState(audio)) return 0;
+        const rtcp_full_control::Decision decision =
+            rtcp_full_control::admitSource(source_state_, command,
+                                           source_mailbox_.occupied());
+        if (decision.error != rtcp_full_control::success || decision.idempotent)
+            return ccm_wire::result(command.request,
+                                    decision.error == rtcp_full_control::success,
+                                    decision.error, out, cap);
+        if (!source_mailbox_.put(command))
+            return ccm_wire::result(command.request, false,
+                                    rtcp_full_control::busy, out, cap);
+        source_state_.transition = command.target == rtcp_full_control::Source::bluetooth
+            ? rtcp_full_control::Transition::starting_bluetooth
+            : rtcp_full_control::Transition::switching_radio;
+        source_started_us_ = micros();
         return kDeferredResponse;
     }
     return 0;
@@ -362,6 +398,48 @@ bool Server::serviceBluetooth() {
     deadline_ms_ = millis() + 5000;
     return sent;
 }
+bool Server::refreshSourceState(AudioPlayer& audio) {
+    // The radio control source includes the stopped Station Select state,
+    // where AudioPlayer intentionally reports AUDIO_SOURCE_NONE.
+    const rtcp_full_control::Source observed =
+        audio.getSource() == AUDIO_SOURCE_BLUETOOTH
+            ? rtcp_full_control::Source::bluetooth
+            : rtcp_full_control::Source::radio;
+    if (source_state_.source == rtcp_full_control::Source::none) {
+        source_state_.source = observed;
+    } else if (observed != source_state_.source) {
+        if (source_state_.generation == UINT64_MAX) return false;
+        ++source_state_.generation;
+        source_state_.source = observed;
+    }
+    source_state_.bluetooth_connected =
+        observed == rtcp_full_control::Source::bluetooth &&
+        audio.isBluetoothConnected();
+    return true;
+}
+bool Server::serviceSource(AudioPlayer& audio) {
+    rtcp_full_control::SourceCommand command;
+    if (!source_mailbox_.take(command)) return true;
+    const uint8_t error = source_owner_
+        ? source_owner_(command.target)
+        : rtcp_full_control::internal;
+    source_state_.last_error = error;
+    // The correlated result carries the terminal error. Return the state
+    // machine to stable so a later explicit owner request is not locked out.
+    source_state_.transition = rtcp_full_control::Transition::stable;
+    if (!refreshSourceState(audio)) source_state_.last_error = rtcp_full_control::internal;
+    uint8_t response[11]{};
+    const size_t response_size = ccm_wire::result(
+        command.request, error == rtcp_full_control::success, error,
+        response, sizeof response);
+    const bool sent = response_size && sendApplication(response, response_size);
+    timing_.lastResponseUs = micros() - source_started_us_;
+    if (timing_.lastResponseUs > timing_.maxResponseUs)
+        timing_.maxResponseUs = timing_.lastResponseUs;
+    memset(response, 0, sizeof response);
+    deadline_ms_ = millis() + 5000;
+    return sent;
+}
 void Server::poll(AudioPlayer& audio) {
     const bool wifi_connected = WiFi.status() == WL_CONNECTED;
     discovery_.poll(enabled_ && wifi_connected, millis());
@@ -376,7 +454,8 @@ void Server::poll(AudioPlayer& audio) {
     }
     const bool ok = state_ == State::records ? processRecord(audio) : processHandshake();
     const bool playback_ok = ok && state_ == State::records ? servicePlayback() : ok;
-    const bool owner_ok = playback_ok && state_ == State::records ? serviceBluetooth() : playback_ok;
+    const bool bluetooth_ok = playback_ok && state_ == State::records ? serviceBluetooth() : playback_ok;
+    const bool owner_ok = bluetooth_ok && state_ == State::records ? serviceSource(audio) : bluetooth_ok;
     if (!owner_ok) {
         CloseReason reason = diagnostics_.close_reason;
         if (reason == CloseReason::none)
