@@ -1,5 +1,84 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-25 - StationManager record storage moved to PSRAM
+
+The 15 saved-station, 5 recent and 10 favorite `RadioStation` records now
+occupy one lifetime-long 9,720-byte allocation requested explicitly with
+`MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT`. `setup()` initializes that storage
+before the first station/NVS access. The records are placement-constructed,
+remain valid for the application lifetime and are released with their object
+lifetimes by `StationManager`. There is no internal-memory fallback.
+
+If allocation fails, record accessors and mutations fail closed, persistence
+loading is skipped, and no station, favorite or recent NVS namespace is read
+or written. Capacities, NVS namespaces/key formats, serialization, ordering,
+navigation inputs and all protocol behavior are unchanged.
+
+Focused StationManager behavior passed 62/62 assertions and source policy
+passed 16/16. Relevant correctness, web, Radio/RTCP, D-009, BTX, audio-memory,
+TLS and diagnostics regressions passed. A clean pinned `esp32-lwip-psram`
+production build from implementation commit
+`dbf9896876a7fe8c9b421bb1608dc9c2782e9cfe` passed.
+
+Linker evidence reduced the `stationManager` BSS symbol from 9,732 bytes to
+8 bytes. `.dram0.data` remains 30,088 bytes; `.dram0.bss` fell from 58,704 to
+48,984 bytes; total linked static internal DRAM fell from 88,792 to 79,072
+bytes, an exact 9,720-byte recovery. This does not prove an equal improvement
+in the runtime largest contiguous DMA block.
+
+The application is 2,072,416 bytes with SHA-256
+`6f02cdfd1576831a5d4a40f54eff88dcc3960fcdf72545d0909b0525cbceabf6`;
+the ELF is 30,319,124 bytes with SHA-256
+`e547145b6977f7332decd1bafb33e1cd272de0087be3cfc3fec419e944ac5b65`.
+The 3 MiB application partition retains 1,073,312 bytes. Hardware was not
+accessed; persistence, real PSRAM placement and runtime INTERNAL/DMA recovery
+remain pending hardware validation.
+
+## 2026-10-25 - Web diagnostics PSRAM hardware partial validation
+
+Mandatory preflight passed for the existing 2,071,584-byte candidate from
+`71a7ee9c59f78a6629b7d27c5b986bde9b1e8898`, SHA-256
+`247f7a097c76b664072c6d8a38aaf96e7f967b6bd818924b357b3eaadb8c3103`.
+The TUNER was identified as an ESP32-D0WDQ6-V3 revision 3.1 with 4 MiB flash;
+its live partition table retained the 3 MiB application slot at `0x10000`.
+A fresh exact-span backup of the installed 2,071,424-byte application matched
+the approved rollback SHA-256
+`2970cc09d62431e5385bcdb74bbba3702398a775c9e4f652ed3092a67e54f083`.
+
+The first authorized application-write command did not begin because COM5
+could not be opened: esptool exited 2 with Windows `PermissionError(13)` / access
+denied before connecting to the chip. After explicit owner authorization, one
+retry wrote only the application at `0x10000`. Independent exact-span readback
+of 2,071,584 bytes matched SHA-256
+`247f7a097c76b664072c6d8a38aaf96e7f967b6bd818924b357b3eaadb8c3103`.
+Build `71a7ee9c59f7` booted normally with retained configuration, Wi-Fi, RTCP,
+PSRAM and web diagnostics.
+
+Idle baseline had zero allocation failures and zero Wi-Fi TX refusals, with
+100,080/98,292 bytes INTERNAL/DMA free/largest. Bluetooth A2DP SBC audio and
+metadata passed with zero failures/refusals and 10,296/7,668 DMA bytes
+free/largest. The existing Radio ABF HTTPS MP3 station then played stably.
+
+During playback, one `/api/diagnostics` request returned HTTP 200 with the
+complete 1,872-byte body, unchanged 63-field schema, no JSON overflow and no
+socket error. The request's retained instrumentation measured only a 112-byte
+INTERNAL decrease from response start to completed JSON construction. A prior
+idle capture on the production allocator measured a 1,392-byte decrease, so
+the observed 1,280-byte difference supports the expected savings but is not a
+controlled same-workload measurement. PSRAM placement is source/link verified;
+the hardware response alone does not directly identify each allocation region.
+
+The mandatory stop condition was reached immediately after that request:
+INTERNAL was 2,032/1,076 bytes free/largest and DMA was 2,784/1,140 bytes.
+No allocation failure, TX refusal, Wi-Fi disconnect, audio stop or reset had
+occurred, but this contiguous headroom was unsafe for the five-minute test.
+After owner-stopped playback, INTERNAL/DMA recovered to 17,176/8,180 bytes,
+with all eight Helix allocations successful and counters still at zero.
+
+Installation, Bluetooth, HTTPS MP3 startup/playback and the single diagnostics
+response PASS. The five-minute coexistence test was not run and acceptance is
+PARTIAL PASS; the Wi-Fi DMA reliability issue is not declared resolved.
+
 ## 2026-10-25 - Web diagnostics JSON moved to PSRAM
 
 The `/api/diagnostics` `JsonDocument` now uses a dedicated ArduinoJson
