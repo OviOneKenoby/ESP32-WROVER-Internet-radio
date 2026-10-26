@@ -136,7 +136,8 @@ size_t capabilities(uint8_t* output, size_t capacity) {
     output[2] = kMinor;
     output[3] = 0;
     put32(output + 4, kFeatureSourceSwitch | kFeatureMenuProjection |
-                          kFeatureCatalogQuery | kFeatureCatalogCommand);
+                          kFeatureCatalogQuery | kFeatureCatalogCommand |
+                          kFeatureRadioBrowser);
     put16(output + 8, kFreshnessMs);
     output[10] = output[11] = 0;
     put64(output + 12, kCapabilityRevision);

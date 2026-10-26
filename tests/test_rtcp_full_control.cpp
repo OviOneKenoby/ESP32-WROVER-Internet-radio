@@ -11,8 +11,9 @@ int main() {
     assert(capabilities(bytes, sizeof bytes) == 20);
     assert(bytes[0] == kCapabilityResponse && bytes[1] == kMajor);
     assert(bytes[7] == (kFeatureSourceSwitch | kFeatureMenuProjection |
-                        kFeatureCatalogQuery | kFeatureCatalogCommand));
-    assert(bytes[2] == 2 && bytes[19] == kCapabilityRevision);
+                        kFeatureCatalogQuery | kFeatureCatalogCommand |
+                        kFeatureRadioBrowser));
+    assert(bytes[2] == 3 && bytes[19] == kCapabilityRevision);
 
     SourceState state{};
     state.generation = 9;

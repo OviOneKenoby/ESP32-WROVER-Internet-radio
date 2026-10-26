@@ -14,13 +14,14 @@ constexpr uint8_t kSourceSelectRequest = 20;
 constexpr uint8_t kMenuStateRequest = 21;
 constexpr uint8_t kMenuStateResponse = 22;
 constexpr uint8_t kMajor = 1;
-constexpr uint8_t kMinor = 2;
+constexpr uint8_t kMinor = 3;
 constexpr uint16_t kFreshnessMs = 2000;
-constexpr uint64_t kCapabilityRevision = 3;
+constexpr uint64_t kCapabilityRevision = 4;
 constexpr uint32_t kFeatureSourceSwitch = 1u << 0;
 constexpr uint32_t kFeatureMenuProjection = 1u << 1;
 constexpr uint32_t kFeatureCatalogQuery = 1u << 2;
 constexpr uint32_t kFeatureCatalogCommand = 1u << 3;
+constexpr uint32_t kFeatureRadioBrowser = 1u << 4;
 constexpr size_t kMenuWindowItems = 5;
 constexpr size_t kMenuNameBytes = 48;
 

@@ -15,8 +15,8 @@ assert "kMaxPlaintext = 512" in header
 assert "D-009 persistent projection and mailbox exceed the approved budget" in header
 assert "rtcpServer.setPlaybackOwner(executeRtcpPlayback)" in main
 assert "playStation(targetStation, false)" in main
-fixed = main.split("bool playStation(uint8_t stationIdx, bool updateDisplay)", 1)[1]
-fixed = fixed.split("void playDiscoveredStation", 1)[0]
+fixed = main.split("bool playStation(uint8_t stationIdx, bool updateDisplay) {", 1)[1]
+fixed = fixed.split("bool playDiscoveredStation", 1)[0]
 assert fixed.index("rtcpServer.invalidateMediaContext()") < fixed.index("audioPlayer.play")
 assert "stationManager.addToFavorites" not in fixed
 

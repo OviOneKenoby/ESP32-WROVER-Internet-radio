@@ -8,6 +8,7 @@
 #include "net_manager.h"
 #include "stations.h"
 #include "browser.h"
+#include "remote_browser.h"
 #include "web_portal.h"
 #include "time_service.h"
 #include "correctness_guards.h"
@@ -133,6 +134,10 @@ bool projectRtcpMenu(rtcp_full_control::MenuView& view);
 bool projectRtcpCatalog(const rtcp_catalog::Query& query,
                         rtcp_catalog::PageView& view);
 uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command);
+bool projectRtcpBrowser(const rtcp_browser::Query& query,
+                        rtcp_browser::StateView& view);
+uint8_t executeRtcpBrowser(const rtcp_browser::Command& command);
+void closeRtcpBrowser();
 
 // Station discovery (browse by country/genre), Favorites, Recent - see
 // browser.h for the underlying API client. Each "enter*" function does
@@ -224,6 +229,9 @@ void setup() {
     rtcpServer.setMenuOwner(projectRtcpMenu);
     rtcpServer.setCatalogOwner(projectRtcpCatalog);
     rtcpServer.setCatalogCommandOwner(executeRtcpCatalog);
+    rtcpServer.setBrowserOwner(projectRtcpBrowser);
+    rtcpServer.setBrowserCommandOwner(executeRtcpBrowser);
+    rtcpServer.setBrowserCloseOwner(closeRtcpBrowser);
     
     // Load default radio stations
     Serial.println("[MAIN] Loading radio stations...");
@@ -615,6 +623,37 @@ uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command) {
     return rtcp_catalog::unsupported;
 }
 
+bool projectRtcpBrowser(const rtcp_browser::Query& query,
+                        rtcp_browser::StateView& view) {
+    return remoteBrowser.view(query, view);
+}
+
+void closeRtcpBrowser() { remoteBrowser.cancel(); }
+
+uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
+    using rtcp_browser::Operation;
+    uint8_t error = remoteBrowser.execute(command, millis());
+    if (error != rtcp_browser::success) return error;
+    if (command.operation != Operation::play &&
+        command.operation != Operation::add_favorite) return error;
+    char name[MAX_NAME_LENGTH]{}, url[MAX_URL_LENGTH]{};
+    StationCodec codec = STATION_CODEC_MP3;
+    if (!remoteBrowser.takePlay(command.token, name, sizeof name,
+                                url, sizeof url, codec))
+        return rtcp_browser::stale;
+    if (command.operation == Operation::add_favorite) {
+        if (stationManager.isFavorite(url)) return rtcp_catalog::already_present;
+        if (stationManager.getFavoriteCount() >= MAX_FAVORITES)
+            return rtcp_catalog::capacity_full;
+        return stationManager.addToFavorites(name, url, codec)
+            ? rtcp_browser::success : rtcp_browser::execution_failed;
+    }
+    remoteBrowser.cancel();
+    const bool played = playDiscoveredStation(name, url, codec, false);
+    publishRtcpProjection();
+    return played ? rtcp_browser::success : rtcp_browser::execution_failed;
+}
+
 // ============================================
 // Main Loop
 // ============================================
@@ -638,6 +677,7 @@ void loop() {
     // Drain framework events on the application task before serving web
     // requests, so status/IP diagnostics cannot expose stale connection data.
     wifiManager.update();
+    remoteBrowser.poll(millis());
     // Publish a copied, fixed-size D-009 view from the application owner.
     // RTCP request handling never reads UI/browser state or allocates metadata.
     publishRtcpProjection();
@@ -1072,6 +1112,9 @@ bool playDiscoveredStation(const char* name, const char* url, StationCodec codec
 
 // ---- Letter (alphabet-first country navigation) ----
 void enterBrowseLetter() {
+    // Physical TUNER navigation has priority. It owns a separate browser
+    // session and never moves the REMOTE cursor or display state.
+    remoteBrowser.cancel();
     // Stop any currently-playing station before making a browse-mode
     // network call. Running an ongoing audio stream (its own open
     // connection, possibly HTTPS/TLS) at the same time as this HTTPS

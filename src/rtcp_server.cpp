@@ -143,6 +143,8 @@ void Server::closeClient(CloseReason reason) {
     btx_mailbox_.clear(); btx_session_.clear();
     source_mailbox_.clear();
     catalog_mailbox_.clear();
+    browser_mailbox_.clear();
+    if (browser_close_owner_) browser_close_owner_();
     state_ = enabled_ ? State::listening : State::disabled;
 }
 void Server::acceptClient() {
@@ -153,6 +155,7 @@ void Server::acceptClient() {
     btx_mailbox_.clear(); btx_session_.clear();
     source_mailbox_.clear();
     catalog_mailbox_.clear();
+    browser_mailbox_.clear();
     diagnostics_.accepted(freeInternal(), largestInternal());
     deadline_ms_ = millis() + 3000; state_ = State::client_hello;
 }
@@ -227,7 +230,7 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         // The suffix is inside the existing bounded identity text. Legacy
         // clients accept and ignore it; new clients use it only to decide
         // whether it is safe to send the separately negotiated ID 16 probe.
-        return ccm_wire::identity(FIRMWARE_VERSION "+fc3", out, cap);
+        return ccm_wire::identity(FIRMWARE_VERSION "+fc4", out, cap);
     if (p[0] == kCapabilityRequest && n == 1) {
         const rtcp_btx::CapabilityReply reply = btx_session_.capabilityRequest();
         if (reply == rtcp_btx::CapabilityReply::legacy)
@@ -365,6 +368,25 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         catalog_started_us_ = micros();
         return kDeferredResponse;
     }
+    if (p[0] == rtcp_browser::kStateRequest && n == 14 &&
+        btx_session_.negotiated() && browser_owner_) {
+        if (sample_sequence_ == UINT64_MAX) return 0;
+        rtcp_browser::Query query{};
+        rtcp_browser::StateView view{};
+        if (!rtcp_browser::parseQuery(p, n, query) ||
+            !browser_owner_(query, view)) return 0;
+        return rtcp_browser::state(view, ++sample_sequence_, out, cap);
+    }
+    if (p[0] == rtcp_browser::kCommandRequest && n == 29 &&
+        btx_session_.negotiated() && browser_command_owner_) {
+        rtcp_browser::Command command{};
+        if (!rtcp_browser::parseCommand(p, n, command)) return 0;
+        if (!browser_mailbox_.put(command))
+            return ccm_wire::result(command.request, false,
+                                    rtcp_browser::busy, out, cap);
+        browser_started_us_ = micros();
+        return kDeferredResponse;
+    }
     return 0;
 }
 bool Server::processRecord(AudioPlayer& audio) {
@@ -500,6 +522,23 @@ bool Server::serviceCatalog() {
     deadline_ms_ = millis() + 5000;
     return sent;
 }
+bool Server::serviceBrowser() {
+    rtcp_browser::Command command{};
+    if (!browser_mailbox_.take(command)) return true;
+    const uint8_t error = browser_command_owner_
+        ? browser_command_owner_(command) : rtcp_browser::internal;
+    uint8_t response[11]{};
+    const size_t response_size = ccm_wire::result(
+        command.request, error == rtcp_browser::success, error,
+        response, sizeof response);
+    const bool sent = response_size && sendApplication(response, response_size);
+    timing_.lastResponseUs = micros() - browser_started_us_;
+    if (timing_.lastResponseUs > timing_.maxResponseUs)
+        timing_.maxResponseUs = timing_.lastResponseUs;
+    memset(response, 0, sizeof response);
+    deadline_ms_ = millis() + 5000;
+    return sent;
+}
 void Server::poll(AudioPlayer& audio) {
     const bool wifi_connected = WiFi.status() == WL_CONNECTED;
     discovery_.poll(enabled_ && wifi_connected, millis());
@@ -516,7 +555,8 @@ void Server::poll(AudioPlayer& audio) {
     const bool playback_ok = ok && state_ == State::records ? servicePlayback() : ok;
     const bool bluetooth_ok = playback_ok && state_ == State::records ? serviceBluetooth() : playback_ok;
     const bool source_ok = bluetooth_ok && state_ == State::records ? serviceSource(audio) : bluetooth_ok;
-    const bool owner_ok = source_ok && state_ == State::records ? serviceCatalog() : source_ok;
+    const bool catalog_ok = source_ok && state_ == State::records ? serviceCatalog() : source_ok;
+    const bool owner_ok = catalog_ok && state_ == State::records ? serviceBrowser() : catalog_ok;
     if (!owner_ok) {
         CloseReason reason = diagnostics_.close_reason;
         if (reason == CloseReason::none)
