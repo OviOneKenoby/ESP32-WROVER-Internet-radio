@@ -51,6 +51,9 @@ int main() {
     assert(admit(command, 4, 7, Stage::genres, Status::loading, 2, false).error == busy);
     command.token = 3;
     assert(admit(command, 4, 7, Stage::genres, Status::ready, 2, false).error == invalid_argument);
+    command.operation = Operation::select_country;
+    command.token = 37; // Opaque index into the complete country catalog.
+    assert(admit(command, 4, 7, Stage::countries, Status::ready, 2, false).error == success);
 
     std::memset(command_bytes, 0, sizeof command_bytes);
     command_bytes[0] = kCommandRequest; command_bytes[8] = 2;

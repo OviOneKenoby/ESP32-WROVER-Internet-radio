@@ -204,7 +204,9 @@ Decision admit(const Command& command, uint64_t generation, uint64_t revision,
     const bool any = command.token == kAnyToken;
     switch (command.operation) {
     case Operation::select_country:
-        if (stage != Stage::countries || (!any && command.token >= count))
+        // Country tokens are opaque indices into the complete bounded
+        // TUNER catalog; a filtered page's visible count can be smaller.
+        if (stage != Stage::countries)
             return decision;
         break;
     case Operation::select_name:
