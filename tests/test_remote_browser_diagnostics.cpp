@@ -11,5 +11,45 @@ int main() {
     assert(value.start_requests == UINT32_MAX);
     assert(sizeof(RemoteBrowserDiagnostics) == 56);
     assert(uint8_t(RemoteBrowserCancelReason::rtcp_closed) == 3);
+
+    // Successful START followed by a page response.
+    value.start_requests = 1;
+    value.start_results = 1;
+    value.page_queries = 1;
+    value.pages_produced = 1;
+    value.jobs_completed = 1;
+    value.generation = 7;
+    value.revision = 4;
+    value.active = 1;
+    value.job = 0;
+    value.status = 2;
+    value.error = 0;
+    assert(value.start_requests == value.start_results);
+    assert(value.page_queries == value.pages_produced);
+    assert(value.jobs_completed == 1 && value.jobs_failed == 0);
+
+    // Loading, empty completion, HTTPS failure, timeout and cancellation are
+    // retained as bounded state/counters without packet or credential data.
+    value.job = 1;
+    value.status = 1;
+    assert(value.job == 1 && value.status == 1);
+    value.job = 0;
+    value.status = 2;
+    value.error = 0;
+    assert(value.pages_produced == 1 && value.error == 0);
+    RemoteBrowserDiagnostics::increment(value.jobs_failed);
+    value.status = 3;
+    value.error = 7;
+    assert(value.jobs_failed == 1 && value.status == 3 && value.error == 7);
+    RemoteBrowserDiagnostics::increment(value.jobs_failed);
+    value.error = 8;
+    assert(value.jobs_failed == 2 && value.error == 8);
+    RemoteBrowserDiagnostics::increment(value.cancellations);
+    value.cancel_reason = RemoteBrowserCancelReason::rtcp_closed;
+    value.active = 0;
+    value.job = 0;
+    assert(value.cancellations == 1 &&
+           value.cancel_reason == RemoteBrowserCancelReason::rtcp_closed);
+    assert(value.active == 0 && value.job == 0);
     std::puts("REMOTE browser diagnostics: PASS");
 }
