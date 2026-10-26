@@ -1,6 +1,6 @@
 # REMOTE Full Control — TUNER Protocol and Ownership Record
 
-Status: **offline partial implementation; Radio Browser blocked**  
+Status: **Milestone 5 complete offline; hardware validation pending**
 Binding product behavior: REMOTE repository
 `docs/REMOTE_FULL_CONTROL_SPEC.md`
 
@@ -31,6 +31,7 @@ optional Full Control safely:
 - `+fc1`: source switching, version 1.0;
 - `+fc2`: read-only canonical menu projection, version 1.1;
 - `+fc3`: bounded station catalogs, version 1.2.
+- `+fc4`: bounded cooperative Radio Browser, version 1.3.
 
 Legacy clients ignore the identity text and never send optional records.
 
@@ -48,6 +49,9 @@ Legacy clients ignore the identity text and never send optional records.
 | 23 | REMOTE -> TUNER | Catalog collection/offset/limit query, 5 bytes |
 | 24 | TUNER -> REMOTE | Catalog page, at most 288 bytes |
 | 25 | REMOTE -> TUNER | Correlated semantic catalog command, 21 bytes |
+| 26 | REMOTE -> TUNER | Browser stage/page/filter/generation request, 14 bytes |
+| 27 | TUNER -> REMOTE | Browser state/page with at most five items, at most 296 bytes |
+| 28 | REMOTE -> TUNER | Correlated browser command with generation/revision fence, 29 bytes |
 
 Command completion reuses correlated result ID 8. Catalog errors 8 and 9 are
 the bounded already-present and full results; existing meanings 1-7 remain
@@ -80,7 +84,31 @@ the restartable Bluetooth cleanup and returns to Station Select without
 resuming a station. Same-source selection is idempotent. Physical source/menu
 changes are published without forcing REMOTE navigation.
 
-## Memory decisions
+## Radio Browser execution and memory
+
+The existing physical TUNER browser remains independent. REMOTE Browser work
+uses `RemoteBrowser`, a cooperative `esp_http_client` service polled from the
+application loop. It never enters `StationBrowser::httpsGetJsonOnce()`, never
+stops audio and never creates a new task. HTTPS verifies against the pinned
+Arduino certificate bundle. Each job has a 30-second absolute deadline and at
+most two mirror attempts.
+
+The response body is capped at 32 KiB and the body, JSON document and retained
+catalog arrays require PSRAM with no internal-RAM fallback. Catalog limits are
+250 countries, 40 genres and 20 station results. Wire pages expose at most five
+validated 48-byte labels and opaque catalog tokens; URLs remain TUNER-local.
+Session generation and browser revision reject stale queries and mutations.
+Disconnect, REMOTE cancel/exit/filter replacement, and physical TUNER browser
+entry cancel or invalidate work. The one-slot command mailbox and correlated
+result ID 8 preserve no-retry/no-replay behavior.
+
+The REMOTE filter order is Country (Any/A-Z), Name (Popular/A-Z), Genre
+(Any/list), Results. Browser operations are start, select country, select name,
+select genre, play, add-to-Favorites and cancel. Play and Favorites mutations
+execute on the TUNER application loop and remain fenced against physical TUNER
+activity.
+
+## Other memory decisions
 
 Catalog wire objects, projection windows and mailbox storage are fixed-size.
 Responses remain within the existing 512-byte plaintext bound. StationManager
@@ -88,43 +116,33 @@ continues using its verified lifetime PSRAM record block; no collection is
 duplicated into permanent internal RAM. Runtime DMA headroom is not inferred
 from the static build result and remains a hardware-validation requirement.
 
-## Radio Browser blocker
-
-`StationBrowser::httpsGetJsonOnce()` in `src/browser.cpp` is synchronous on the
-application loop, configures 20-second connect and read timeouts, buffers the
-whole body in `StreamString`, then performs dynamic JSON deserialization. RTCP
-response deadlines are 5 seconds in `src/rtcp_server.cpp`. The platform also
-has verified internal-memory low-water marks near 1-2 KiB.
-
-There is no verified cancellation or cooperative Browser job. Therefore no
-Browser message or command is implemented or advertised. Resolving this block
-requires a bounded cooperative ownership design, stale-result handling,
-memory proof and long-HTTPS/RTCP coexistence tests. A new large-stack task must
-not be added without evidence.
-
 ## Verification checkpoint
 
-Implementation commit:
-`c217275262266b709a244870dd0f317ce135fdab`.
+Milestone 5 implementation commits:
+`bfcd2574bdf4d221eb96c26fe1444b82c9bcc096` and
+`e51e39db9ab4b6e8ba7c6497765393d39a05c594`.
 
-- Full-Control source/menu model: PASS.
-- Catalog model: PASS.
-- D-009: PASS, 23/23.
-- BTX: PASS, 46/46.
-- StationManager PSRAM: PASS, 62/62.
+- Browser protocol model: PASS; cooperative Browser policy: PASS, 9/9.
+- D-009 integration policy: PASS, 12/12; BTX integration policy: PASS, 21/21;
+  StationManager PSRAM policy: PASS, 16/16.
+- Previously passing unchanged Full-Control, catalog, D-009 (23/23), BTX
+  (46/46) and StationManager PSRAM (62/62) evidence remains applicable.
 - Production environment `esp32-lwip-psram`: PASS.
-- Static RAM: 79,264 / 327,680 bytes.
-- Linked flash: 2,072,557 / 3,145,728 bytes.
-- BIN: 2,079,136 bytes; SHA-256
-  `7749b1f0f819773c2ee18e964115cbea55ccefa6aa92e388d5e06b31deaf2315`.
-- ELF: 30,428,856 bytes; SHA-256
-  `ab5c1b58bae98baaba0d617fd87ac3a41e8db666b2586572fea1b1df439a19d0`.
-- Exact-image slot headroom: 1,066,592 bytes.
+- Static RAM: 79,928 / 327,680 bytes.
+- Linked flash: 2,121,041 / 3,145,728 bytes.
+- BIN: 2,127,616 bytes; SHA-256
+  `4d68d01fd3ccaffbd463c6ff310e54d16bb42d2e9e102426384cf1d4b63e8e6d`.
+- ELF: 31,124,020 bytes; SHA-256
+  `f77bc0dea52af9328d305ec88ab221f3c7ad39d4861fe757e49825b61bca3020`.
+- Exact-image slot headroom: 1,018,112 bytes.
 - Hardware: NOT TESTED; no device was accessed.
 
 Installation must be separately authorized. A safe staged hardware procedure
 installs TUNER first, verifies legacy D-009/BTX behavior, then installs REMOTE
-and validates source, lists, mutations, concurrency, sleep/wake and reconnect.
+and validates source, lists, browser filters/paging/play/Favorites, slow-HTTPS
+RTCP/audio coexistence, physical-control priority, cancellation, disconnect,
+sleep/wake and reconnect. Runtime internal/DMA and PSRAM low-water evidence is
+mandatory; static build numbers do not establish runtime safety.
 Rollback artifacts must be verified before either write. The installed TUNER
 rollback is implementation `dbf9896`, 2,072,416 bytes, SHA-256
 `6f02cdfd1576831a5d4a40f54eff88dcc3960fcdf72545d0909b0525cbceabf6`.

@@ -1,5 +1,32 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-26 - Full Control Milestone 5 cooperative Radio Browser
+
+Replaced the unsafe RTCP integration prospect—not the existing physical TUNER
+browser—with a separate cooperative Radio Browser service. Full-Control 1.3
+(`+fc4`) adds authenticated IDs 26-28 for bounded five-item state pages and
+revision-fenced semantic start/filter/play/add-Favorites/cancel commands. The
+service uses asynchronous `esp_http_client`, verified TLS, a 30-second absolute
+deadline, at most two mirrors and fixed catalog limits. Its 32 KiB response,
+JSON document and catalog storage are PSRAM-only with no internal-RAM fallback.
+It neither stops playback nor creates a new task, and disconnect, cancellation,
+filter replacement and physical TUNER browser entry invalidate stale work.
+
+Browser protocol and cooperative-policy tests pass, as do the affected D-009,
+BTX and StationManager integration policies. Production source commits are
+`bfcd2574bdf4d221eb96c26fe1444b82c9bcc096` and
+`e51e39db9ab4b6e8ba7c6497765393d39a05c594`. The pinned
+`esp32-lwip-psram` build passes: BIN 2,127,616 bytes, SHA-256
+`4d68d01fd3ccaffbd463c6ff310e54d16bb42d2e9e102426384cf1d4b63e8e6d`;
+ELF 31,124,020 bytes, SHA-256
+`f77bc0dea52af9328d305ec88ab221f3c7ad39d4861fe757e49825b61bca3020`;
+79,928 bytes static RAM and 1,018,112 bytes exact-image slot headroom.
+
+This is offline verification only. Runtime internal/DMA and PSRAM low-water
+behavior, slow-HTTPS coexistence with audio/RTCP/HTTP, physical-control
+responsiveness and all owner UX flows remain hardware-pending. No device was
+accessed.
+
 ## 2026-10-26 - Full Control independent navigation clarification
 
 Recorded the approved architecture: REMOTE navigation does not drive the
