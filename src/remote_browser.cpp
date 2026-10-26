@@ -44,7 +44,7 @@ void RemoteBrowserService::advanceRevision() {
 }
 
 bool RemoteBrowserService::start(uint32_t now_ms) {
-    cancel();
+    cancel(RemoteBrowserCancelReason::restart);
     if (WiFi.status() != WL_CONNECTED || !allocateStorage()) return false;
     if (generation_ != UINT64_MAX) ++generation_; else generation_ = 1;
     if (!generation_) generation_ = 1;
@@ -54,6 +54,9 @@ bool RemoteBrowserService::start(uint32_t now_ms) {
     country_error_ = genre_error_ = result_error_ = 0;
     selected_country_ = selected_genre_ = rtcp_browser::kAnyToken;
     selected_name_ = 0;
+    diagnostics_.active = 1;
+    diagnostics_.generation = generation_;
+    diagnostics_.revision = revision_;
     return beginJob(Job::countries,
         "/json/countries?order=name&fields=name,iso_3166_1", now_ms);
 }
@@ -63,11 +66,20 @@ void RemoteBrowserService::releaseHttp() {
     body_size_ = 0; body_overflow_ = false;
 }
 
-void RemoteBrowserService::cancel() {
+void RemoteBrowserService::cancel(RemoteBrowserCancelReason reason) {
+    if (active_ || job_ != Job::none) {
+        RemoteBrowserDiagnostics::increment(diagnostics_.cancellations);
+        diagnostics_.cancel_reason = reason;
+    }
     releaseHttp(); job_ = Job::none;
     country_status_ = genre_status_ = result_status_ = rtcp_browser::Status::idle;
     country_count_ = 0; genre_count_ = result_count_ = 0;
     active_ = false; revision_ = 0;
+    diagnostics_.active = 0;
+    diagnostics_.job = 0;
+    diagnostics_.status = uint8_t(rtcp_browser::Status::idle);
+    diagnostics_.error = 0;
+    diagnostics_.revision = 0;
 }
 
 esp_err_t RemoteBrowserService::onHttpEvent(esp_http_client_event_t* event) {
@@ -106,6 +118,9 @@ bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) 
     if (!path || std::strlen(path) >= sizeof path_) return false;
     if (path != path_) std::strcpy(path_, path);
     job_ = job; mirror_ = 0;
+    diagnostics_.job = uint8_t(job_);
+    diagnostics_.status = uint8_t(rtcp_browser::Status::loading);
+    diagnostics_.error = 0;
     if (!beginMirror(now_ms)) { finishJob(false, rtcp_browser::internal); return false; }
     return true;
 }
@@ -120,7 +135,13 @@ void RemoteBrowserService::finishJob(bool success, uint8_t error) {
     *status = success ? (count ? rtcp_browser::Status::ready : rtcp_browser::Status::empty)
                       : rtcp_browser::Status::failed;
     *target_error = success ? 0 : error;
+    RemoteBrowserDiagnostics::increment(success ? diagnostics_.jobs_completed
+                                                : diagnostics_.jobs_failed);
+    diagnostics_.status = uint8_t(*status);
+    diagnostics_.error = *target_error;
     releaseHttp(); job_ = Job::none; advanceRevision();
+    diagnostics_.job = 0;
+    diagnostics_.revision = revision_;
 }
 
 bool RemoteBrowserService::parseJob() {
@@ -196,10 +217,20 @@ bool RemoteBrowserService::encode(const char* input, char* output, size_t capaci
 
 uint8_t RemoteBrowserService::execute(const rtcp_browser::Command& command, uint32_t now_ms) {
     using namespace rtcp_browser;
-    if (command.operation == Operation::start)
-        return start(now_ms) ? success : unavailable;
+    if (command.operation == Operation::start) {
+        RemoteBrowserDiagnostics::increment(diagnostics_.start_requests);
+        const uint8_t result = start(now_ms) ? success : unavailable;
+        RemoteBrowserDiagnostics::increment(diagnostics_.start_results);
+        diagnostics_.active = active_;
+        diagnostics_.generation = generation_;
+        diagnostics_.revision = revision_;
+        return result;
+    }
     if (!active_ || command.expected_generation != generation_) return stale;
-    if (command.operation == Operation::cancel) { cancel(); return success; }
+    if (command.operation == Operation::cancel) {
+        cancel(RemoteBrowserCancelReason::remote_command);
+        return success;
+    }
     if (command.expected_revision != revision_) return stale;
     if (job_ != Job::none) return busy;
     if (command.operation == Operation::select_country) {
@@ -243,6 +274,7 @@ bool RemoteBrowserService::takePlay(uint16_t token, char* name, size_t name_size
 bool RemoteBrowserService::view(const rtcp_browser::Query& query,
                                 rtcp_browser::StateView& out) const {
     using namespace rtcp_browser;
+    RemoteBrowserDiagnostics::increment(diagnostics_.page_queries);
     if (!active_ || (query.generation && query.generation != generation_)) return false;
     out = {}; out.stage = query.stage; out.generation = generation_; out.revision = revision_;
     const char* current = audioPlayer.getCurrentURL();
@@ -273,6 +305,22 @@ bool RemoteBrowserService::view(const rtcp_browser::Query& query,
             out.items[i].token=token;out.items[i].active=current&&current[0]&&strcmp(current,results_[token].url)==0;
             out.items[i].name=results_[token].name;}
     }
+    RemoteBrowserDiagnostics::increment(diagnostics_.pages_produced);
+    diagnostics_.active = active_;
+    diagnostics_.job = uint8_t(job_);
+    diagnostics_.status = uint8_t(out.status);
+    diagnostics_.error = out.error;
+    diagnostics_.generation = generation_;
+    diagnostics_.revision = revision_;
     return true;
+}
+
+RemoteBrowserDiagnostics RemoteBrowserService::diagnostics() const {
+    auto value = diagnostics_;
+    value.active = active_;
+    value.job = uint8_t(job_);
+    value.generation = generation_;
+    value.revision = revision_;
+    return value;
 }
 

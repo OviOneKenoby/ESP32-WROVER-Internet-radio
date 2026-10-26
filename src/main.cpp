@@ -628,7 +628,9 @@ bool projectRtcpBrowser(const rtcp_browser::Query& query,
     return remoteBrowser.view(query, view);
 }
 
-void closeRtcpBrowser() { remoteBrowser.cancel(); }
+void closeRtcpBrowser() {
+    remoteBrowser.cancel(RemoteBrowserCancelReason::rtcp_closed);
+}
 
 uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
     using rtcp_browser::Operation;
@@ -648,7 +650,7 @@ uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
         return stationManager.addToFavorites(name, url, codec)
             ? rtcp_browser::success : rtcp_browser::execution_failed;
     }
-    remoteBrowser.cancel();
+    remoteBrowser.cancel(RemoteBrowserCancelReason::playback_started);
     const bool played = playDiscoveredStation(name, url, codec, false);
     publishRtcpProjection();
     return played ? rtcp_browser::success : rtcp_browser::execution_failed;
@@ -1114,7 +1116,7 @@ bool playDiscoveredStation(const char* name, const char* url, StationCodec codec
 void enterBrowseLetter() {
     // Physical TUNER navigation has priority. It owns a separate browser
     // session and never moves the REMOTE cursor or display state.
-    remoteBrowser.cancel();
+    remoteBrowser.cancel(RemoteBrowserCancelReason::physical_navigation);
     // Stop any currently-playing station before making a browse-mode
     // network call. Running an ongoing audio stream (its own open
     // connection, possibly HTTPS/TLS) at the same time as this HTTPS

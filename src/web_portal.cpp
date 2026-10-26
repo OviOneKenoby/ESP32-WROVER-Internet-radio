@@ -7,6 +7,7 @@
 #include "system_info.h"
 #include "correctness_guards.h"
 #include "rtcp_server.h"
+#include "remote_browser.h"
 #include "diagnostics_psram_allocator.h"
 #include <ArduinoJson.h>
 #include <WiFi.h>
@@ -159,6 +160,8 @@ void WebPortal::handleDiagnostics() {
     doc["uptime_ms"] = millis();
     const auto rtcpTiming = rtcpServer.timing();
     const auto& rtcpDiscovery = rtcpServer.discoveryDiagnostics();
+    const auto rtcpDiagnostic = rtcpServer.diagnostics();
+    const auto browserDiagnostic = remoteBrowser.diagnostics();
     doc["rtcp_mdns_active"] = rtcpDiscovery.active;
     doc["rtcp_mdns_starts"] = rtcpDiscovery.starts;
     doc["rtcp_mdns_stops"] = rtcpDiscovery.stops;
@@ -168,6 +171,23 @@ void WebPortal::handleDiagnostics() {
     doc["rtcp_max_apply_us"] = rtcpTiming.maxApplyUs;
     doc["rtcp_last_response_us"] = rtcpTiming.lastResponseUs;
     doc["rtcp_max_response_us"] = rtcpTiming.maxResponseUs;
+    doc["rtcp_connections"] = rtcpDiagnostic.connections;
+    doc["rtcp_closes"] = rtcpDiagnostic.closes;
+    doc["rtcp_close_reason"] = uint8_t(rtcpDiagnostic.close_reason);
+    doc["browser_start_requests"] = browserDiagnostic.start_requests;
+    doc["browser_start_results"] = browserDiagnostic.start_results;
+    doc["browser_page_queries"] = browserDiagnostic.page_queries;
+    doc["browser_pages_produced"] = browserDiagnostic.pages_produced;
+    doc["browser_jobs_completed"] = browserDiagnostic.jobs_completed;
+    doc["browser_jobs_failed"] = browserDiagnostic.jobs_failed;
+    doc["browser_cancellations"] = browserDiagnostic.cancellations;
+    doc["browser_generation"] = browserDiagnostic.generation;
+    doc["browser_revision"] = browserDiagnostic.revision;
+    doc["browser_active"] = browserDiagnostic.active;
+    doc["browser_job"] = browserDiagnostic.job;
+    doc["browser_status"] = browserDiagnostic.status;
+    doc["browser_error"] = browserDiagnostic.error;
+    doc["browser_cancel_reason"] = uint8_t(browserDiagnostic.cancel_reason);
     doc["reset_reason"] = SystemInfo::resetReasonName(esp_reset_reason());
     doc["free_internal_heap"] = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     doc["largest_internal_heap_block"] = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);

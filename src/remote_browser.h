@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "rtcp_browser.h"
+#include "remote_browser_diagnostics.h"
 #include "station_codec.h"
 #include <ArduinoJson.h>
 #include <esp_http_client.h>
@@ -12,7 +13,7 @@ class RemoteBrowserService {
 public:
     bool start(uint32_t now_ms);
     void poll(uint32_t now_ms);
-    void cancel();
+    void cancel(RemoteBrowserCancelReason reason = RemoteBrowserCancelReason::remote_command);
     bool view(const rtcp_browser::Query& query, rtcp_browser::StateView& out) const;
     uint8_t execute(const rtcp_browser::Command& command, uint32_t now_ms);
     bool takePlay(uint16_t token, char* name, size_t name_size,
@@ -20,6 +21,7 @@ public:
     uint64_t generation() const { return generation_; }
     uint64_t revision() const { return revision_; }
     bool active() const { return active_; }
+    RemoteBrowserDiagnostics diagnostics() const;
 
 private:
     struct PsramAllocator final : ArduinoJson::Allocator {
@@ -47,6 +49,7 @@ private:
     Job job_{Job::none}; esp_http_client_handle_t client_{nullptr};
     uint32_t job_deadline_ms_{0}; uint8_t mirror_{0}; bool body_overflow_{false};
     char path_[512]{};
+    mutable RemoteBrowserDiagnostics diagnostics_{};
 
     static esp_err_t onHttpEvent(esp_http_client_event_t* event);
     bool allocateStorage(); void releaseHttp();
