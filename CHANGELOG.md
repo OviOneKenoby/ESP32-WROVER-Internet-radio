@@ -1,5 +1,42 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-26 - Full Control independent navigation clarification
+
+Recorded the approved architecture: REMOTE navigation does not drive the
+physical TUNER cursor or e-paper menu. The canonical menu projection remains
+read-only/informational and both interfaces remain independently usable.
+Source, playback, active station, metadata, volume and catalog mutations remain
+TUNER-authoritative; mutations retain revision fencing and no-replay behavior.
+No firmware behavior changed for this clarification.
+
+## 2026-10-25 - REMOTE Full Control station catalogs; Browser risk gate
+
+Added capability-negotiated Full-Control 1.2 (`+fc3`) bounded station catalogs
+for Saved Stations, Favorites and Recent. Authenticated IDs 23-25 provide
+five-item/48-byte-name pages and semantic play, remove and add-favorite
+operations; stream URLs never cross RTCP. A fixed one-slot main-loop mailbox,
+catalog revision fencing, sanitized bounded results and disconnect cleanup
+preserve physical-control priority and prevent replay. Existing StationManager
+capacities, ordering, NVS namespaces and serialized records are unchanged.
+
+Focused catalog and Full-Control models pass, as do D-009 (23/23), BTX (46/46)
+and StationManager PSRAM (62/62) regressions. The final pinned
+`esp32-lwip-psram` build passes with 79,264 bytes static RAM and 2,072,557 bytes
+linked flash. The 2,079,136-byte BIN has SHA-256
+`7749b1f0f819773c2ee18e964115cbea55ccefa6aa92e388d5e06b31deaf2315`;
+the 30,428,856-byte ELF has SHA-256
+`ab5c1b58bae98baaba0d617fd87ac3a41e8db666b2586572fea1b1df439a19d0`.
+Exact-image application-slot headroom is 1,066,592 bytes.
+
+Radio Browser is explicitly **BLOCKED**, not silently reduced. Its existing
+`StationBrowser::httpsGetJsonOnce()` executes on the main loop with 20-second
+connect/read timeouts, whole-body `StreamString` buffering and dynamic JSON
+deserialization. Direct RTCP exposure would conflict with 5-second RTCP
+deadlines and the verified constrained internal-memory envelope. No Browser
+protocol or command is advertised. A bounded cooperative job and measured
+memory/RTCP coexistence are required before that milestone can proceed. No
+hardware was accessed.
+
 ## 2026-10-25 - REMOTE Full Control milestone 2 read-only projection (offline)
 
 Added capability-negotiated, authenticated read-only projection of the

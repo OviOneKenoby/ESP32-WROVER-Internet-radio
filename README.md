@@ -9,6 +9,10 @@ OpenAI's ChatGPT/Codex coding assistant. The project owner defined the
 hardware and feature requirements, assembled and flashed the device, and
 performed the real-hardware testing and validation that informed each change.
 
+The current authenticated REMOTE Full Control protocol, ownership rules,
+offline verification and Radio Browser blocker are recorded in
+[REMOTE_FULL_CONTROL_PROTOCOL.md](REMOTE_FULL_CONTROL_PROTOCOL.md).
+
 ## Features
 
 ✅ **Internet Radio Streaming** - Play online radio stations with HTTP streaming
