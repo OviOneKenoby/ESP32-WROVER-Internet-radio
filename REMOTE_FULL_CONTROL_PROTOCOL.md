@@ -125,4 +125,12 @@ Implementation commit:
 Installation must be separately authorized. A safe staged hardware procedure
 installs TUNER first, verifies legacy D-009/BTX behavior, then installs REMOTE
 and validates source, lists, mutations, concurrency, sleep/wake and reconnect.
-Rollback artifacts must be verified before either write.
+Rollback artifacts must be verified before either write. The installed TUNER
+rollback is implementation `dbf9896`, 2,072,416 bytes, SHA-256
+`6f02cdfd1576831a5d4a40f54eff88dcc3960fcdf72545d0909b0525cbceabf6`.
+The installed REMOTE rollback is implementation `596cb71`, 2,583,008 bytes,
+SHA-256
+`fad87bb2f50142f3758945c5a2276a2535008aec4f32a5ec29f021faa95f3b3f`, with
+its verified full 16 MiB backup. A separately authorized rollback restores
+REMOTE first, then TUNER, application-only with independent readback; it never
+touches NVS, pairing, bootloaders or partition tables.
