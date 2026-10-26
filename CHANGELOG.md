@@ -1,5 +1,27 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-26 - Full Control Browser lifecycle diagnostics
+
+Added a fixed 56-byte, secret-free `RemoteBrowserDiagnostics` record to the
+existing cooperative Browser service. It exposes saturating START request/result,
+page query/production, job completion/failure and cancellation counters plus
+current generation, revision, active job/status/error and a bounded cancellation
+reason. Existing `/api/diagnostics` also exposes the already-maintained RTCP
+connection/close reason needed to correlate a single reproduction. No packet,
+URL, credential or station payload is retained; no dynamic diagnostic
+allocation, task, timeout, protocol or Browser behavior changed.
+
+Focused lifecycle-state and saturation coverage passes, Browser policy passes
+13/13, and relevant Full Control, catalog, D-009, BTX and StationManager
+regressions pass. Production `esp32-lwip-psram` build at implementation commit
+`4fa198a` passes: BIN 2,129,472 bytes, SHA-256
+`5cb1ad29a26173d277772d5f798a1be32ff857a322e2f82bea1ce1ec704fbd68`;
+ELF 31,157,412 bytes, SHA-256
+`552d732c823044033666ce4d0d631d9288f0532aa14b66bd4b98db8b2c6756e0`;
+79,976 bytes static RAM and 1,016,256 bytes exact-image slot headroom. This is
+diagnostic-only and hardware reproduction remains pending; no device was
+accessed.
+
 ## 2026-10-26 - Full Control Milestone 5 cooperative Radio Browser
 
 Replaced the unsafe RTCP integration prospect—not the existing physical TUNER

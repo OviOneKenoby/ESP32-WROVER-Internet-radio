@@ -108,6 +108,26 @@ select genre, play, add-to-Favorites and cancel. Play and Favorites mutations
 execute on the TUNER application loop and remain fenced against physical TUNER
 activity.
 
+## Browser diagnostic fields
+
+The existing authenticated protocol is unchanged. Read-only
+`/api/diagnostics` adds fixed lifecycle evidence for one bounded reproduction:
+
+- `browser_start_requests`, `browser_start_results`;
+- `browser_page_queries`, `browser_pages_produced`;
+- `browser_jobs_completed`, `browser_jobs_failed`, `browser_cancellations`;
+- `browser_generation`, `browser_revision`;
+- `browser_active`, `browser_job`, `browser_status`, `browser_error`;
+- `browser_cancel_reason` (`0` none, `1` restart, `2` REMOTE command,
+  `3` RTCP closed, `4` playback started, `5` physical navigation);
+- existing `rtcp_connections`, `rtcp_closes`, `rtcp_close_reason` for session
+  correlation.
+
+All counters saturate and the record is exactly 56 bytes. It contains no URL,
+station text, packet bytes, identity, key or credential. The fields observe
+successful, loading, empty, failed, timed-out, cancelled and disconnected work;
+they do not alter job ownership, cancellation, deadlines or generation fences.
+
 ## Other memory decisions
 
 Catalog wire objects, projection windows and mailbox storage are fixed-size.
@@ -117,6 +137,17 @@ duplicated into permanent internal RAM. Runtime DMA headroom is not inferred
 from the static build result and remains a hardware-validation requirement.
 
 ## Verification checkpoint
+
+Targeted diagnostic implementation `4fa198a55422ff9ed938f9356c1b5443d6800e31`
+and test checkpoint `b3ed9e5` pass the focused diagnostic and relevant existing
+regressions. Production `esp32-lwip-psram` result: 2,129,472-byte BIN,
+SHA-256 `5cb1ad29a26173d277772d5f798a1be32ff857a322e2f82bea1ce1ec704fbd68`;
+31,157,412-byte ELF, SHA-256
+`552d732c823044033666ce4d0d631d9288f0532aa14b66bd4b98db8b2c6756e0`;
+79,976 bytes static RAM and 1,016,256 bytes exact-image slot headroom. Hardware
+reproduction remains pending.
+
+### Original Milestone 5 checkpoint
 
 Milestone 5 implementation commits:
 `bfcd2574bdf4d221eb96c26fe1444b82c9bcc096` and
