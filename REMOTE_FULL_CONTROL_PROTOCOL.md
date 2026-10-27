@@ -42,6 +42,20 @@ retest pending**. The original Browser `error 8` cause and FC-FAV-02 disconnect
 popup are **DIAGNOSTIC ONLY - more evidence required**. Browser retrieval must
 not be called fixed until an actual ESP32 HTTPS request succeeds.
 
+## 2026-10-28 version 1.4 stability extension
+
+Identity `+fc5`, minor version 4, capability revision 5 adds feature bit 32 for
+deferred catalog PLAY. A peer must advertise the bit before REMOTE sends PLAY.
+Existing command/result layouts are unchanged: success means bounded admission,
+not completed audio startup. Playback is confirmed only by a later
+authoritative observation. TUNER keeps one fixed pending slot, fences it by
+request/session/catalog revision, never replays it and cancels it on RTCP close
+or physical ownership change.
+
+Diagnostics additionally expose four retained socket-close records and bounded
+first/final ESP-TLS error categories. These fields do not change timeouts,
+retries, authentication, replay protection or Browser behavior.
+
 ## Authority and compatibility
 
 TUNER remains authoritative for source, playback, metadata, volume, station
@@ -65,6 +79,8 @@ optional Full Control safely:
 - `+fc2`: read-only canonical menu projection, version 1.1;
 - `+fc3`: bounded station catalogs, version 1.2.
 - `+fc4`: bounded cooperative Radio Browser, version 1.3.
+- `+fc5`: revision-fenced deferred catalog PLAY and stability evidence,
+  version 1.4.
 
 Legacy clients ignore the identity text and never send optional records.
 

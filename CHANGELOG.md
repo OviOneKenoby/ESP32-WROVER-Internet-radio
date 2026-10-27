@@ -1,5 +1,39 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-28 - Full Control stability corrections offline verified
+
+Added a fixed four-entry RTCP close-history ring. Each TUNER record retains
+uptime, accepted-session counter, server state, close reason, captured socket
+error, request type and failure stage before cleanup. This is diagnostic-only
+and does not claim the remaining transport instability is fixed.
+
+Catalog PLAY now uses one fixed deferred slot on the existing audio task.
+Admission remains authenticated and revision-fenced, while network open runs
+outside the RTCP/main-loop owner and playback mutex. The request is revalidated
+before commit; local physical actions, RTCP close or catalog revision change
+cancel it. It is never replayed, and success is confirmed by authoritative
+state. Full Control is version 1.4/revision 5, identity `+fc5`, with a dedicated
+deferred-play feature bit.
+
+Bluetooth playback state now gives AVRCP play-status authority, with A2DP state
+as fallback before AVRCP is observed. Source transition, disconnect and restart
+clear stale authority. Radio Browser now copies bounded system, mbedTLS,
+certificate and ESP error categories during `HTTP_EVENT_ERROR`, preserving
+first and final failures. This Browser change is diagnostic-only; HTTPS is not
+claimed fixed.
+
+Focused RTCP diagnostics (13 checks), Browser diagnostics, Full Control,
+deferred-start policy (7/7), Bluetooth authority, catalog, BTX (46/46), D-009
+(23/23) and integration-policy regressions pass. Production
+`esp32-lwip-psram` build at source
+`014185ab1e2e25ce590dc67833350a4de98fc77e` passes: BIN 2,135,376 bytes,
+SHA-256 `c33ec3b137f2ba21b8dbdead00dd962efe21bd5b343273f4c50d62ed133e273f`;
+ELF 31,249,148 bytes, SHA-256
+`16f3659d88a60065df00a7c687d841fc2f0d3eae07f7432e71cee656bdb1d1e4`;
+80,784 bytes static RAM, 2,128,793 bytes program usage and 1,010,352 bytes
+exact-image partition headroom. Embedded build ID is `014185ab1e2e`. Existing dependency
+warnings remain. No hardware was accessed or flashed.
+
 ## 2026-10-27 - Full Control HTTPS failure and command-timing diagnostics
 
 Corrected the confirmed Radio Browser deadline defect without changing network
