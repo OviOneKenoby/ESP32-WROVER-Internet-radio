@@ -498,6 +498,9 @@ bool Server::serviceSource(AudioPlayer& audio) {
         response, sizeof response);
     const bool sent = response_size && sendApplication(response, response_size);
     timing_.lastResponseUs = micros() - source_started_us_;
+    timing_.sourceLastResponseUs = timing_.lastResponseUs;
+    if (timing_.sourceLastResponseUs > timing_.sourceMaxResponseUs)
+        timing_.sourceMaxResponseUs = timing_.sourceLastResponseUs;
     if (timing_.lastResponseUs > timing_.maxResponseUs)
         timing_.maxResponseUs = timing_.lastResponseUs;
     memset(response, 0, sizeof response);
@@ -516,6 +519,9 @@ bool Server::serviceCatalog() {
         response, sizeof response);
     const bool sent = response_size && sendApplication(response, response_size);
     timing_.lastResponseUs = micros() - catalog_started_us_;
+    timing_.catalogLastResponseUs = timing_.lastResponseUs;
+    if (timing_.catalogLastResponseUs > timing_.catalogMaxResponseUs)
+        timing_.catalogMaxResponseUs = timing_.catalogLastResponseUs;
     if (timing_.lastResponseUs > timing_.maxResponseUs)
         timing_.maxResponseUs = timing_.lastResponseUs;
     memset(response, 0, sizeof response);
@@ -533,6 +539,9 @@ bool Server::serviceBrowser() {
         response, sizeof response);
     const bool sent = response_size && sendApplication(response, response_size);
     timing_.lastResponseUs = micros() - browser_started_us_;
+    timing_.browserLastResponseUs = timing_.lastResponseUs;
+    if (timing_.browserLastResponseUs > timing_.browserMaxResponseUs)
+        timing_.browserMaxResponseUs = timing_.browserLastResponseUs;
     if (timing_.lastResponseUs > timing_.maxResponseUs)
         timing_.maxResponseUs = timing_.lastResponseUs;
     memset(response, 0, sizeof response);

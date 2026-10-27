@@ -34,6 +34,12 @@ struct Timing {
     uint32_t maxApplyUs{0};
     uint32_t lastResponseUs{0};
     uint32_t maxResponseUs{0};
+    uint32_t sourceLastResponseUs{0};
+    uint32_t sourceMaxResponseUs{0};
+    uint32_t catalogLastResponseUs{0};
+    uint32_t catalogMaxResponseUs{0};
+    uint32_t browserLastResponseUs{0};
+    uint32_t browserMaxResponseUs{0};
 };
 
 // Reads an owner-provisioned pairing from the dedicated read-only NVS
