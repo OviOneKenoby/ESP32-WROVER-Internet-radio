@@ -47,14 +47,14 @@ private:
     uint16_t selected_genre_{rtcp_browser::kAnyToken};
     uint8_t selected_name_{0};
     Job job_{Job::none}; esp_http_client_handle_t client_{nullptr};
-    uint32_t job_deadline_ms_{0}; uint8_t mirror_{0}; bool body_overflow_{false};
+    uint32_t job_started_ms_{0}, job_deadline_ms_{0}; uint8_t mirror_{0}; bool body_overflow_{false};
     char path_[512]{};
     mutable RemoteBrowserDiagnostics diagnostics_{};
 
     static esp_err_t onHttpEvent(esp_http_client_event_t* event);
     bool allocateStorage(); void releaseHttp();
     bool beginJob(Job job, const char* path, uint32_t now_ms);
-    bool beginMirror(uint32_t now_ms);
+    bool beginMirror();
     bool parseJob(); void finishJob(bool success, uint8_t error);
     static bool encode(const char* input, char* output, size_t capacity);
     void advanceRevision();

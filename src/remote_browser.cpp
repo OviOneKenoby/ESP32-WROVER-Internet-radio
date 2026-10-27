@@ -84,8 +84,33 @@ void RemoteBrowserService::cancel(RemoteBrowserCancelReason reason) {
 
 esp_err_t RemoteBrowserService::onHttpEvent(esp_http_client_event_t* event) {
     auto* self = static_cast<RemoteBrowserService*>(event->user_data);
-    if (!self || event->event_id != HTTP_EVENT_ON_DATA || event->data_len <= 0)
-        return ESP_OK;
+    if (!self) return ESP_OK;
+    switch (event->event_id) {
+        case HTTP_EVENT_ERROR:
+            self->diagnostics_.transport_stage = RemoteBrowserTransportStage::event_error;
+            return ESP_OK;
+        case HTTP_EVENT_ON_CONNECTED:
+            self->diagnostics_.transport_stage = RemoteBrowserTransportStage::connected;
+            return ESP_OK;
+        case HTTP_EVENT_HEADERS_SENT:
+            self->diagnostics_.transport_stage = RemoteBrowserTransportStage::headers_sent;
+            return ESP_OK;
+        case HTTP_EVENT_ON_HEADER:
+            self->diagnostics_.transport_stage = RemoteBrowserTransportStage::header_received;
+            return ESP_OK;
+        case HTTP_EVENT_ON_FINISH:
+            self->diagnostics_.transport_stage = RemoteBrowserTransportStage::finished;
+            return ESP_OK;
+        case HTTP_EVENT_DISCONNECTED:
+            self->diagnostics_.transport_stage = RemoteBrowserTransportStage::disconnected;
+            return ESP_OK;
+        case HTTP_EVENT_ON_DATA:
+            self->diagnostics_.transport_stage = RemoteBrowserTransportStage::body_received;
+            break;
+        default:
+            return ESP_OK;
+    }
+    if (event->data_len <= 0) return ESP_OK;
     const size_t amount = size_t(event->data_len);
     if (!self->body_ || amount > kBodyCapacity - self->body_size_) {
         self->body_overflow_ = true;
@@ -96,7 +121,7 @@ esp_err_t RemoteBrowserService::onHttpEvent(esp_http_client_event_t* event) {
     return ESP_OK;
 }
 
-bool RemoteBrowserService::beginMirror(uint32_t now_ms) {
+bool RemoteBrowserService::beginMirror() {
     releaseHttp();
     char url[640]{};
     if (mirror_ >= RADIO_BROWSER_MIRROR_COUNT ||
@@ -110,7 +135,10 @@ bool RemoteBrowserService::beginMirror(uint32_t now_ms) {
     config.crt_bundle_attach = arduino_esp_crt_bundle_attach;
     config.buffer_size = 1024; config.buffer_size_tx = 512;
     client_ = esp_http_client_init(&config);
-    job_deadline_ms_ = now_ms + kJobDeadlineMs;
+    diagnostics_.mirror = mirror_;
+    diagnostics_.transport_stage = client_
+        ? RemoteBrowserTransportStage::client_initialized
+        : RemoteBrowserTransportStage::event_error;
     return client_ != nullptr;
 }
 
@@ -118,10 +146,22 @@ bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) 
     if (!path || std::strlen(path) >= sizeof path_) return false;
     if (path != path_) std::strcpy(path_, path);
     job_ = job; mirror_ = 0;
+    job_started_ms_ = now_ms;
+    job_deadline_ms_ = now_ms + kJobDeadlineMs;
     diagnostics_.job = uint8_t(job_);
     diagnostics_.status = uint8_t(rtcp_browser::Status::loading);
     diagnostics_.error = 0;
-    if (!beginMirror(now_ms)) { finishJob(false, rtcp_browser::internal); return false; }
+    diagnostics_.elapsed_ms = 0;
+    diagnostics_.transport_error = 0;
+    diagnostics_.first_transport_error = 0;
+    diagnostics_.http_status = 0;
+    diagnostics_.first_http_status = 0;
+    diagnostics_.tls_error = 0; // This pinned Arduino-IDF header exposes no safe client TLS-error getter.
+    diagnostics_.tls_flags = 0;
+    diagnostics_.deadline_expired = 0;
+    diagnostics_.first_failure_stage = RemoteBrowserTransportStage::idle;
+    diagnostics_.first_failure_mirror = 0;
+    if (!beginMirror()) { finishJob(false, rtcp_browser::internal); return false; }
     return true;
 }
 
@@ -139,6 +179,7 @@ void RemoteBrowserService::finishJob(bool success, uint8_t error) {
                                                 : diagnostics_.jobs_failed);
     diagnostics_.status = uint8_t(*status);
     diagnostics_.error = *target_error;
+    diagnostics_.elapsed_ms = millis() - job_started_ms_;
     releaseHttp(); job_ = Job::none; advanceRevision();
     diagnostics_.job = 0;
     diagnostics_.revision = revision_;
@@ -186,18 +227,48 @@ bool RemoteBrowserService::parseJob() {
 
 void RemoteBrowserService::poll(uint32_t now_ms) {
     if (job_ == Job::none || !client_) return;
-    if (WiFi.status() != WL_CONNECTED || int32_t(now_ms - job_deadline_ms_) >= 0) {
+    if (WiFi.status() != WL_CONNECTED) {
+        diagnostics_.transport_error = ESP_ERR_INVALID_STATE;
+        diagnostics_.elapsed_ms = now_ms - job_started_ms_;
+        if (diagnostics_.first_failure_stage == RemoteBrowserTransportStage::idle) {
+            diagnostics_.first_failure_stage = diagnostics_.transport_stage;
+            diagnostics_.first_transport_error = diagnostics_.transport_error;
+            diagnostics_.first_http_status = diagnostics_.http_status;
+            diagnostics_.first_failure_mirror = mirror_;
+        }
         finishJob(false, rtcp_browser::network); return;
     }
+    if (int32_t(now_ms - job_deadline_ms_) >= 0) {
+        diagnostics_.transport_stage = RemoteBrowserTransportStage::deadline;
+        diagnostics_.deadline_expired = 1;
+        diagnostics_.elapsed_ms = now_ms - job_started_ms_;
+        if (diagnostics_.first_failure_stage == RemoteBrowserTransportStage::idle) {
+            diagnostics_.first_failure_stage = RemoteBrowserTransportStage::deadline;
+            diagnostics_.first_failure_mirror = mirror_;
+        }
+        finishJob(false, rtcp_browser::network); return;
+    }
+    if (diagnostics_.transport_stage == RemoteBrowserTransportStage::client_initialized)
+        diagnostics_.transport_stage = RemoteBrowserTransportStage::connecting;
     const esp_err_t result = esp_http_client_perform(client_);
     if (result == ESP_ERR_HTTP_EAGAIN) return;
     const int status = esp_http_client_get_status_code(client_);
+    diagnostics_.transport_error = result;
+    diagnostics_.http_status = status > INT16_MAX ? INT16_MAX
+        : status < INT16_MIN ? INT16_MIN : int16_t(status);
+    diagnostics_.elapsed_ms = now_ms - job_started_ms_;
     if (result == ESP_OK && status == 200 && !body_overflow_) {
         finishJob(parseJob(), rtcp_browser::parse_failed); return;
     }
     if (body_overflow_) { finishJob(false, rtcp_browser::response_too_large); return; }
+    if (diagnostics_.first_failure_stage == RemoteBrowserTransportStage::idle) {
+        diagnostics_.first_failure_stage = diagnostics_.transport_stage;
+        diagnostics_.first_transport_error = diagnostics_.transport_error;
+        diagnostics_.first_http_status = diagnostics_.http_status;
+        diagnostics_.first_failure_mirror = mirror_;
+    }
     if (++mirror_ < kMirrorLimit && mirror_ < RADIO_BROWSER_MIRROR_COUNT) {
-        beginMirror(now_ms); return;
+        if (beginMirror()) return;
     }
     finishJob(false, rtcp_browser::network);
 }

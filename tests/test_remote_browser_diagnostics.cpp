@@ -9,7 +9,7 @@ int main() {
     RemoteBrowserDiagnostics::increment(value.start_requests);
     RemoteBrowserDiagnostics::increment(value.start_requests);
     assert(value.start_requests == UINT32_MAX);
-    assert(sizeof(RemoteBrowserDiagnostics) == 56);
+    assert(sizeof(RemoteBrowserDiagnostics) == 80);
     assert(uint8_t(RemoteBrowserCancelReason::rtcp_closed) == 3);
 
     // Successful START followed by a page response.
@@ -51,5 +51,20 @@ int main() {
     assert(value.cancellations == 1 &&
            value.cancel_reason == RemoteBrowserCancelReason::rtcp_closed);
     assert(value.active == 0 && value.job == 0);
+    value.mirror = 1;
+    value.transport_stage = RemoteBrowserTransportStage::connected;
+    value.transport_error = -1;
+    value.http_status = 503;
+    value.elapsed_ms = 30000;
+    value.deadline_expired = 1;
+    value.first_failure_stage = RemoteBrowserTransportStage::connecting;
+    value.first_failure_mirror = 0;
+    value.first_transport_error = -2;
+    assert(value.mirror == 1 && value.http_status == 503 &&
+           value.transport_stage == RemoteBrowserTransportStage::connected);
+    assert(value.transport_error == -1 && value.elapsed_ms == 30000 &&
+           value.deadline_expired == 1);
+    assert(value.first_failure_stage == RemoteBrowserTransportStage::connecting &&
+           value.first_failure_mirror == 0 && value.first_transport_error == -2);
     std::puts("REMOTE browser diagnostics: PASS");
 }
