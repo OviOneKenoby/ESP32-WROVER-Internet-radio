@@ -14,7 +14,9 @@
 #include <AudioGeneratorAAC.h>
 #include <AudioOutputI2S.h>
 #include <esp_a2dp_api.h>
+#include <esp_avrc_api.h>
 #include "rtcp_btx.h"
+#include "bluetooth_playback_authority.h"
 
 enum AudioCodec {
     AUDIO_CODEC_MP3,
@@ -43,6 +45,7 @@ enum BluetoothLifecycleState {
     BT_LIFECYCLE_STOPPING,
     BT_LIFECYCLE_CLEANUP_FAILED
 };
+enum class DeferredPlayStatus : uint8_t { none, queued, running, succeeded, failed, cancelled };
 
 struct AudioDiagnostics {
     AudioSource source;
@@ -64,6 +67,10 @@ public:
 
     // Playback control
     bool play(const char* streamURL, AudioCodec codec = AUDIO_CODEC_MP3);
+    bool deferPlay(uint64_t request, const char* streamURL, AudioCodec codec);
+    DeferredPlayStatus deferredPlayStatus(uint64_t request);
+    void clearDeferredPlay(uint64_t request);
+    void cancelDeferredPlay();
     void pause();
     void resume();
     void stop();
@@ -156,6 +163,7 @@ private:
     static void bluetoothMetadataCallback(uint8_t attribute, const uint8_t* value);
     static void bluetoothConnectionCallback(esp_a2d_connection_state_t state, void* object);
     static void bluetoothAudioCallback(esp_a2d_audio_state_t state, void* object);
+    static void bluetoothPlaybackCallback(esp_avrc_playback_stat_t state);
 
     // State variables
     PlaybackState playbackState;
@@ -173,6 +181,7 @@ private:
     bool btEnabled;
     BluetoothLifecycleState bluetoothLifecycle;
     bool bluetoothPlaybackPaused = false;
+    BluetoothPlaybackAuthority bluetoothPlaybackAuthority{};
     char bluetoothTitle[128];
     char bluetoothArtist[128];
     char bluetoothNowPlaying[256];
@@ -188,6 +197,18 @@ private:
 
     // Mutex for thread safety
     SemaphoreHandle_t audioMutex;
+
+    struct DeferredPlay {
+        uint64_t request{0};
+        DeferredPlayStatus status{DeferredPlayStatus::none};
+        AudioCodec codec{AUDIO_CODEC_NONE};
+        char url[512]{};
+    } deferredPlay_;
+    portMUX_TYPE deferredPlayMux = portMUX_INITIALIZER_UNLOCKED;
+    bool playNow(const char* streamURL, AudioCodec codec);
+    bool playDeferredNow(uint64_t request, const char* streamURL, AudioCodec codec);
+    bool finishRadioStartLocked(const char* streamURL, AudioCodec codec,
+                                AudioFileSource* openedSource);
 
     // One-shot diagnostic milestone; it does not alter decoder scheduling.
     bool mp3DiagnosticStablePending;

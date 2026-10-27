@@ -15,8 +15,12 @@ for name in ("client_initialized", "connecting", "connected", "headers_sent",
     assert name in header
 for field in ("browser_mirror", "browser_transport_stage", "browser_transport_error",
               "browser_http_status", "browser_elapsed_ms", "browser_deadline_expired",
-              "browser_first_failure_stage", "browser_first_transport_error"):
+              "browser_first_failure_stage", "browser_first_transport_error",
+              "browser_tls_system_error", "browser_tls_mbedtls_error",
+              "browser_tls_esp_error", "browser_tls_cert_flags"):
     assert field in web
+assert "esp_tls_get_and_clear_error_type" in source
+assert "recordTls" in source
 assert "config.timeout_ms = 250" in source
 assert "kMirrorLimit = 2" in source
 print("remote browser transport/deadline policy: PASS")

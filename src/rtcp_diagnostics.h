@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <array>
 
 namespace rtcp {
 
@@ -40,6 +41,15 @@ enum class CloseReason : uint8_t {
 };
 
 struct Diagnostics {
+    struct CloseEvent {
+        uint32_t uptime_ms{0};
+        uint32_t session{0};
+        int32_t socket_error{0};
+        uint8_t state{0};
+        CloseReason reason{CloseReason::none};
+        DiagnosticRequest request{DiagnosticRequest::none};
+        DiagnosticStage stage{DiagnosticStage::idle};
+    };
     uint32_t connections{0};
     uint32_t client_finishes{0};
     uint32_t records{0};
@@ -59,6 +69,11 @@ struct Diagnostics {
     CloseReason close_reason{CloseReason::none};
     DiagnosticStage stage{DiagnosticStage::idle};
     uint8_t reserved{0};
+    int32_t transport_error{0};
+    std::array<CloseEvent,4> close_history{};
+    uint8_t close_history_next{0};
+    uint8_t close_history_count{0};
+    uint16_t close_history_reserved{0};
 
     static void increment(uint32_t& value, uint32_t by = 1) {
         const uint32_t remaining = std::numeric_limits<uint32_t>::max() - value;
@@ -70,7 +85,7 @@ struct Diagnostics {
         free_internal = free_bytes;
         largest_internal = largest_block;
         stage = DiagnosticStage::accepted;
-        close_reason = CloseReason::none;
+        transport_error = 0;
     }
 
     void clientFinish() {
@@ -105,18 +120,32 @@ struct Diagnostics {
         stage = DiagnosticStage::response_written;
     }
 
-    void closed(CloseReason reason, uint32_t free_bytes, uint32_t largest_block) {
+    void closed(CloseReason reason, uint32_t free_bytes, uint32_t largest_block,
+                uint32_t uptime_ms, uint8_t connection_state,
+                int32_t socket_error = 0) {
         increment(closes);
         if (reason == CloseReason::timeout) increment(timeouts);
         if (reason == CloseReason::peer_eof) increment(eofs);
         close_reason = reason;
         free_internal = free_bytes;
         largest_internal = largest_block;
+        const DiagnosticStage failure_stage = stage;
         stage = DiagnosticStage::closed;
+        transport_error = socket_error;
+        CloseEvent& event = close_history[close_history_next];
+        event.uptime_ms = uptime_ms;
+        event.session = connections;
+        event.socket_error = socket_error;
+        event.state = connection_state;
+        event.reason = reason;
+        event.request = request;
+        event.stage = failure_stage;
+        close_history_next = uint8_t((close_history_next + 1) % close_history.size());
+        if (close_history_count < close_history.size()) ++close_history_count;
     }
 };
 
-static_assert(sizeof(Diagnostics) == 60, "RTCP diagnostics must remain fixed at 60 bytes");
+static_assert(sizeof(Diagnostics) == 132, "RTCP diagnostics must remain fixed and bounded");
 
 inline DiagnosticRequest diagnosticRequest(uint8_t value) {
     switch (value) {

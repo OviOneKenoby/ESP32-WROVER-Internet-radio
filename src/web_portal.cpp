@@ -180,6 +180,24 @@ void WebPortal::handleDiagnostics() {
     doc["rtcp_connections"] = rtcpDiagnostic.connections;
     doc["rtcp_closes"] = rtcpDiagnostic.closes;
     doc["rtcp_close_reason"] = uint8_t(rtcpDiagnostic.close_reason);
+    doc["rtcp_transport_error"] = rtcpDiagnostic.transport_error;
+    doc["rtcp_close_history_count"] = rtcpDiagnostic.close_history_count;
+    JsonArray closeHistory = doc["rtcp_close_history"].to<JsonArray>();
+    for (uint8_t age = 0; age < rtcpDiagnostic.close_history_count &&
+                          age < rtcpDiagnostic.close_history.size(); ++age) {
+        const uint8_t index = uint8_t((rtcpDiagnostic.close_history_next +
+            rtcpDiagnostic.close_history.size() - 1 - age) %
+            rtcpDiagnostic.close_history.size());
+        const auto& event = rtcpDiagnostic.close_history[index];
+        JsonObject row = closeHistory.add<JsonObject>();
+        row["uptime_ms"] = event.uptime_ms;
+        row["session"] = event.session;
+        row["state"] = event.state;
+        row["reason"] = uint8_t(event.reason);
+        row["socket_error"] = event.socket_error;
+        row["request"] = uint8_t(event.request);
+        row["stage"] = uint8_t(event.stage);
+    }
     doc["browser_start_requests"] = browserDiagnostic.start_requests;
     doc["browser_start_results"] = browserDiagnostic.start_results;
     doc["browser_page_queries"] = browserDiagnostic.page_queries;
@@ -202,6 +220,16 @@ void WebPortal::handleDiagnostics() {
     doc["browser_first_http_status"] = browserDiagnostic.first_http_status;
     doc["browser_tls_error"] = browserDiagnostic.tls_error;
     doc["browser_tls_flags"] = browserDiagnostic.tls_flags;
+    doc["browser_tls_available"] = browserDiagnostic.tls_available;
+    doc["browser_tls_system_error"] = browserDiagnostic.tls_system_error;
+    doc["browser_tls_mbedtls_error"] = browserDiagnostic.tls_mbedtls_error;
+    doc["browser_tls_esp_error"] = browserDiagnostic.tls_esp_error;
+    doc["browser_tls_cert_flags"] = browserDiagnostic.tls_cert_flags;
+    doc["browser_first_tls_available"] = browserDiagnostic.first_tls_available;
+    doc["browser_first_tls_system_error"] = browserDiagnostic.first_tls_system_error;
+    doc["browser_first_tls_mbedtls_error"] = browserDiagnostic.first_tls_mbedtls_error;
+    doc["browser_first_tls_esp_error"] = browserDiagnostic.first_tls_esp_error;
+    doc["browser_first_tls_cert_flags"] = browserDiagnostic.first_tls_cert_flags;
     doc["browser_elapsed_ms"] = browserDiagnostic.elapsed_ms;
     doc["browser_deadline_expired"] = browserDiagnostic.deadline_expired;
     doc["browser_first_failure_stage"] = uint8_t(browserDiagnostic.first_failure_stage);

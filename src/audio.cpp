@@ -377,11 +377,49 @@ bool AudioPlayer::init() {
 // Playback Control - Internet Radio
 // ============================================
 bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
+    cancelDeferredPlay();
+    return playNow(streamURL, codec);
+}
+
+bool AudioPlayer::playNow(const char* streamURL, AudioCodec codec) {
+    return playDeferredNow(0, streamURL, codec);
+}
+
+bool AudioPlayer::playDeferredNow(uint64_t request, const char* streamURL,
+                                  AudioCodec codec) {
     if (!streamURL) return false;
 
-    xSemaphoreTake(audioMutex, portMAX_DELAY);
+    const bool isSecure = strncmp(streamURL, "https://", 8) == 0;
+    AudioFileSource* openedSource = isSecure
+        ? static_cast<AudioFileSource*>(new AudioFileSourceICYSStream())
+        : static_cast<AudioFileSource*>(new AudioFileSourceICYStream());
+    if (isSecure) Serial.println("[AUDIO] Using HTTPS source");
+    openedSource->RegisterMetadataCB(metadataCallback, (void*)this);
+    openedSource->RegisterStatusCB(statusCallback, (void*)this);
 
-    // Clean up any previous playback before starting a new one.
+    // Network open is deliberately outside audioMutex. A physical source or
+    // station action can cancel a deferred REMOTE request and take ownership
+    // immediately instead of waiting behind a slow DNS/TLS/open operation.
+    if (!openedSource->open(streamURL)) {
+        Serial.println("[AUDIO] Failed to open stream");
+        delete openedSource;
+        return false;
+    }
+
+    if (request && deferredPlayStatus(request) != DeferredPlayStatus::running) {
+        delete openedSource;
+        return false;
+    }
+
+    xSemaphoreTake(audioMutex, portMAX_DELAY);
+    if (request && deferredPlayStatus(request) != DeferredPlayStatus::running) {
+        xSemaphoreGive(audioMutex);
+        delete openedSource;
+        return false;
+    }
+
+    // Commit the already-opened source only after the request is revalidated.
+    // The previous source stays intact if open failed or ownership changed.
     teardownRadioPlayback();
     mp3DiagnosticStablePending = false;
     if (codec == AUDIO_CODEC_MP3) {
@@ -389,34 +427,11 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
             static_cast<uint8_t>(currentSource),
             static_cast<uint8_t>(bluetoothLifecycle));
     }
-
     strncpy(currentURL, streamURL, sizeof(currentURL) - 1);
     currentURL[sizeof(currentURL) - 1] = '\0';
     currentCodec = codec;
-    setNowPlaying("Live stream"); // replaced when ICY metadata arrives
-
-    // Pick the source class based on the URL's scheme - both can coexist
-    // in the same station list. HTTPS uses more RAM during the TLS
-    // handshake (no PSRAM on this board), so it's only used when the URL
-    // actually needs it.
-    bool isSecure = (strncmp(streamURL, "https://", 8) == 0);
-    if (isSecure) {
-        audioSource = new AudioFileSourceICYSStream();
-        Serial.println("[AUDIO] Using HTTPS source");
-    } else {
-        audioSource = new AudioFileSourceICYStream();
-    }
-    audioSource->RegisterMetadataCB(metadataCallback, (void*)this);
-    audioSource->RegisterStatusCB(statusCallback, (void*)this);
-
-    if (!audioSource->open(streamURL)) {
-        Serial.println("[AUDIO] Failed to open stream");
-        delete audioSource;
-        audioSource = nullptr;
-        currentURL[0] = '\0';
-        xSemaphoreGive(audioMutex);
-        return false;
-    }
+    setNowPlaying("Live stream");
+    audioSource = openedSource;
 
     // Ring buffer decoupling network reads from decode timing - this is
     // the library's own recommended pattern, not something extra I added.
@@ -501,6 +516,47 @@ bool AudioPlayer::play(const char* streamURL, AudioCodec codec) {
     return true;
 }
 
+bool AudioPlayer::deferPlay(uint64_t request, const char* streamURL, AudioCodec codec) {
+    if (!request || !streamURL || !streamURL[0]) return false;
+    bool accepted = false;
+    portENTER_CRITICAL(&deferredPlayMux);
+    if (deferredPlay_.status == DeferredPlayStatus::none) {
+        deferredPlay_.request = request;
+        deferredPlay_.codec = codec;
+        strncpy(deferredPlay_.url, streamURL, sizeof(deferredPlay_.url) - 1);
+        deferredPlay_.url[sizeof(deferredPlay_.url) - 1] = 0;
+        deferredPlay_.status = DeferredPlayStatus::queued;
+        accepted = true;
+    }
+    portEXIT_CRITICAL(&deferredPlayMux);
+    return accepted;
+}
+
+DeferredPlayStatus AudioPlayer::deferredPlayStatus(uint64_t request) {
+    DeferredPlayStatus status = DeferredPlayStatus::none;
+    portENTER_CRITICAL(&deferredPlayMux);
+    if (request && deferredPlay_.request == request) status = deferredPlay_.status;
+    portEXIT_CRITICAL(&deferredPlayMux);
+    return status;
+}
+
+void AudioPlayer::clearDeferredPlay(uint64_t request) {
+    portENTER_CRITICAL(&deferredPlayMux);
+    if (request && deferredPlay_.request == request &&
+        deferredPlay_.status != DeferredPlayStatus::queued &&
+        deferredPlay_.status != DeferredPlayStatus::running)
+        deferredPlay_ = DeferredPlay{};
+    portEXIT_CRITICAL(&deferredPlayMux);
+}
+
+void AudioPlayer::cancelDeferredPlay() {
+    portENTER_CRITICAL(&deferredPlayMux);
+    if (deferredPlay_.status == DeferredPlayStatus::queued ||
+        deferredPlay_.status == DeferredPlayStatus::running)
+        deferredPlay_.status = DeferredPlayStatus::cancelled;
+    portEXIT_CRITICAL(&deferredPlayMux);
+}
+
 // ============================================
 // Teardown helper - stops and frees the radio playback chain
 // ============================================
@@ -565,6 +621,7 @@ void AudioPlayer::resume() {
 }
 
 void AudioPlayer::stop() {
+    cancelDeferredPlay();
     if (audioMutex) xSemaphoreTake(audioMutex, portMAX_DELAY);
     playbackState = STATE_STOPPED;
     teardownRadioPlayback();
@@ -619,6 +676,7 @@ void AudioPlayer::adjustVolumeSteps(int32_t detents) {
 // Bluetooth Control (pschatzmann/ESP32-A2DP)
 // ============================================
 bool AudioPlayer::enableBluetooth() {
+    cancelDeferredPlay();
     if (btEnabled && bluetoothLifecycle == BT_LIFECYCLE_ACTIVE) return true;
     if (bluetoothLifecycle == BT_LIFECYCLE_CLEANUP_FAILED) {
         Serial.println("[AUDIO] Bluetooth start blocked after incomplete cleanup; reboot required");
@@ -648,6 +706,7 @@ bool AudioPlayer::enableBluetooth() {
     // callback is registered before start(), as required by this library.
     a2dp_sink.set_avrc_metadata_attribute_mask(ESP_AVRC_MD_ATTR_TITLE | ESP_AVRC_MD_ATTR_ARTIST);
     a2dp_sink.set_avrc_metadata_callback(bluetoothMetadataCallback);
+    a2dp_sink.set_avrc_rn_playstatus_callback(bluetoothPlaybackCallback);
     a2dp_sink.set_on_connection_state_changed(bluetoothConnectionCallback, this);
     a2dp_sink.set_on_audio_state_changed(bluetoothAudioCallback, this);
     setBluetoothRtcpSource(rtcp_btx::Source::bluetooth);
@@ -686,6 +745,7 @@ bool AudioPlayer::enableBluetooth() {
 }
 
 bool AudioPlayer::disableBluetooth() {
+    cancelDeferredPlay();
     if (!btEnabled && bluetoothLifecycle == BT_LIFECYCLE_INACTIVE) return true;
     if (bluetoothLifecycle == BT_LIFECYCLE_CLEANUP_FAILED) {
         Serial.println("[AUDIO] Bluetooth cleanup already failed; reboot required before radio mode");
@@ -761,6 +821,25 @@ void AudioPlayer::audioTaskFunc() {
     // I2S in one call.
     uint32_t lastYield = millis();
     while (true) {
+        DeferredPlay work{};
+        bool startDeferred = false;
+        portENTER_CRITICAL(&deferredPlayMux);
+        if (deferredPlay_.status == DeferredPlayStatus::queued) {
+            deferredPlay_.status = DeferredPlayStatus::running;
+            work = deferredPlay_;
+            startDeferred = true;
+        }
+        portEXIT_CRITICAL(&deferredPlayMux);
+        if (startDeferred) {
+            const bool played = playDeferredNow(work.request, work.url, work.codec);
+            portENTER_CRITICAL(&deferredPlayMux);
+            if (deferredPlay_.request == work.request &&
+                deferredPlay_.status == DeferredPlayStatus::running)
+                deferredPlay_.status = played ? DeferredPlayStatus::succeeded
+                                              : DeferredPlayStatus::failed;
+            portEXIT_CRITICAL(&deferredPlayMux);
+            continue;
+        }
         // play(), stop(), and the Bluetooth handoff delete and replace the
         // decoder/source chain. Use their mutex here as well, so the audio
         // task never calls loop() on a decoder another task just freed.
@@ -910,6 +989,7 @@ void AudioPlayer::setBluetoothRtcpSource(rtcp_btx::Source source) {
             ? rtcp_btx::Connection::unknown
             : rtcp_btx::Connection::not_applicable;
         bluetoothRtcpState.playback = rtcp_btx::Playback::unknown;
+        bluetoothPlaybackAuthority.reset();
         clearBluetoothMetadataLocked();
     }
     portEXIT_CRITICAL(&bluetoothMetadataMux);
@@ -1001,6 +1081,7 @@ void AudioPlayer::bluetoothConnectionCallback(esp_a2d_connection_state_t state, 
         }
         self->bluetoothRtcpState.connection = observed;
         self->bluetoothRtcpState.playback = rtcp_btx::Playback::unknown;
+        self->bluetoothPlaybackAuthority.reset();
     }
     portEXIT_CRITICAL(&self->bluetoothMetadataMux);
 }
@@ -1017,9 +1098,43 @@ void AudioPlayer::bluetoothAudioCallback(esp_a2d_audio_state_t state, void* obje
         observed = rtcp_btx::Playback::stopped;
     portENTER_CRITICAL(&self->bluetoothMetadataMux);
     if (self->bluetoothRtcpState.source == rtcp_btx::Source::bluetooth &&
-        self->bluetoothRtcpState.connection == rtcp_btx::Connection::connected)
-        self->bluetoothRtcpState.playback = observed;
+        self->bluetoothRtcpState.connection == rtcp_btx::Connection::connected) {
+        self->bluetoothPlaybackAuthority.observeA2dp(observed);
+        self->bluetoothRtcpState.playback = self->bluetoothPlaybackAuthority.playback();
+        self->bluetoothPlaybackPaused = self->bluetoothRtcpState.playback != rtcp_btx::Playback::playing;
+        self->playbackState = self->bluetoothRtcpState.playback == rtcp_btx::Playback::playing
+            ? STATE_PLAYING : self->bluetoothRtcpState.playback == rtcp_btx::Playback::paused
+                ? STATE_PAUSED : STATE_STOPPED;
+    }
     portEXIT_CRITICAL(&self->bluetoothMetadataMux);
+}
+
+void AudioPlayer::bluetoothPlaybackCallback(esp_avrc_playback_stat_t state) {
+    rtcp_btx::Playback observed = rtcp_btx::Playback::unknown;
+    bool valid = true;
+    switch (state) {
+        case ESP_AVRC_PLAYBACK_PLAYING:
+        case ESP_AVRC_PLAYBACK_FWD_SEEK:
+        case ESP_AVRC_PLAYBACK_REV_SEEK:
+            observed = rtcp_btx::Playback::playing; break;
+        case ESP_AVRC_PLAYBACK_PAUSED:
+            observed = rtcp_btx::Playback::paused; break;
+        case ESP_AVRC_PLAYBACK_STOPPED:
+            observed = rtcp_btx::Playback::stopped; break;
+        default:
+            valid = false; break;
+    }
+    portENTER_CRITICAL(&audioPlayer.bluetoothMetadataMux);
+    if (audioPlayer.bluetoothRtcpState.source == rtcp_btx::Source::bluetooth &&
+        audioPlayer.bluetoothRtcpState.connection == rtcp_btx::Connection::connected) {
+        audioPlayer.bluetoothPlaybackAuthority.observeAvrc(observed, valid);
+        audioPlayer.bluetoothRtcpState.playback = audioPlayer.bluetoothPlaybackAuthority.playback();
+        audioPlayer.bluetoothPlaybackPaused = audioPlayer.bluetoothRtcpState.playback != rtcp_btx::Playback::playing;
+        audioPlayer.playbackState = audioPlayer.bluetoothRtcpState.playback == rtcp_btx::Playback::playing
+            ? STATE_PLAYING : audioPlayer.bluetoothRtcpState.playback == rtcp_btx::Playback::paused
+                ? STATE_PAUSED : STATE_STOPPED;
+    }
+    portEXIT_CRITICAL(&audioPlayer.bluetoothMetadataMux);
 }
 
 void AudioPlayer::setBluetoothMetadata(uint8_t attribute, const char* value) {

@@ -43,6 +43,16 @@ struct RemoteBrowserDiagnostics {
     int16_t first_http_status{0};
     int16_t tls_error{0};
     uint16_t tls_flags{0};
+    int32_t tls_system_error{0};
+    int32_t tls_mbedtls_error{0};
+    int32_t tls_esp_error{0};
+    uint32_t tls_cert_flags{0};
+    int32_t first_tls_system_error{0};
+    int32_t first_tls_mbedtls_error{0};
+    int32_t first_tls_esp_error{0};
+    uint32_t first_tls_cert_flags{0};
+    uint8_t tls_available{0};
+    uint8_t first_tls_available{0};
     uint8_t active{0};
     uint8_t job{0};
     uint8_t status{0};
@@ -57,7 +67,27 @@ struct RemoteBrowserDiagnostics {
     static void increment(uint32_t& value) {
         if (value != std::numeric_limits<uint32_t>::max()) ++value;
     }
+    void recordTls(int32_t system_error, int32_t mbedtls_error,
+                   uint32_t cert_flags, int32_t esp_error,
+                   uint8_t available) {
+        tls_system_error = system_error;
+        tls_mbedtls_error = mbedtls_error;
+        tls_cert_flags = cert_flags;
+        tls_esp_error = esp_error;
+        tls_available = available;
+        tls_error = mbedtls_error < INT16_MIN ? INT16_MIN
+                  : mbedtls_error > INT16_MAX ? INT16_MAX
+                  : int16_t(mbedtls_error);
+        tls_flags = cert_flags > UINT16_MAX ? UINT16_MAX : uint16_t(cert_flags);
+        if (!first_tls_available && available) {
+            first_tls_system_error = system_error;
+            first_tls_mbedtls_error = mbedtls_error;
+            first_tls_cert_flags = cert_flags;
+            first_tls_esp_error = esp_error;
+            first_tls_available = available;
+        }
+    }
 };
 
-static_assert(sizeof(RemoteBrowserDiagnostics) == 80,
+static_assert(sizeof(RemoteBrowserDiagnostics) == 112,
               "browser diagnostics must remain fixed and allocation-free");

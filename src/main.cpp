@@ -61,6 +61,16 @@ uint32_t localVolumeDetents = 0;
 uint32_t localVolumeLastApplyUs = 0;
 uint32_t localVolumeMaxApplyUs = 0;
 
+struct DeferredCatalogStart {
+    uint64_t request{0};
+    uint64_t expectedRevision{0};
+    rtcp_catalog::Collection collection{rtcp_catalog::Collection::saved};
+    uint16_t token{0};
+    StationCodec codec{STATION_CODEC_MP3};
+    char name[MAX_NAME_LENGTH]{};
+    bool active{false};
+} deferredCatalogStart;
+
 // Shared cursor for all the browse-mode list screens (country/tag/results/
 // favorites/recent) - these are always mutually exclusive (only one such
 // list is ever being viewed at a time), so one shared variable is simpler
@@ -134,6 +144,8 @@ bool projectRtcpMenu(rtcp_full_control::MenuView& view);
 bool projectRtcpCatalog(const rtcp_catalog::Query& query,
                         rtcp_catalog::PageView& view);
 uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command);
+void serviceDeferredCatalogStart();
+void cancelDeferredCatalogStart();
 bool projectRtcpBrowser(const rtcp_browser::Query& query,
                         rtcp_browser::StateView& view);
 uint8_t executeRtcpBrowser(const rtcp_browser::Command& command);
@@ -229,6 +241,7 @@ void setup() {
     rtcpServer.setMenuOwner(projectRtcpMenu);
     rtcpServer.setCatalogOwner(projectRtcpCatalog);
     rtcpServer.setCatalogCommandOwner(executeRtcpCatalog);
+    rtcpServer.setCatalogCloseOwner(cancelDeferredCatalogStart);
     rtcpServer.setBrowserOwner(projectRtcpBrowser);
     rtcpServer.setBrowserCommandOwner(executeRtcpBrowser);
     rtcpServer.setBrowserCloseOwner(closeRtcpBrowser);
@@ -596,12 +609,23 @@ uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command) {
     if (!station) return rtcp_catalog::unavailable;
 
     if (command.operation == Operation::play) {
-        const bool played = command.collection == Collection::saved
-            ? playStation(uint8_t(command.token))
-            : playDiscoveredStation(station->name, station->url,
-                                    station->codec, false);
-        publishRtcpProjection();
-        return played ? rtcp_catalog::success : rtcp_catalog::execution_failed;
+        if (deferredCatalogStart.active) return rtcp_catalog::busy;
+        const StationCodec codec = stationCodecForURL(station->url, station->codec);
+        const AudioCodec audioCodec = codec == STATION_CODEC_AAC
+            ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
+        if (!audioPlayer.deferPlay(command.request, station->url, audioCodec))
+            return rtcp_catalog::busy;
+        deferredCatalogStart.request = command.request;
+        deferredCatalogStart.expectedRevision = command.expected_revision;
+        deferredCatalogStart.collection = command.collection;
+        deferredCatalogStart.token = command.token;
+        deferredCatalogStart.codec = codec;
+        strncpy(deferredCatalogStart.name, station->name,
+                sizeof(deferredCatalogStart.name) - 1);
+        deferredCatalogStart.name[sizeof(deferredCatalogStart.name) - 1] = 0;
+        deferredCatalogStart.active = true;
+        rtcpServer.invalidateMediaContext();
+        return rtcp_catalog::success; // admission; playback is confirmed authoritatively
     }
     if (command.operation == Operation::remove) {
         const bool removed = command.collection == Collection::saved
@@ -621,6 +645,45 @@ uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command) {
             ? rtcp_catalog::success : rtcp_catalog::execution_failed;
     }
     return rtcp_catalog::unsupported;
+}
+
+void cancelDeferredCatalogStart() {
+    if (!deferredCatalogStart.active) return;
+    audioPlayer.cancelDeferredPlay();
+}
+
+void serviceDeferredCatalogStart() {
+    if (!deferredCatalogStart.active) return;
+    DeferredPlayStatus status = audioPlayer.deferredPlayStatus(deferredCatalogStart.request);
+    if ((status == DeferredPlayStatus::queued || status == DeferredPlayStatus::running) &&
+        stationManager.getCatalogRevision() != deferredCatalogStart.expectedRevision) {
+        audioPlayer.cancelDeferredPlay();
+        status = DeferredPlayStatus::cancelled;
+    }
+    if (status == DeferredPlayStatus::queued || status == DeferredPlayStatus::running) return;
+    if (status == DeferredPlayStatus::succeeded) {
+        if (deferredCatalogStart.collection == rtcp_catalog::Collection::saved) {
+            selectedStation = uint8_t(deferredCatalogStart.token);
+            stationManager.setCurrentStation(selectedStation);
+            nowPlayingContext.set(deferredCatalogStart.codec, false);
+        } else {
+            nowPlayingContext.set(deferredCatalogStart.codec, true);
+            stationManager.addToRecent(deferredCatalogStart.name,
+                                       audioPlayer.getCurrentURL(),
+                                       deferredCatalogStart.codec);
+        }
+        strncpy(nowPlayingName, deferredCatalogStart.name, sizeof(nowPlayingName) - 1);
+        nowPlayingName[sizeof(nowPlayingName) - 1] = 0;
+        currentMode = MODE_PLAYING_RADIO;
+        lastKnownPlaybackState = STATE_BUFFERING;
+        display.showPlaying(nowPlayingName, "Buffering...", nowPlayingFooter());
+    } else if (status == DeferredPlayStatus::failed) {
+        currentMode = MODE_ERROR;
+        display.showError("Failed to play station");
+    }
+    audioPlayer.clearDeferredPlay(deferredCatalogStart.request);
+    deferredCatalogStart = DeferredCatalogStart{};
+    publishRtcpProjection();
 }
 
 bool projectRtcpBrowser(const rtcp_browser::Query& query,
@@ -675,6 +738,7 @@ void loop() {
             handleInput(event);
         }
     }
+    serviceDeferredCatalogStart();
 
     // Drain framework events on the application task before serving web
     // requests, so status/IP diagnostics cannot expose stale connection data.
@@ -686,10 +750,12 @@ void loop() {
     // Bounded, nonblocking service on the existing application/main-loop
     // owner. It stays disabled until a private pairing record exists.
     rtcpServer.poll(audioPlayer);
+    serviceDeferredCatalogStart();
     webPortal.handle();
     // Service again after a potentially longer web-manager turn so control
     // traffic does not wait for the next full application-loop cycle.
     rtcpServer.poll(audioPlayer);
+    serviceDeferredCatalogStart();
     timeService.update();
 
     // E-paper refresh is synchronous and was previously performed after every

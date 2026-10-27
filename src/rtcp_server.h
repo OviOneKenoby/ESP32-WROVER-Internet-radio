@@ -55,6 +55,7 @@ public:
     using CatalogOwner = bool (*)(const rtcp_catalog::Query& query,
                                   rtcp_catalog::PageView& view);
     using CatalogCommandOwner = uint8_t (*)(const rtcp_catalog::Command& command);
+    using CatalogCloseOwner = void (*)();
     using BrowserOwner = bool (*)(const rtcp_browser::Query&, rtcp_browser::StateView&);
     using BrowserCommandOwner = uint8_t (*)(const rtcp_browser::Command&);
     using BrowserCloseOwner = void (*)();
@@ -68,6 +69,7 @@ public:
     void setCatalogCommandOwner(CatalogCommandOwner owner) {
         catalog_command_owner_ = owner;
     }
+    void setCatalogCloseOwner(CatalogCloseOwner owner) { catalog_close_owner_ = owner; }
     void setBrowserOwner(BrowserOwner owner) { browser_owner_ = owner; }
     void setBrowserCommandOwner(BrowserCommandOwner owner) { browser_command_owner_ = owner; }
     void setBrowserCloseOwner(BrowserCloseOwner owner) { browser_close_owner_ = owner; }
@@ -120,12 +122,15 @@ private:
     rtcp_full_control::MenuRevision menu_revision_{};
     MenuOwner menu_owner_{nullptr};
     rtcp_catalog::Mailbox catalog_mailbox_{};
+    uint64_t last_catalog_request_{0};
     CatalogOwner catalog_owner_{nullptr};
     CatalogCommandOwner catalog_command_owner_{nullptr};
+    CatalogCloseOwner catalog_close_owner_{nullptr};
     rtcp_browser::Mailbox browser_mailbox_{};
     BrowserOwner browser_owner_{nullptr};
     BrowserCommandOwner browser_command_owner_{nullptr};
     BrowserCloseOwner browser_close_owner_{nullptr};
+    int32_t last_socket_error_{0};
     uint32_t source_started_us_{0};
     uint32_t catalog_started_us_{0};
     uint32_t browser_started_us_{0};
@@ -134,7 +139,7 @@ private:
     DiscoveryAdvertisement discovery_{};
 
     void acceptClient();
-    void closeClient(CloseReason reason);
+    void closeClient(CloseReason reason, int32_t socket_error = 0);
     bool readBounded();
     bool processHandshake();
     bool processRecord(AudioPlayer& audio);
@@ -164,9 +169,10 @@ static_assert(sizeof(rtcp_full_control::SourceState) +
                   sizeof(rtcp_full_control::MenuRevision) +
                   sizeof(rtcp::Server::MenuOwner) <= 72,
               "full-control source state exceeds the approved budget");
-static_assert(sizeof(rtcp_catalog::Mailbox) +
+static_assert(sizeof(rtcp_catalog::Mailbox) + sizeof(uint64_t) +
                   sizeof(rtcp::Server::CatalogOwner) +
-                  sizeof(rtcp::Server::CatalogCommandOwner) <= 48,
+                  sizeof(rtcp::Server::CatalogCommandOwner) +
+                  sizeof(rtcp::Server::CatalogCloseOwner) <= 64,
               "catalog command state exceeds the approved budget");
 static_assert(sizeof(rtcp_browser::Mailbox) + sizeof(rtcp::Server::BrowserOwner) +
                   sizeof(rtcp::Server::BrowserCommandOwner) +

@@ -15,7 +15,7 @@ checks = {
         "remoteBrowser.cancel(RemoteBrowserCancelReason::physical_navigation);" in main,
     "no playback stop on browse start": "audioPlayer.stop" not in service,
     "session close cancellation": "browser_close_owner_" in server,
-    "fc4 identity": 'FIRMWARE_VERSION "+fc4"' in server,
+    "fc5 identity": 'FIRMWARE_VERSION "+fc5"' in server,
     "start diagnostics": "diagnostics_.start_requests" in service and
         "diagnostics_.start_results" in service,
     "page diagnostics": "diagnostics_.page_queries" in service and

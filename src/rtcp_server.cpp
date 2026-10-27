@@ -10,6 +10,7 @@
 #include <mbedtls/gcm.h>
 #include <mbedtls/md.h>
 #include <cstring>
+#include <cerrno>
 
 namespace rtcp {
 namespace {
@@ -132,8 +133,9 @@ bool Server::begin() {
     discovery_.poll(true, millis());
     return true;
 }
-void Server::closeClient(CloseReason reason) {
-    diagnostics_.closed(reason, freeInternal(), largestInternal());
+void Server::closeClient(CloseReason reason, int32_t socket_error) {
+    diagnostics_.closed(reason, freeInternal(), largestInternal(), millis(),
+                        uint8_t(state_), socket_error);
     if (client_) client_.stop();
     memset(c2s_key_.data(), 0, c2s_key_.size()); memset(s2c_key_.data(), 0, s2c_key_.size());
     memset(c2s_prefix_.data(), 0, c2s_prefix_.size()); memset(s2c_prefix_.data(), 0, s2c_prefix_.size());
@@ -143,6 +145,8 @@ void Server::closeClient(CloseReason reason) {
     btx_mailbox_.clear(); btx_session_.clear();
     source_mailbox_.clear();
     catalog_mailbox_.clear();
+    last_catalog_request_ = 0;
+    if (catalog_close_owner_) catalog_close_owner_();
     browser_mailbox_.clear();
     if (browser_close_owner_) browser_close_owner_();
     state_ = enabled_ ? State::listening : State::disabled;
@@ -155,15 +159,22 @@ void Server::acceptClient() {
     btx_mailbox_.clear(); btx_session_.clear();
     source_mailbox_.clear();
     catalog_mailbox_.clear();
+    last_catalog_request_ = 0;
     browser_mailbox_.clear();
     diagnostics_.accepted(freeInternal(), largestInternal());
     deadline_ms_ = millis() + 3000; state_ = State::client_hello;
 }
 bool Server::readBounded() {
+    last_socket_error_ = 0;
     if (!client_ || !client_.connected()) return false;
     size_t budget = 128;
     while (budget && client_.available() && rx_used_ < rx_needed_) {
-        const int c = client_.read(); if (c < 0) break;
+        errno = 0;
+        const int c = client_.read();
+        if (c < 0) {
+            last_socket_error_ = errno;
+            return false;
+        }
         rx_[rx_used_++] = uint8_t(c); --budget;
     }
     return true;
@@ -215,10 +226,13 @@ bool Server::sendApplication(const uint8_t* data, size_t size) {
     const size_t wire = kRecordHeader + size + kTagBytes;
     diagnostics_.responseBuilt(wire);
     const uint32_t allocation_before = SystemInfo::allocationFailureCount();
+    errno = 0;
     const size_t written = client_.write(tx_.data(), wire);
+    const int write_error = written == wire ? 0 : errno;
     const uint32_t allocation_after = SystemInfo::allocationFailureCount();
     diagnostics_.responseWrite(written, allocation_after >= allocation_before
                                             ? allocation_after - allocation_before : 0);
+    if (written != wire) diagnostics_.transport_error = write_error;
     if (written != wire) return false;
     ++tx_counter_; return true;
 }
@@ -230,7 +244,7 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         // The suffix is inside the existing bounded identity text. Legacy
         // clients accept and ignore it; new clients use it only to decide
         // whether it is safe to send the separately negotiated ID 16 probe.
-        return ccm_wire::identity(FIRMWARE_VERSION "+fc4", out, cap);
+        return ccm_wire::identity(FIRMWARE_VERSION "+fc5", out, cap);
     if (p[0] == kCapabilityRequest && n == 1) {
         const rtcp_btx::CapabilityReply reply = btx_session_.capabilityRequest();
         if (reply == rtcp_btx::CapabilityReply::legacy)
@@ -350,6 +364,9 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         btx_session_.negotiated() && catalog_owner_) {
         rtcp_catalog::Command command{};
         if (!rtcp_catalog::parseCommand(p, n, command)) return 0;
+        if (command.request == last_catalog_request_)
+            return ccm_wire::result(command.request, false,
+                                    rtcp_catalog::busy, out, cap);
         rtcp_catalog::PageView current{};
         rtcp_catalog::Query query{};
         query.collection = command.collection;
@@ -365,6 +382,7 @@ size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
         if (!catalog_mailbox_.put(command))
             return ccm_wire::result(command.request, false,
                                     rtcp_catalog::busy, out, cap);
+        last_catalog_request_ = command.request;
         catalog_started_us_ = micros();
         return kDeferredResponse;
     }
@@ -553,7 +571,12 @@ void Server::poll(AudioPlayer& audio) {
     discovery_.poll(enabled_ && wifi_connected, millis());
     if (!enabled_) { if (wifi_connected) begin(); return; }
     if (state_ == State::listening) { acceptClient(); return; }
-    if (!readBounded()) { closeClient(CloseReason::peer_eof); return; }
+    if (!readBounded()) {
+        closeClient(last_socket_error_ ? CloseReason::transport_error
+                                       : CloseReason::peer_eof,
+                    last_socket_error_);
+        return;
+    }
     // Process a complete buffered record before evaluating the idle deadline.
     // An incomplete or absent record still expires at the original deadline.
     if (state_ == State::records && rx_used_ != rx_needed_ &&
@@ -571,7 +594,7 @@ void Server::poll(AudioPlayer& audio) {
         if (reason == CloseReason::none)
             reason = state_ == State::records ? CloseReason::framing_invalid
                                               : CloseReason::handshake_invalid;
-        closeClient(reason);
+        closeClient(reason, diagnostics_.transport_error);
     }
 }
 }  // namespace rtcp

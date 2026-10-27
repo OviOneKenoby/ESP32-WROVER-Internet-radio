@@ -6,6 +6,8 @@
 #include <WiFi.h>
 #include <esp_crt_bundle.h>
 #include <esp_heap_caps.h>
+#include <esp_tls.h>
+#include <esp_tls_errors.h>
 #include <cstring>
 
 namespace {
@@ -88,6 +90,23 @@ esp_err_t RemoteBrowserService::onHttpEvent(esp_http_client_event_t* event) {
     switch (event->event_id) {
         case HTTP_EVENT_ERROR:
             self->diagnostics_.transport_stage = RemoteBrowserTransportStage::event_error;
+            self->diagnostics_.elapsed_ms = millis() - self->job_started_ms_;
+            if (event->data) {
+                const auto handle = static_cast<esp_tls_error_handle_t>(event->data);
+                int system_error = 0, mbedtls_error = 0, cert_flags = 0, esp_error = 0;
+                uint8_t available = 0;
+                if (esp_tls_get_and_clear_error_type(handle, ESP_TLS_ERR_TYPE_SYSTEM,
+                                                     &system_error) == ESP_OK) available |= 1u;
+                if (esp_tls_get_and_clear_error_type(handle, ESP_TLS_ERR_TYPE_MBEDTLS,
+                                                     &mbedtls_error) == ESP_OK) available |= 2u;
+                if (esp_tls_get_and_clear_error_type(handle, ESP_TLS_ERR_TYPE_MBEDTLS_CERT_FLAGS,
+                                                     &cert_flags) == ESP_OK) available |= 4u;
+                if (esp_tls_get_and_clear_error_type(handle, ESP_TLS_ERR_TYPE_ESP,
+                                                     &esp_error) == ESP_OK) available |= 8u;
+                self->diagnostics_.recordTls(system_error, mbedtls_error,
+                                             uint32_t(cert_flags), esp_error,
+                                             available);
+            }
             return ESP_OK;
         case HTTP_EVENT_ON_CONNECTED:
             self->diagnostics_.transport_stage = RemoteBrowserTransportStage::connected;
@@ -156,8 +175,13 @@ bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) 
     diagnostics_.first_transport_error = 0;
     diagnostics_.http_status = 0;
     diagnostics_.first_http_status = 0;
-    diagnostics_.tls_error = 0; // This pinned Arduino-IDF header exposes no safe client TLS-error getter.
+    diagnostics_.tls_error = 0;
     diagnostics_.tls_flags = 0;
+    diagnostics_.tls_system_error = diagnostics_.tls_mbedtls_error = 0;
+    diagnostics_.tls_esp_error = 0; diagnostics_.tls_cert_flags = 0;
+    diagnostics_.first_tls_system_error = diagnostics_.first_tls_mbedtls_error = 0;
+    diagnostics_.first_tls_esp_error = 0; diagnostics_.first_tls_cert_flags = 0;
+    diagnostics_.tls_available = diagnostics_.first_tls_available = 0;
     diagnostics_.deadline_expired = 0;
     diagnostics_.first_failure_stage = RemoteBrowserTransportStage::idle;
     diagnostics_.first_failure_mirror = 0;

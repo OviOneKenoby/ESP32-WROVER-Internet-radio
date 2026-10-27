@@ -14,7 +14,7 @@ void expect(bool value, const char* message) {
 int main() {
     using namespace rtcp;
     Diagnostics d;
-    expect(sizeof d == 60, "fixed 60-byte storage");
+    expect(sizeof d == 132, "fixed 132-byte storage");
 
     d.accepted(2304, 948);
     d.clientFinish();
@@ -43,10 +43,20 @@ int main() {
            "failed write classified");
     expect(d.allocation_failure_delta == 3, "allocation delta accumulated");
 
-    d.closed(CloseReason::timeout, 1900, 700);
-    d.closed(CloseReason::peer_eof, 1800, 650);
+    d.closed(CloseReason::timeout, 1900, 700, 100, 4, 110);
+    d.accepted(1850, 675);
+    d.closed(CloseReason::peer_eof, 1800, 650, 200, 4, 104);
     expect(d.timeouts == 1 && d.eofs == 1 && d.closes == 2,
            "timeout and EOF classified");
+    expect(d.close_history_count == 2 &&
+           d.close_history[(d.close_history_next + 3) % 4].socket_error == 104 &&
+           d.close_history[(d.close_history_next + 2) % 4].socket_error == 110,
+           "close evidence retained across reconnection");
+    expect(d.close_history[(d.close_history_next + 3) % 4].stage ==
+               DiagnosticStage::accepted &&
+           d.close_history[(d.close_history_next + 2) % 4].stage ==
+               DiagnosticStage::response_built,
+           "failure stage retained before closed state");
 
     d.snapshot_requests = std::numeric_limits<uint32_t>::max();
     d.received(DiagnosticRequest::snapshot, 1700, 600);
@@ -61,7 +71,7 @@ int main() {
            diagnosticRequest(10) == DiagnosticRequest::now_playing &&
            diagnosticRequest(0x42) == DiagnosticRequest::unknown,
            "request type is bounded and payload-free");
-    expect(sizeof(Diagnostics) <= 64, "diagnostic budget");
+    expect(sizeof(Diagnostics) <= 160, "diagnostic budget");
 
     std::cout << "PASS: " << checks << " RTCP diagnostic checks\n";
 }
