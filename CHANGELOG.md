@@ -1,5 +1,38 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-27 - Full Control HTTPS failure and command-timing diagnostics
+
+Corrected the confirmed Radio Browser deadline defect without changing network
+policy: the 30-second deadline is now created once per Browser job and remains
+absolute across first-mirror failure and second-mirror fallback. The existing
+250 ms transport timeout, certificate bundle, configured mirrors, two-mirror
+limit, PSRAM-only buffers, TLS verification and RTCP behavior are unchanged.
+
+Expanded the fixed Browser diagnostic record from 56 to 80 bytes to retain the
+first transport failure and the final result independently. Existing read-only
+diagnostics now expose active/last mirror, transport stage, first failure mirror,
+stage, `esp_err_t` and HTTP status, final error/status, elapsed time,
+deadline-expired state, generation, cancellation and bounded failure category.
+The pinned Arduino/ESP-IDF client wrapper does not safely expose a TLS last-error
+category, so the TLS fields explicitly report unavailable/zero rather than
+inferring a cause. This instrumentation does not claim the hardware `error 8`
+cause is fixed.
+
+Added bounded last/max response duration measurements for source-switch,
+catalog and Browser RTCP commands. They provide correlation for FC-FAV-02 and do
+not change deadlines, execution ownership, station playback or retry behavior.
+
+Focused Browser lifecycle, first/second mirror, cancellation, whole-job deadline,
+Full Control source/menu, catalog, D-009, BTX, StationManager and latency tests
+pass. Production `esp32-lwip-psram` build at source
+`67f610a383dfca3b51f80ee4d734375578c197ed` passes: BIN 2,130,896 bytes,
+SHA-256 `6a89b8388393ac2a9c962c6bcc9e3ad3ee980f6a42c9e73bf3166df54e9d4756`;
+ELF 31,186,376 bytes, SHA-256
+`5f64eef42f9b0d464ec7327af27673cd2c9d64d094a396882b97249effaba8d2`;
+80,032 bytes static RAM and 1,014,832 bytes exact-image slot headroom. Existing
+AudioTools include-order and framework ADC-deprecation warnings remain; no new
+project warning was identified. No device was accessed or flashed.
+
 ## 2026-10-26 - Full Control Browser lifecycle diagnostics
 
 Added a fixed 56-byte, secret-free `RemoteBrowserDiagnostics` record to the

@@ -9,6 +9,39 @@ owner-approved behavior. If implementation constraints conflict with that
 specification, the conflict must be reported rather than silently changing the
 behavior.
 
+## 2026-10-27 retained diagnostics checkpoint
+
+The cooperative Browser job owns one absolute 30-second deadline. Mirror fallback
+does not restart or extend it. The production transport policy remains otherwise
+unchanged: verified TLS, the same certificate bundle and mirror list, two mirrors,
+250 ms transport timeout and bounded PSRAM-only response/JSON/catalog storage.
+
+`/api/diagnostics` exposes the fixed, secret-free Browser evidence required for
+one controlled reproduction:
+
+- active and last mirror index;
+- current/last transport stage;
+- first failure mirror, stage, `esp_err_t` and HTTP status;
+- final `esp_err_t` and HTTP status;
+- elapsed job time and absolute-deadline-expired flag;
+- active/last generation, cancellation reason and final Browser failure category;
+- TLS error/verification placeholders plus an availability flag.
+
+The pinned Arduino/ESP-IDF wrapper provides no safe TLS last-error accessor, so
+the availability flag is false and TLS numeric fields remain zero. They must not
+be interpreted as a successful TLS verification or a diagnosed TLS failure.
+No URL, payload, credential or certificate content is retained.
+
+The RTCP timing block additionally retains last/max response duration for source,
+catalog and Browser commands. These counters are observational only: protocol
+deadlines, command correlation, physical-control priority, no-replay behavior and
+application-main-loop ownership are unchanged.
+
+Offline status: the absolute-deadline correction is **FIXED OFFLINE - hardware
+retest pending**. The original Browser `error 8` cause and FC-FAV-02 disconnect
+popup are **DIAGNOSTIC ONLY - more evidence required**. Browser retrieval must
+not be called fixed until an actual ESP32 HTTPS request succeeds.
+
 ## Authority and compatibility
 
 TUNER remains authoritative for source, playback, metadata, volume, station
