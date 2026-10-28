@@ -1,5 +1,42 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-28 - Full Control 1.3 joint hardware-failure corrections ready offline
+
+Corrected the demonstrated paired failure paths while preserving RTCP
+authentication, revision fencing, physical-control priority, exactly-once
+mutation admission and the approved Bluetooth-to-Radio stopped state. During
+an accepted deferred catalog PLAY, the existing persistent audio task now
+temporarily yields priority only around network stream open, then restores its
+original priority. This lets the main-loop RTCP owner service confirmation
+traffic without adding a task, queue, mutation replay or protocol change. The
+request is still revalidated before commit.
+
+Bluetooth outbound Play/Pause now uses checked AVRCP passthrough press/release
+submission with rotating transaction labels that avoid the pinned library's
+label-0 capability request. Link state and both submission results are checked.
+Playback authority also preserves PAUSED when A2DP reports remote suspension
+while a phone represents Pause as AVRCP STOPPED. After Bluetooth-to-Radio I2S
+handoff, decoder startup explicitly reapplies the authoritative gain.
+
+The cooperative Radio Browser keeps its asynchronous execution, two mirrors
+and 30-second absolute job deadline, while increasing the per-transport
+connect timeout from the hardware-failing 250 ms to a bounded 1,000 ms. This
+addresses the proven premature connection window; successful HTTPS retrieval
+still requires hardware validation and is not claimed offline.
+
+Focused deferred-start policy (9/9), Browser transport/deadline and policy
+(13/13), Bluetooth authority, Full-Control, RTCP, catalog, BTX (46/46), D-009
+(23/23) and integration-policy regressions pass. Production
+`esp32-lwip-psram` build at source
+`0ed0ffb366b8b5f12e773bc7bfb658a09f8523a4` passes: BIN 2,135,904 bytes,
+SHA-256 `129f7c9e276e4e06c3c007eef7290409720f899845a244d97b704768a40d321e`;
+ELF 31,252,700 bytes, SHA-256
+`746786cae402b1e96231b8db1d14b3178aa75ba522cef5786d04867b926276ed`;
+80,784 bytes static RAM, 2,129,321 bytes linked program usage and 1,009,824
+bytes exact-image partition headroom. Embedded build ID is `0ed0ffb`. Existing
+third-party AudioTools include-order and framework I2S ADC deprecation warnings
+remain unchanged. No hardware was accessed or flashed.
+
 ## 2026-10-28 - Full Control 1.3 `+fc5` joint hardware validation PARTIAL / FAIL
 
 Installed and independently read back TUNER application `014185ab1e2e`,
