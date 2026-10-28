@@ -12,6 +12,10 @@ int main() {
     assert(state.playback() == rtcp_btx::Playback::paused);
     state.observeAvrc(rtcp_btx::Playback::playing, true);
     assert(state.playback() == rtcp_btx::Playback::playing);
+    state.observeA2dp(rtcp_btx::Playback::paused);
+    state.observeAvrc(rtcp_btx::Playback::stopped, true);
+    assert(state.playback() == rtcp_btx::Playback::paused);
+    state.observeA2dp(rtcp_btx::Playback::stopped);
     state.observeAvrc(rtcp_btx::Playback::stopped, true);
     assert(state.playback() == rtcp_btx::Playback::stopped);
     state.reset();

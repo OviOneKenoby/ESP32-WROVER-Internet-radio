@@ -21,6 +21,7 @@ for field in ("browser_mirror", "browser_transport_stage", "browser_transport_er
     assert field in web
 assert "esp_tls_get_and_clear_error_type" in source
 assert "recordTls" in source
-assert "config.timeout_ms = 250" in source
+assert "kTransportTimeoutMs = 1000" in source
+assert "config.timeout_ms = kTransportTimeoutMs" in source
 assert "kMirrorLimit = 2" in source
 print("remote browser transport/deadline policy: PASS")

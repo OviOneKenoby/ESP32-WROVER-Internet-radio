@@ -13,6 +13,11 @@
 namespace {
 constexpr size_t kBodyCapacity = 32768;
 constexpr uint32_t kJobDeadlineMs = 30000;
+// esp_http_client uses this for each asynchronous transport operation. The
+// former 250 ms value expired both public mirrors before an HTTP response on
+// healthy hardware. One second remains below REMOTE's response deadline while
+// allowing DNS/TCP/TLS progress; the absolute 30 s job fence still applies.
+constexpr uint32_t kTransportTimeoutMs = 1000;
 constexpr uint8_t kMirrorLimit = 2;
 }
 
@@ -149,7 +154,7 @@ bool RemoteBrowserService::beginMirror() {
     esp_http_client_config_t config{};
     config.url = url; config.method = HTTP_METHOD_GET;
     config.user_agent = RADIO_BROWSER_USER_AGENT;
-    config.timeout_ms = 250; config.event_handler = onHttpEvent;
+    config.timeout_ms = kTransportTimeoutMs; config.event_handler = onHttpEvent;
     config.user_data = this; config.is_async = true;
     config.crt_bundle_attach = arduino_esp_crt_bundle_attach;
     config.buffer_size = 1024; config.buffer_size_tx = 512;

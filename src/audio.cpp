@@ -204,6 +204,37 @@ public:
 
     bool isRestartable() const { return !is_start_disabled; }
 
+    bool sendAvrcCommandChecked(int command) {
+        if (!is_connected() || !is_avrc_connected()) {
+            Serial.println("[BT] AVRCP command rejected: controller link unavailable");
+            return false;
+        }
+
+        // The pinned library sends passthrough commands with transaction
+        // label 0, but label 0 is also reserved by that same library for the
+        // GET_CAPS exchange. Keep application passthrough commands in the
+        // otherwise-unused 5..15 range so a late capabilities response cannot
+        // collide with a physical or RTCP control command.
+        const uint8_t label = avrcTransactionLabel;
+        avrcTransactionLabel = label == 15 ? 5 : uint8_t(label + 1);
+        esp_err_t result = esp_avrc_ct_send_passthrough_cmd(
+            label, command, ESP_AVRC_PT_CMD_STATE_PRESSED);
+        if (result != ESP_OK) {
+            Serial.printf("[BT] AVRCP press failed: %s (%d)\n",
+                          esp_err_to_name(result), int(result));
+            return false;
+        }
+        delay_ms(100);
+        result = esp_avrc_ct_send_passthrough_cmd(
+            label, command, ESP_AVRC_PT_CMD_STATE_RELEASED);
+        if (result != ESP_OK) {
+            Serial.printf("[BT] AVRCP release failed: %s (%d)\n",
+                          esp_err_to_name(result), int(result));
+            return false;
+        }
+        return true;
+    }
+
 protected:
     int init_bluetooth() override {
         // Arduino-ESP32 2.x is built with the controller in BTDM mode and its
@@ -294,6 +325,7 @@ private:
     bool i2sInitSucceeded = false;
     volatile bool stackEventCompleted = false;
     bool bleControllerMemoryReleased = false;
+    uint8_t avrcTransactionLabel = 5;
 };
 
 CheckedBluetoothOutput a2dp_output;
@@ -400,7 +432,19 @@ bool AudioPlayer::playDeferredNow(uint64_t request, const char* streamURL,
     // Network open is deliberately outside audioMutex. A physical source or
     // station action can cancel a deferred REMOTE request and take ownership
     // immediately instead of waiting behind a slow DNS/TLS/open operation.
-    if (!openedSource->open(streamURL)) {
+    // A deferred REMOTE start runs on the persistent audio task. Network/TLS
+    // open can perform CPU-heavy work for seconds; keeping the audio task at
+    // its decode priority during that phase starves the lower-priority Arduino
+    // loop which owns RTCP. Temporarily share priority with the owner, then
+    // restore decode priority before committing or decoding the stream.
+    const bool cooperativeOpen = request && audioTaskHandle &&
+        xTaskGetCurrentTaskHandle() == audioTaskHandle;
+    const UBaseType_t savedPriority = cooperativeOpen
+        ? uxTaskPriorityGet(nullptr) : UBaseType_t(0);
+    if (cooperativeOpen) vTaskPrioritySet(nullptr, tskIDLE_PRIORITY + 1);
+    const bool opened = openedSource->open(streamURL);
+    if (cooperativeOpen) vTaskPrioritySet(nullptr, savedPriority);
+    if (!opened) {
         Serial.println("[AUDIO] Failed to open stream");
         delete openedSource;
         return false;
@@ -492,6 +536,10 @@ bool AudioPlayer::playDeferredNow(uint64_t request, const char* streamURL,
         xSemaphoreGive(audioMutex);
         return false;
     }
+    // The Bluetooth path owns a separate legacy-I2S output. Reapply the
+    // authoritative radio gain after the modern I2S output is restarted so a
+    // Bluetooth -> Radio handoff cannot remain silent until the next detent.
+    i2sOutput->SetGain(currentVolume / 100.0f);
     if (codec == AUDIO_CODEC_MP3) {
         Mp3MemoryDiagnostics::setContext(
             static_cast<uint8_t>(currentSource),
@@ -1019,23 +1067,24 @@ uint8_t AudioPlayer::executeBluetoothRtcp(const rtcp_btx::Command& command) {
     const rtcp_btx::Decision decision = rtcp_btx::admit(snapshot, command);
     if (decision.error != rtcp_btx::success) return decision.error;
     if (!btEnabled || !a2dp_sink.is_connected()) return rtcp_btx::unavailable;
+    bool submitted = false;
     switch (command.operation) {
         case rtcp_btx::Operation::play:
-            a2dp_sink.play();
-            bluetoothPlaybackPaused = false;
+            submitted = a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_PLAY);
+            if (submitted) bluetoothPlaybackPaused = false;
             break;
         case rtcp_btx::Operation::pause:
-            a2dp_sink.pause();
-            bluetoothPlaybackPaused = true;
+            submitted = a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_PAUSE);
+            if (submitted) bluetoothPlaybackPaused = true;
             break;
         case rtcp_btx::Operation::previous:
-            a2dp_sink.previous();
+            submitted = a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_BACKWARD);
             break;
         case rtcp_btx::Operation::next:
-            a2dp_sink.next();
+            submitted = a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_FORWARD);
             break;
     }
-    return rtcp_btx::success;
+    return submitted ? rtcp_btx::success : rtcp_btx::unavailable;
 }
 
 void AudioPlayer::bluetoothPlayPause() {
@@ -1043,18 +1092,20 @@ void AudioPlayer::bluetoothPlayPause() {
     // AVRCP commands control the connected phone/source; they do not mute
     // the local I2S output like pause() does for an Internet radio stream.
     if (bluetoothPlaybackPaused) {
-        a2dp_sink.play();
-        bluetoothPlaybackPaused = false;
-        Serial.println("[BT] AVRCP play requested");
+        if (a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_PLAY)) {
+            bluetoothPlaybackPaused = false;
+            Serial.println("[BT] AVRCP play requested");
+        }
     } else {
-        a2dp_sink.pause();
-        bluetoothPlaybackPaused = true;
-        Serial.println("[BT] AVRCP pause requested");
+        if (a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_PAUSE)) {
+            bluetoothPlaybackPaused = true;
+            Serial.println("[BT] AVRCP pause requested");
+        }
     }
 }
 
-void AudioPlayer::bluetoothNext() { if (btEnabled) { a2dp_sink.next(); Serial.println("[BT] AVRCP next requested"); } }
-void AudioPlayer::bluetoothPrevious() { if (btEnabled) { a2dp_sink.previous(); Serial.println("[BT] AVRCP previous requested"); } }
+void AudioPlayer::bluetoothNext() { if (btEnabled && a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_FORWARD)) Serial.println("[BT] AVRCP next requested"); }
+void AudioPlayer::bluetoothPrevious() { if (btEnabled && a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_BACKWARD)) Serial.println("[BT] AVRCP previous requested"); }
 
 void AudioPlayer::bluetoothMetadataCallback(uint8_t attribute, const uint8_t* value) {
     if (!value) return;

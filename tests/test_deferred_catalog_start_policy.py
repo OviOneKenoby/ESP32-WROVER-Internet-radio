@@ -14,6 +14,11 @@ checks = {
         audio.index("openedSource->open(streamURL)") <
         audio.index("xSemaphoreTake(audioMutex, portMAX_DELAY)",
                     audio.index("bool AudioPlayer::playDeferredNow")),
+    "network open shares time with RTCP owner":
+        "vTaskPrioritySet(nullptr, tskIDLE_PRIORITY + 1)" in audio and
+        "vTaskPrioritySet(nullptr, savedPriority)" in audio,
+    "radio gain restored after I2S handoff":
+        "i2sOutput->SetGain(currentVolume / 100.0f);" in audio,
     "revision revalidation": "getCatalogRevision() != deferredCatalogStart.expectedRevision" in main,
     "physical cancellation": all(token in audio for token in (
         "void AudioPlayer::stop()", "bool AudioPlayer::enableBluetooth()",
