@@ -1,5 +1,23 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-28 - Full Control 1.3 `+fc5` joint hardware validation PARTIAL / FAIL
+
+Installed and independently read back TUNER application `014185ab1e2e`,
+2,135,376 bytes, SHA-256
+`c33ec3b137f2ba21b8dbdead00dd962efe21bd5b343273f4c50d62ed133e273f`.
+Startup, Wi-Fi, e-paper/physical navigation, a 316-second paired ACTIVE RTCP
+window, SBC audio/metadata, phone-originated playback state,
+disconnect/reconnect, source switching, MP3 recovery, RTCP volume application
+and REMOTE SYSTEM_SLEEP coexistence passed within the recorded test limits.
+
+The paired result is not hardware PASS. Favorite startup did not produce
+audible playback and coincided with a 3.004-second RTCP response maximum,
+REMOTE timeout/ECONNRESET and TUNER peer EOF. Outbound Bluetooth Play/Pause from
+both REMOTE and TUNER had no effect. The single Radio Browser START failed both
+mirrors with ESP_ERR_HTTP_CONNECT 0x7002 before any HTTP status; captured TLS
+categories were zero. No source/build/NVS/pairing change, rollback, push, merge
+or release was performed.
+
 ## 2026-10-28 - Full Control stability corrections offline verified
 
 Added a fixed four-entry RTCP close-history ring. Each TUNER record retains
