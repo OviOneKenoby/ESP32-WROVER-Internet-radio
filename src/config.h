@@ -123,30 +123,15 @@
 // ============================================
 #define BT_DEVICE_NAME      "ESP32-Radio"
 
-// Station discovery API (radio-browser.info). Officially, clients are
-// asked not to hardcode one mirror and instead discover healthy servers
-// via a DNS lookup of all.api.radio-browser.info - implementing that
-// properly would mean parsing multiple raw DNS A records, which is a
-// meaningful amount of added complexity for a real but small risk (this
-// specific mirror going down). Using the single mirror directly as a
-// deliberate simplification, matching what was actually tested working.
-// Station discovery API (radio-browser.info). Officially, clients are
-// asked not to hardcode one mirror and instead discover healthy servers
-// via a DNS lookup of all.api.radio-browser.info - implementing that
-// properly would mean parsing multiple raw DNS A records, which is a
-// meaningful amount of added complexity. As a simpler middle ground,
-// a small list of real, known mirrors (confirmed via search during
-// development, not guessed) is tried in sequence if one fails - see
-// StationBrowser::httpsGetJson() - rather than a single hardcoded host
-// with no fallback at all, which turned out to matter in practice (a
-// real 503 from de1 specifically, confirmed by direct testing).
-#define RADIO_BROWSER_MIRROR_COUNT 5
+// Station discovery API (radio-browser.info). Start with the service's
+// official DNS discovery hostname, then retain the two currently resolving
+// named endpoints as bounded fallbacks. The asynchronous transport still has
+// its independent absolute job deadline in RemoteBrowserService.
+#define RADIO_BROWSER_MIRROR_COUNT 3
 static const char* const RADIO_BROWSER_MIRRORS[RADIO_BROWSER_MIRROR_COUNT] = {
+    "all.api.radio-browser.info",
     "de1.api.radio-browser.info",
-    "de2.api.radio-browser.info",
-    "fi1.api.radio-browser.info",
-    "nl1.api.radio-browser.info",
-    "at1.api.radio-browser.info"
+    "de2.api.radio-browser.info"
 };
 #define RADIO_BROWSER_USER_AGENT  "ESP32-InternetRadio/1.0"
 #define BT_DISCOVERABLE     true

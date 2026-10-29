@@ -48,6 +48,9 @@ uint32_t volumeDisplayUntil = 0; // 0 = not currently showing volume overlay
 bool volumeOverlayPending = false;
 uint32_t volumeOverlayRequestedMs = 0;
 static const uint32_t VOLUME_OVERLAY_QUIET_MS = 250;
+bool deferredPlaybackDisplayPending = false;
+uint32_t deferredPlaybackDisplayNotBeforeMs = 0;
+static const uint32_t DEFERRED_PLAYBACK_DISPLAY_SETTLE_MS = 500;
 char lastBluetoothMetadata[256] = "";
 uint32_t lastUserInteraction = 0;
 char lastIdleClockMinute[6] = "";
@@ -676,7 +679,14 @@ void serviceDeferredCatalogStart() {
         nowPlayingName[sizeof(nowPlayingName) - 1] = 0;
         currentMode = MODE_PLAYING_RADIO;
         lastKnownPlaybackState = STATE_BUFFERING;
-        display.showPlaying(nowPlayingName, "Buffering...", nowPlayingFooter());
+        // Publish and answer the post-command RTCP synchronization chain before
+        // entering the synchronous e-paper refresh. Hardware evidence showed
+        // the old ordering delaying a following snapshot/menu response until
+        // REMOTE's three-second deadline and causing a peer reset even though
+        // playback itself succeeded.
+        deferredPlaybackDisplayPending = true;
+        deferredPlaybackDisplayNotBeforeMs =
+            millis() + DEFERRED_PLAYBACK_DISPLAY_SETTLE_MS;
     } else if (status == DeferredPlayStatus::failed) {
         currentMode = MODE_ERROR;
         display.showError("Failed to play station");
@@ -1639,9 +1649,16 @@ void updateUI() {
     // set right after starting a stream was never replaced by anything,
     // so it stayed on screen indefinitely even once audio was actually
     // flowing - this polls the real state and catches the transition.
+    if (currentMode != MODE_PLAYING_RADIO) {
+        deferredPlaybackDisplayPending = false;
+    }
     if (currentMode == MODE_PLAYING_RADIO) {
         PlaybackState nowState = audioPlayer.getState();
-        if (nowState != lastKnownPlaybackState) {
+        const bool deferredDisplayReady = deferredPlaybackDisplayPending &&
+            int32_t(millis() - deferredPlaybackDisplayNotBeforeMs) >= 0;
+        if (deferredDisplayReady ||
+            (!deferredPlaybackDisplayPending && nowState != lastKnownPlaybackState)) {
+            deferredPlaybackDisplayPending = false;
             lastKnownPlaybackState = nowState;
             const char* statusText = "Buffering...";
             if (nowState == STATE_PLAYING) statusText = "Playing";

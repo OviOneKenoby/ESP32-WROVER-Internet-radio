@@ -21,7 +21,8 @@ for field in ("browser_mirror", "browser_transport_stage", "browser_transport_er
     assert field in web
 assert "esp_tls_get_and_clear_error_type" in source
 assert "recordTls" in source
-assert "kTransportTimeoutMs = 1000" in source
+assert "kTransportTimeoutMs = 5000" in source
 assert "config.timeout_ms = kTransportTimeoutMs" in source
-assert "kMirrorLimit = 2" in source
+assert "kMirrorLimit = RADIO_BROWSER_MIRROR_COUNT" in source
+assert '"all.api.radio-browser.info"' in (root / "src/config.h").read_text(encoding="utf-8")
 print("remote browser transport/deadline policy: PASS")

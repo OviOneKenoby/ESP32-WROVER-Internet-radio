@@ -13,12 +13,13 @@
 namespace {
 constexpr size_t kBodyCapacity = 32768;
 constexpr uint32_t kJobDeadlineMs = 30000;
-// esp_http_client uses this for each asynchronous transport operation. The
-// former 250 ms value expired both public mirrors before an HTTP response on
-// healthy hardware. One second remains below REMOTE's response deadline while
-// allowing DNS/TCP/TLS progress; the absolute 30 s job fence still applies.
-constexpr uint32_t kTransportTimeoutMs = 1000;
-constexpr uint8_t kMirrorLimit = 2;
+// esp_http_client applies this to a transport operation, including DNS/TCP/TLS
+// setup. Hardware evidence showed both attempts terminating at this former
+// one-second fence before any HTTP status or TLS error was available. Keep a
+// bounded five-second per-operation allowance; the independent 30-second job
+// deadline continues to fence the complete request across all endpoints.
+constexpr uint32_t kTransportTimeoutMs = 5000;
+constexpr uint8_t kMirrorLimit = RADIO_BROWSER_MIRROR_COUNT;
 }
 
 RemoteBrowserService remoteBrowser;

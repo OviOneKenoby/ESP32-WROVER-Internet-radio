@@ -9,7 +9,9 @@ checks = {
     "true async HTTPS": "config.is_async = true" in service and "esp_http_client_perform" in service,
     "bounded PSRAM body": "kBodyCapacity = 32768" in service and "MALLOC_CAP_SPIRAM" in service,
     "verified HTTPS": "arduino_esp_crt_bundle_attach" in service,
-    "bounded mirrors and deadline": "kMirrorLimit = 2" in service and "kJobDeadlineMs = 30000" in service,
+    "bounded mirrors and deadline":
+        "kMirrorLimit = RADIO_BROWSER_MIRROR_COUNT" in service and
+        "kJobDeadlineMs = 30000" in service,
     "application-loop cooperative poll": "remoteBrowser.poll(millis())" in main,
     "physical browser priority": "void enterBrowseLetter()" in main and
         "remoteBrowser.cancel(RemoteBrowserCancelReason::physical_navigation);" in main,

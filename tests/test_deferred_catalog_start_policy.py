@@ -28,6 +28,17 @@ checks = {
     "no automatic replay": "last_catalog_request_" in server,
     "version fenced capability": "kMinor = 4" in protocol and
         "kFeatureDeferredCatalogPlay" in protocol,
+    "post-command state published before e-paper refresh":
+        "deferredPlaybackDisplayPending = true" in main and
+        main.index("deferredCatalogStart = DeferredCatalogStart{};") <
+        main.index("publishRtcpProjection();",
+                   main.index("deferredCatalogStart = DeferredCatalogStart{};")) and
+        "display.showPlaying(nowPlayingName, \"Buffering...\"" not in
+        main[main.index("void serviceDeferredCatalogStart()"):
+             main.index("bool projectRtcpBrowser")],
+    "deferred e-paper refresh remains bounded":
+        "DEFERRED_PLAYBACK_DISPLAY_SETTLE_MS = 500" in main and
+        "deferredDisplayReady" in main,
 }
 
 for name, passed in checks.items():
