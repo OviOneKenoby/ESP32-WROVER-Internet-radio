@@ -1,5 +1,24 @@
 # REMOTE Full Control
 
+## 2026-10-29 action-time transport checkpoint
+
+Hardware on the `0ed0ffb` / `9142401` pair verified Bluetooth control and
+authority, Radio recovery, authoritative volume, sleep/wake restoration and
+continuous audio. Favorite playback itself now succeeds immediately, but its
+post-command e-paper redraw coincided with a REMOTE response timeout and reset;
+Radio Browser also failed before HTTP status at its one-second per-transport
+fence. TUNER source `579f412691df6ffc4d03513d1c64f7a65ea18320` defers that
+redraw until authoritative state is published and gives the asynchronous
+Browser transport a bounded five-second operation window across the official
+DNS endpoint plus two resolving fallbacks. The 30-second whole-job deadline,
+RTCP protocol/security, revision fencing and no-replay rules are unchanged.
+
+Offline tests and production build pass. The candidate BIN is 2,135,920 bytes,
+SHA-256 `663983a35e060eb1fee6943512dc60d22ef7414255725a46f329b7c5915aed3c`.
+It is **not installed**. Hardware acceptance requires one Favorite start with
+both close histories unchanged and one complete Country -> Name -> Genre ->
+Results Browser flow.
+
 ## Compatibility and ownership
 
 TUNER remains the sole application owner. RTCP/1 authentication, record

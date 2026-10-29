@@ -1,5 +1,44 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-29 - Full Control action-time transport and Browser correction ready offline
+
+The focused hardware run of TUNER `0ed0ffb` with REMOTE `9142401` verified
+normal startup, Bluetooth source/state/metadata and bidirectional Play/Pause,
+Bluetooth-to-Radio stopped semantics, immediate Radio audio/gain recovery,
+volume control, SYSTEM_SLEEP/touch-wake state restoration and uninterrupted
+audio while REMOTE slept. TUNER does not display playback state; earlier notes
+claiming that it did are superseded.
+
+Two failures remained. Starting a Favorite succeeded audibly but a synchronous
+e-paper redraw preceded completion of the post-command RTCP query chain; the
+hardware trace retained a response timeout followed by `ECONNRESET`, while
+TUNER recorded peer EOF and a 3,011,296 us maximum response. The deferred
+completion path now clears its request, publishes authoritative state and
+allows RTCP to settle before the e-paper refresh. The mutation is still
+exactly-once, revision-fenced and never replayed.
+
+Radio Browser tried two endpoints for about one second each and failed before
+HTTP status with `ESP_ERR_HTTP_CONNECT`; TLS categories were available but
+zero. Its asynchronous transport now starts with the service's official
+`all.api.radio-browser.info` DNS endpoint, retains the two resolving named
+fallbacks and permits five seconds per transport operation under the unchanged
+30-second absolute job deadline. This is an evidence-backed bounded correction,
+not a hardware PASS.
+
+Focused deferred-start policy (11/11), display-service policy (9/9), Browser
+transport/policy (13/13), D-009 integration (12/12), BTX integration (21/21),
+Full-Control, catalog, Browser, D-009 (23/23), BTX (46/46) and Browser
+diagnostic executable tests pass. Production `esp32-lwip-psram` build at
+source `579f412691df6ffc4d03513d1c64f7a65ea18320` passes: BIN 2,135,920
+bytes, SHA-256
+`663983a35e060eb1fee6943512dc60d22ef7414255725a46f329b7c5915aed3c`;
+ELF 31,253,356 bytes, SHA-256
+`05511c56f1ce6ac9d313ef0e8d742f66d3208f409dbd5dcf8e3ad44bcd0170b4`;
+80,792 bytes static RAM, 2,129,345 bytes linked flash use and 1,009,808 bytes
+exact-image slot headroom. Embedded build ID is `579f412691df`. Existing
+third-party warnings are unchanged. Candidate is not installed; no hardware,
+NVS, pairing, push, merge or release action occurred.
+
 ## 2026-10-28 - Full Control 1.3 joint hardware-failure corrections ready offline
 
 Corrected the demonstrated paired failure paths while preserving RTCP
