@@ -9,7 +9,7 @@ int main() {
     RemoteBrowserDiagnostics::increment(value.start_requests);
     RemoteBrowserDiagnostics::increment(value.start_requests);
     assert(value.start_requests == UINT32_MAX);
-    assert(sizeof(RemoteBrowserDiagnostics) == 112);
+    assert(sizeof(RemoteBrowserDiagnostics) == 144);
     assert(uint8_t(RemoteBrowserCancelReason::rtcp_closed) == 3);
 
     // Successful START followed by a page response.
@@ -66,6 +66,20 @@ int main() {
            value.deadline_expired == 1);
     assert(value.first_failure_stage == RemoteBrowserTransportStage::connecting &&
            value.first_failure_mirror == 0 && value.first_transport_error == -2);
+    value.resetMirrorTransport();
+    value.recordMirrorTerminal(0, 0, 127, true);
+    value.recordMirrorTerminal(1, 110, 5012, true);
+    value.recordMirrorTerminal(2, 104, 83, true);
+    assert(value.socket_errno == 104 && value.first_socket_errno == 0 &&
+           value.final_socket_errno == 104 && value.failed_mirror_count == 3);
+    assert(value.mirror_elapsed_ms[0] == 127 &&
+           value.mirror_elapsed_ms[1] == 5012 &&
+           value.mirror_elapsed_ms[2] == 83);
+    value.resetMirrorTransport();
+    value.recordMirrorTerminal(0, 0, 42, false);
+    assert(value.socket_errno == 0 && value.first_socket_errno == 0 &&
+           value.final_socket_errno == 0 && value.failed_mirror_count == 0 &&
+           value.mirror_elapsed_ms[0] == 42);
     value.recordTls(104, -0x7280, 0x1234, 0x8001, 15);
     value.recordTls(110, -0x6800, 0, 0x8002, 11);
     assert(value.tls_system_error == 110 && value.tls_mbedtls_error == -0x6800 &&

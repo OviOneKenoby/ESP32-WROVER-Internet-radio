@@ -1,5 +1,27 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-29 - Radio Browser socket diagnostics checkpoint
+
+The cooperative Radio Browser now retains the socket errno returned by the
+pinned ESP-IDF HTTP client before cleanup or mirror advancement can destroy
+that session-local evidence. Fixed-size diagnostics record the current,
+first-failed and final-failed errno, the elapsed time of each of the three
+bounded mirror attempts and the number of failed mirrors. The existing
+ESP-IDF error, HTTP status and TLS categories remain unchanged. Errno zero is
+retained as zero; it means the client exposed no lower socket error and is not
+reinterpreted as success or as a fabricated cause.
+
+This diagnostic was required because the owner-controlled comparison produced
+the same `ESP_ERR_HTTP_CONNECT` failure after radio playback was fully stopped.
+The test rules out active playback as a necessary trigger for that attempt,
+while Wi-Fi, RTCP and available memory remained healthy. It does not establish
+the lower DNS/TCP/socket cause and does not repair Radio Browser HTTPS.
+
+Hardware validation still requires installing this separately authorized
+candidate, initiating exactly one REMOTE Browser request and capturing the new
+errno and per-mirror timings. No endpoint, timeout, TLS-verification, RTCP,
+station, playback or retry behavior changed.
+
 ## 2026-10-29 - Full Control action-time transport and Browser correction ready offline
 
 The focused hardware run of TUNER `0ed0ffb` with REMOTE `9142401` verified

@@ -216,6 +216,13 @@ void WebPortal::handleDiagnostics() {
     doc["browser_transport_stage"] = uint8_t(browserDiagnostic.transport_stage);
     doc["browser_transport_error"] = browserDiagnostic.transport_error;
     doc["browser_first_transport_error"] = browserDiagnostic.first_transport_error;
+    doc["browser_socket_errno"] = browserDiagnostic.socket_errno;
+    doc["browser_first_socket_errno"] = browserDiagnostic.first_socket_errno;
+    doc["browser_final_socket_errno"] = browserDiagnostic.final_socket_errno;
+    doc["browser_failed_mirror_count"] = browserDiagnostic.failed_mirror_count;
+    doc["browser_mirror_0_elapsed_ms"] = browserDiagnostic.mirror_elapsed_ms[0];
+    doc["browser_mirror_1_elapsed_ms"] = browserDiagnostic.mirror_elapsed_ms[1];
+    doc["browser_mirror_2_elapsed_ms"] = browserDiagnostic.mirror_elapsed_ms[2];
     doc["browser_http_status"] = browserDiagnostic.http_status;
     doc["browser_first_http_status"] = browserDiagnostic.first_http_status;
     doc["browser_tls_error"] = browserDiagnostic.tls_error;

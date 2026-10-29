@@ -20,6 +20,8 @@ constexpr uint32_t kJobDeadlineMs = 30000;
 // deadline continues to fence the complete request across all endpoints.
 constexpr uint32_t kTransportTimeoutMs = 5000;
 constexpr uint8_t kMirrorLimit = RADIO_BROWSER_MIRROR_COUNT;
+static_assert(RADIO_BROWSER_MIRROR_COUNT == RemoteBrowserDiagnostics::kMirrorSlots,
+              "browser diagnostic mirror slots must match configured mirrors");
 }
 
 RemoteBrowserService remoteBrowser;
@@ -146,8 +148,9 @@ esp_err_t RemoteBrowserService::onHttpEvent(esp_http_client_event_t* event) {
     return ESP_OK;
 }
 
-bool RemoteBrowserService::beginMirror() {
+bool RemoteBrowserService::beginMirror(uint32_t now_ms) {
     releaseHttp();
+    mirror_started_ms_ = now_ms;
     char url[640]{};
     if (mirror_ >= RADIO_BROWSER_MIRROR_COUNT ||
         snprintf(url, sizeof url, "https://%s%s", RADIO_BROWSER_MIRRORS[mirror_], path_) >= int(sizeof url))
@@ -179,6 +182,7 @@ bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) 
     diagnostics_.elapsed_ms = 0;
     diagnostics_.transport_error = 0;
     diagnostics_.first_transport_error = 0;
+    diagnostics_.resetMirrorTransport();
     diagnostics_.http_status = 0;
     diagnostics_.first_http_status = 0;
     diagnostics_.tls_error = 0;
@@ -191,7 +195,7 @@ bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) 
     diagnostics_.deadline_expired = 0;
     diagnostics_.first_failure_stage = RemoteBrowserTransportStage::idle;
     diagnostics_.first_failure_mirror = 0;
-    if (!beginMirror()) { finishJob(false, rtcp_browser::internal); return false; }
+    if (!beginMirror(now_ms)) { finishJob(false, rtcp_browser::internal); return false; }
     return true;
 }
 
@@ -282,7 +286,14 @@ void RemoteBrowserService::poll(uint32_t now_ms) {
         diagnostics_.transport_stage = RemoteBrowserTransportStage::connecting;
     const esp_err_t result = esp_http_client_perform(client_);
     if (result == ESP_ERR_HTTP_EAGAIN) return;
+    // Capture errno while the client handle is still valid. Cleanup and the
+    // next mirror can overwrite the transport's session-local error state.
+    const int socket_error = result == ESP_OK ? 0 : esp_http_client_get_errno(client_);
     const int status = esp_http_client_get_status_code(client_);
+    const uint32_t mirror_elapsed = now_ms - mirror_started_ms_;
+    const bool mirror_failed = result != ESP_OK || status != 200 || body_overflow_;
+    diagnostics_.recordMirrorTerminal(mirror_, socket_error, mirror_elapsed,
+                                      mirror_failed);
     diagnostics_.transport_error = result;
     diagnostics_.http_status = status > INT16_MAX ? INT16_MAX
         : status < INT16_MIN ? INT16_MIN : int16_t(status);
@@ -298,7 +309,7 @@ void RemoteBrowserService::poll(uint32_t now_ms) {
         diagnostics_.first_failure_mirror = mirror_;
     }
     if (++mirror_ < kMirrorLimit && mirror_ < RADIO_BROWSER_MIRROR_COUNT) {
-        if (beginMirror()) return;
+        if (beginMirror(now_ms)) return;
     }
     finishJob(false, rtcp_browser::network);
 }

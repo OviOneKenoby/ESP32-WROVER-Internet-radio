@@ -27,6 +27,8 @@ enum class RemoteBrowserTransportStage : uint8_t {
 };
 
 struct RemoteBrowserDiagnostics {
+    static constexpr uint8_t kMirrorSlots = 3;
+
     uint32_t start_requests{0};
     uint32_t start_results{0};
     uint32_t page_queries{0};
@@ -39,6 +41,10 @@ struct RemoteBrowserDiagnostics {
     uint32_t elapsed_ms{0};
     int32_t transport_error{0};
     int32_t first_transport_error{0};
+    int32_t socket_errno{0};
+    int32_t first_socket_errno{0};
+    int32_t final_socket_errno{0};
+    uint32_t mirror_elapsed_ms[kMirrorSlots]{};
     int16_t http_status{0};
     int16_t first_http_status{0};
     int16_t tls_error{0};
@@ -63,9 +69,26 @@ struct RemoteBrowserDiagnostics {
     RemoteBrowserTransportStage first_failure_stage{RemoteBrowserTransportStage::idle};
     uint8_t first_failure_mirror{0};
     uint8_t deadline_expired{0};
+    uint8_t failed_mirror_count{0};
 
     static void increment(uint32_t& value) {
         if (value != std::numeric_limits<uint32_t>::max()) ++value;
+    }
+    void resetMirrorTransport() {
+        socket_errno = 0;
+        first_socket_errno = 0;
+        final_socket_errno = 0;
+        failed_mirror_count = 0;
+        for (auto& elapsed : mirror_elapsed_ms) elapsed = 0;
+    }
+    void recordMirrorTerminal(uint8_t mirror_index, int32_t error_number,
+                              uint32_t elapsed, bool failed) {
+        socket_errno = error_number;
+        if (mirror_index < kMirrorSlots) mirror_elapsed_ms[mirror_index] = elapsed;
+        if (!failed) return;
+        if (!failed_mirror_count) first_socket_errno = error_number;
+        final_socket_errno = error_number;
+        if (failed_mirror_count != UINT8_MAX) ++failed_mirror_count;
     }
     void recordTls(int32_t system_error, int32_t mbedtls_error,
                    uint32_t cert_flags, int32_t esp_error,
@@ -89,5 +112,5 @@ struct RemoteBrowserDiagnostics {
     }
 };
 
-static_assert(sizeof(RemoteBrowserDiagnostics) == 112,
+static_assert(sizeof(RemoteBrowserDiagnostics) == 144,
               "browser diagnostics must remain fixed and allocation-free");
