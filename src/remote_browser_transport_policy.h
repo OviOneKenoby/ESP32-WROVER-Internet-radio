@@ -21,9 +21,9 @@ constexpr bool isTransientHttpStatus(int status) {
            status == 503 || status == 504;
 }
 
-constexpr FailureAction failureAction(bool transport_failed, int http_status,
-                                      uint8_t mirror, uint8_t mirror_count,
-                                      bool delayed_retry_used) {
+inline FailureAction failureAction(bool transport_failed, int http_status,
+                                   uint8_t mirror, uint8_t mirror_count,
+                                   bool delayed_retry_used) {
     if (!transport_failed && !isTransientHttpStatus(http_status))
         return FailureAction::stop;
     if (delayed_retry_used)
