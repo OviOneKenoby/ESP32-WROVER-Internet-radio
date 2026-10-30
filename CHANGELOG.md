@@ -1,5 +1,28 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-30 - Radio Browser native certificate-bundle correction
+
+Radio Browser's asynchronous ESP-IDF HTTP client incorrectly used Arduino's
+private `arduino_esp_crt_bundle_attach` callback. That callback requires a
+bundle registered through `WiFiClientSecure::setCACertBundle()`, which this
+native HTTP path never performs. Certificate verification therefore had no
+trust anchors and the asynchronous client surfaced only the generic
+`ESP_ERR_HTTP_CONNECT` result.
+
+The Browser transport now binds ESP-IDF 4.4.7's native
+`esp_crt_bundle_attach` callback and its configured built-in certificate
+bundle. The pinned framework contains Arduino and ESP-IDF headers with the
+same basename and include guard, so the source records the exact native C
+declaration to avoid resolving the incompatible Arduino-private declaration.
+Hostname and certificate verification remain enabled. Endpoints, timeouts,
+asynchronous EAGAIN progression, diagnostics, RTCP behavior, playback and
+audio are unchanged. A focused policy regression rejects reintroduction of
+the Arduino callback or insecure certificate policy.
+
+Focused Browser policy (15/15), transport/deadline, bounded diagnostics and
+RTCP Browser model tests pass. Production build identity and hardware
+validation are recorded below after verification.
+
 ## 2026-10-30 - Radio Browser socket diagnostics checkpoint
 
 The cooperative Radio Browser now retains the socket errno returned by the

@@ -8,7 +8,12 @@ server = (root / "src/rtcp_server.cpp").read_text(encoding="utf-8")
 checks = {
     "true async HTTPS": "config.is_async = true" in service and "esp_http_client_perform" in service,
     "bounded PSRAM body": "kBodyCapacity = 32768" in service and "MALLOC_CAP_SPIRAM" in service,
-    "verified HTTPS": "arduino_esp_crt_bundle_attach" in service,
+    "native verified HTTPS":
+        "config.crt_bundle_attach = esp_crt_bundle_attach" in service and
+        'extern "C" esp_err_t esp_crt_bundle_attach(void* conf)' in service,
+    "Arduino bundle callback excluded": "arduino_esp_crt_bundle_attach" not in service,
+    "certificate verification retained":
+        "setInsecure" not in service and "skip_common_name" not in service,
     "bounded mirrors and deadline":
         "kMirrorLimit = RADIO_BROWSER_MIRROR_COUNT" in service and
         "kJobDeadlineMs = 30000" in service,

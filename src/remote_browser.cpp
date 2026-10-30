@@ -4,11 +4,17 @@
 #include "browser.h"
 #include "stations.h"
 #include <WiFi.h>
-#include <esp_crt_bundle.h>
+#include <esp_err.h>
 #include <esp_heap_caps.h>
 #include <esp_tls.h>
 #include <esp_tls_errors.h>
 #include <cstring>
+
+// Arduino-ESP32 2.0.17 ships a private esp_crt_bundle.h with the same include
+// guard and basename as ESP-IDF 4.4.7's native header. PlatformIO resolves the
+// Arduino header first for this translation unit, so declare the exact native
+// ESP-IDF callback signature here and bind the IDF-owned certificate bundle.
+extern "C" esp_err_t esp_crt_bundle_attach(void* conf);
 
 namespace {
 constexpr size_t kBodyCapacity = 32768;
@@ -160,7 +166,7 @@ bool RemoteBrowserService::beginMirror(uint32_t now_ms) {
     config.user_agent = RADIO_BROWSER_USER_AGENT;
     config.timeout_ms = kTransportTimeoutMs; config.event_handler = onHttpEvent;
     config.user_data = this; config.is_async = true;
-    config.crt_bundle_attach = arduino_esp_crt_bundle_attach;
+    config.crt_bundle_attach = esp_crt_bundle_attach;
     config.buffer_size = 1024; config.buffer_size_tx = 512;
     client_ = esp_http_client_init(&config);
     diagnostics_.mirror = mirror_;
