@@ -35,6 +35,18 @@ Screensaver and REMOTE firmware behavior are unchanged. Production build and
 hardware validation identities are recorded separately after verification;
 actual Country-list and navigation success remain hardware-pending.
 
+Production `esp32-lwip-psram` build at source
+`e1aadc07b43bc6837a6e28739c0bd99536ff8202` passes with embedded build ID
+`e1aadc07b43b`: BIN 2,202,400 bytes, SHA-256
+`9a9fae10e9e27caa10c59e07a5a6cd9c9a284fe881f73ea3c5c753ea7e665f25`;
+ELF 31,355,148 bytes, SHA-256
+`b84102ed087e6542ca2a0f55fd59fc1331a14c3aaf4facb1c54d0eb75cf2cab7`.
+Static RAM is 81,192 bytes, linked flash use is 2,195,829 bytes, and
+exact-image application-slot headroom is 943,328 bytes. Against the native
+certificate-bundle baseline this is +16 bytes static RAM and +368 bytes BIN.
+No new compiler warnings were introduced; the established third-party A2DP
+and deprecated ADC warnings remain.
+
 ## 2026-10-30 - Radio Browser native certificate-bundle correction
 
 Radio Browser's asynchronous ESP-IDF HTTP client incorrectly used Arduino's
