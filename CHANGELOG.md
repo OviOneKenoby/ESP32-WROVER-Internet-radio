@@ -1,6 +1,6 @@
 # Changelog — What Was Actually Wrong and Fixed
 
-## 2026-10-29 - Radio Browser socket diagnostics checkpoint
+## 2026-10-30 - Radio Browser socket diagnostics checkpoint
 
 The cooperative Radio Browser now retains the socket errno returned by the
 pinned ESP-IDF HTTP client before cleanup or mirror advancement can destroy
@@ -21,6 +21,17 @@ Hardware validation still requires installing this separately authorized
 candidate, initiating exactly one REMOTE Browser request and capturing the new
 errno and per-mirror timings. No endpoint, timeout, TLS-verification, RTCP,
 station, playback or retry behavior changed.
+
+Focused Browser diagnostics, RTCP Browser wire, asynchronous transport/deadline
+and Browser policy tests pass. Production `esp32-lwip-psram` build at source
+`4c6049aaa2a1c8b93803a2f2f5d902abaf31bbe7` passes: BIN 2,136,720 bytes,
+SHA-256 `5c63f89c182c1093de23e61be467f86007e9056d96101ad153963f5cffd94b4f`;
+ELF 31,265,724 bytes, SHA-256
+`60455aff45975f3a4f531cb240bb32d4c11d505df32fa2557574bfb9c90c2bab`;
+80,824 bytes static RAM, 2,130,141 bytes linked flash use and 1,009,008
+bytes exact-image application-slot headroom. Embedded build ID is
+`4c6049aaa2a1`. The 32-byte static-RAM increase matches the fixed diagnostic
+storage growth. No new compiler warnings were introduced.
 
 ## 2026-10-29 - Full Control action-time transport and Browser correction ready offline
 
