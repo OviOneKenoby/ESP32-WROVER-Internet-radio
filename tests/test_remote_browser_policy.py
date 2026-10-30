@@ -16,7 +16,13 @@ checks = {
         "setInsecure" not in service and "skip_common_name" not in service,
     "bounded mirrors and deadline":
         "kMirrorLimit = RADIO_BROWSER_MIRROR_COUNT" in service and
-        "kJobDeadlineMs = 30000" in service,
+        "remote_browser_transport::kJobDeadlineMs" in service,
+    "documented country response schema":
+        '"/json/countries?order=name&hidebroken=true&limit=250"' in service and
+        'object["iso_3166_1"]' not in service,
+    "encoded exact country search":
+        '"&country=%s&countryExact=true"' in service and
+        '"&countrycode=%s"' not in service,
     "application-loop cooperative poll": "remoteBrowser.poll(millis())" in main,
     "physical browser priority": "void enterBrowseLetter()" in main and
         "remoteBrowser.cancel(RemoteBrowserCancelReason::physical_navigation);" in main,

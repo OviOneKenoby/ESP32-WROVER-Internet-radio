@@ -29,7 +29,7 @@ private:
         void deallocate(void* pointer) override;
         void* reallocate(void* pointer, size_t size) override;
     } allocator_;
-    struct Country { char name[BROWSE_COUNTRY_NAME_LEN]; char code[BROWSE_COUNTRY_CODE_LEN]; };
+    struct Country { char name[BROWSE_COUNTRY_NAME_LEN]; };
     struct Genre { char name[BROWSE_TAG_NAME_LEN]; };
     struct Result { char name[MAX_NAME_LENGTH]; char url[MAX_URL_LENGTH]; StationCodec codec; };
     enum class Job : uint8_t { none, countries, genres, results };
@@ -47,7 +47,10 @@ private:
     uint16_t selected_genre_{rtcp_browser::kAnyToken};
     uint8_t selected_name_{0};
     Job job_{Job::none}; esp_http_client_handle_t client_{nullptr};
-    uint32_t job_started_ms_{0}, job_deadline_ms_{0}, mirror_started_ms_{0}; uint8_t mirror_{0}; bool body_overflow_{false};
+    uint32_t job_started_ms_{0}, job_deadline_ms_{0}, mirror_started_ms_{0};
+    uint32_t retry_at_ms_{0};
+    uint8_t mirror_{0}, attempt_count_{0};
+    bool body_overflow_{false}, delayed_retry_used_{false}, retry_waiting_{false};
     char path_[512]{};
     mutable RemoteBrowserDiagnostics diagnostics_{};
 

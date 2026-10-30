@@ -220,6 +220,9 @@ void WebPortal::handleDiagnostics() {
     doc["browser_first_socket_errno"] = browserDiagnostic.first_socket_errno;
     doc["browser_final_socket_errno"] = browserDiagnostic.final_socket_errno;
     doc["browser_failed_mirror_count"] = browserDiagnostic.failed_mirror_count;
+    doc["browser_attempt_count"] = browserDiagnostic.attempt_count;
+    doc["browser_retry_count"] = browserDiagnostic.retry_count;
+    doc["browser_retry_waiting"] = browserDiagnostic.retry_waiting;
     doc["browser_mirror_0_elapsed_ms"] = browserDiagnostic.mirror_elapsed_ms[0];
     doc["browser_mirror_1_elapsed_ms"] = browserDiagnostic.mirror_elapsed_ms[1];
     doc["browser_mirror_2_elapsed_ms"] = browserDiagnostic.mirror_elapsed_ms[2];

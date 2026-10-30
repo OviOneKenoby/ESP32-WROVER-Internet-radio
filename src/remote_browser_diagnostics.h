@@ -24,6 +24,7 @@ enum class RemoteBrowserTransportStage : uint8_t {
     disconnected = 8,
     event_error = 9,
     deadline = 10,
+    retry_wait = 11,
 };
 
 struct RemoteBrowserDiagnostics {
@@ -70,6 +71,9 @@ struct RemoteBrowserDiagnostics {
     uint8_t first_failure_mirror{0};
     uint8_t deadline_expired{0};
     uint8_t failed_mirror_count{0};
+    uint8_t attempt_count{0};
+    uint8_t retry_count{0};
+    uint8_t retry_waiting{0};
 
     static void increment(uint32_t& value) {
         if (value != std::numeric_limits<uint32_t>::max()) ++value;

@@ -60,12 +60,17 @@ int main() {
     value.first_failure_stage = RemoteBrowserTransportStage::connecting;
     value.first_failure_mirror = 0;
     value.first_transport_error = -2;
+    value.attempt_count = 4;
+    value.retry_count = 1;
+    value.retry_waiting = 1;
     assert(value.mirror == 1 && value.http_status == 503 &&
            value.transport_stage == RemoteBrowserTransportStage::connected);
     assert(value.transport_error == -1 && value.elapsed_ms == 30000 &&
            value.deadline_expired == 1);
     assert(value.first_failure_stage == RemoteBrowserTransportStage::connecting &&
            value.first_failure_mirror == 0 && value.first_transport_error == -2);
+    assert(value.attempt_count == 4 && value.retry_count == 1 &&
+           value.retry_waiting == 1);
     value.resetMirrorTransport();
     value.recordMirrorTerminal(0, 0, 127, true);
     value.recordMirrorTerminal(1, 110, 5012, true);

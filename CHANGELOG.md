@@ -1,5 +1,40 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-30 - Radio Browser bounded HTTPS reliability correction
+
+The native ESP-IDF certificate-bundle correction remains in place and TLS
+verification remains enabled. Hardware evidence from that checkpoint reached
+an authenticated HTTP 503 response after two connection failures, proving
+that the remaining failure was not the earlier missing-trust-anchor defect.
+The three configured hostnames offered no useful recovery during that run,
+and the client exhausted them in about two seconds.
+
+The cooperative Browser transport now permits 8 seconds per DNS/TCP/TLS/HTTP
+attempt under one 40-second job deadline. Transport failures and HTTP 429,
+500, 502, 503 and 504 advance through the three configured endpoints. After
+all three transiently fail, exactly one canonical-endpoint retry is permitted
+after a 2-second non-blocking delay, for a maximum of four attempts. Every
+attempt receives a newly initialized HTTP client, redirects remain verified
+and are capped at three, cancellation remains immediate during the delay, and
+no START or mutation is replayed. Fixed diagnostics expose attempt, retry and
+retry-wait state without allocation.
+
+The official Radio Browser `/json/countries` response supplies country names
+and station counts, not the requested `iso_3166_1` member. The former parser
+would therefore have discarded every country even after HTTP success. The
+request and parser now consume the documented name field, and subsequent
+bounded station searches URL-encode that name with exact-country matching.
+The fixed 32 KiB PSRAM response body and existing country/tag/result limits
+are unchanged.
+
+Focused Browser policy (17/17), transport/deadline, reliability-policy and
+bounded-diagnostics tests pass. The one-off earlier RTCP `peer_eof` remains
+unproven as a Browser defect: it canceled the first request as designed,
+reauthentication succeeded, and it did not recur on the second request.
+Screensaver and REMOTE firmware behavior are unchanged. Production build and
+hardware validation identities are recorded separately after verification;
+actual Country-list and navigation success remain hardware-pending.
+
 ## 2026-10-30 - Radio Browser native certificate-bundle correction
 
 Radio Browser's asynchronous ESP-IDF HTTP client incorrectly used Arduino's

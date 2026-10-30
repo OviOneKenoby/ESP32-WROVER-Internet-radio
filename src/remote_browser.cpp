@@ -1,4 +1,5 @@
 #include "remote_browser.h"
+#include "remote_browser_transport_policy.h"
 
 #include "audio.h"
 #include "browser.h"
@@ -18,13 +19,6 @@ extern "C" esp_err_t esp_crt_bundle_attach(void* conf);
 
 namespace {
 constexpr size_t kBodyCapacity = 32768;
-constexpr uint32_t kJobDeadlineMs = 30000;
-// esp_http_client applies this to a transport operation, including DNS/TCP/TLS
-// setup. Hardware evidence showed both attempts terminating at this former
-// one-second fence before any HTTP status or TLS error was available. Keep a
-// bounded five-second per-operation allowance; the independent 30-second job
-// deadline continues to fence the complete request across all endpoints.
-constexpr uint32_t kTransportTimeoutMs = 5000;
 constexpr uint8_t kMirrorLimit = RADIO_BROWSER_MIRROR_COUNT;
 static_assert(RADIO_BROWSER_MIRROR_COUNT == RemoteBrowserDiagnostics::kMirrorSlots,
               "browser diagnostic mirror slots must match configured mirrors");
@@ -74,7 +68,7 @@ bool RemoteBrowserService::start(uint32_t now_ms) {
     diagnostics_.generation = generation_;
     diagnostics_.revision = revision_;
     return beginJob(Job::countries,
-        "/json/countries?order=name&fields=name,iso_3166_1", now_ms);
+        "/json/countries?order=name&hidebroken=true&limit=250", now_ms);
 }
 
 void RemoteBrowserService::releaseHttp() {
@@ -87,7 +81,7 @@ void RemoteBrowserService::cancel(RemoteBrowserCancelReason reason) {
         RemoteBrowserDiagnostics::increment(diagnostics_.cancellations);
         diagnostics_.cancel_reason = reason;
     }
-    releaseHttp(); job_ = Job::none;
+    releaseHttp(); job_ = Job::none; retry_waiting_ = false;
     country_status_ = genre_status_ = result_status_ = rtcp_browser::Status::idle;
     country_count_ = 0; genre_count_ = result_count_ = 0;
     active_ = false; revision_ = 0;
@@ -164,11 +158,17 @@ bool RemoteBrowserService::beginMirror(uint32_t now_ms) {
     esp_http_client_config_t config{};
     config.url = url; config.method = HTTP_METHOD_GET;
     config.user_agent = RADIO_BROWSER_USER_AGENT;
-    config.timeout_ms = kTransportTimeoutMs; config.event_handler = onHttpEvent;
+    config.timeout_ms = remote_browser_transport::kTransportTimeoutMs;
+    config.event_handler = onHttpEvent;
     config.user_data = this; config.is_async = true;
     config.crt_bundle_attach = esp_crt_bundle_attach;
+    config.disable_auto_redirect = false;
+    config.max_redirection_count = remote_browser_transport::kMaxRedirects;
     config.buffer_size = 1024; config.buffer_size_tx = 512;
     client_ = esp_http_client_init(&config);
+    if (attempt_count_ != UINT8_MAX) ++attempt_count_;
+    diagnostics_.attempt_count = attempt_count_;
+    diagnostics_.retry_waiting = 0;
     diagnostics_.mirror = mirror_;
     diagnostics_.transport_stage = client_
         ? RemoteBrowserTransportStage::client_initialized
@@ -179,9 +179,10 @@ bool RemoteBrowserService::beginMirror(uint32_t now_ms) {
 bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) {
     if (!path || std::strlen(path) >= sizeof path_) return false;
     if (path != path_) std::strcpy(path_, path);
-    job_ = job; mirror_ = 0;
+    job_ = job; mirror_ = 0; attempt_count_ = 0;
+    delayed_retry_used_ = false; retry_waiting_ = false; retry_at_ms_ = 0;
     job_started_ms_ = now_ms;
-    job_deadline_ms_ = now_ms + kJobDeadlineMs;
+    job_deadline_ms_ = now_ms + remote_browser_transport::kJobDeadlineMs;
     diagnostics_.job = uint8_t(job_);
     diagnostics_.status = uint8_t(rtcp_browser::Status::loading);
     diagnostics_.error = 0;
@@ -201,6 +202,9 @@ bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) 
     diagnostics_.deadline_expired = 0;
     diagnostics_.first_failure_stage = RemoteBrowserTransportStage::idle;
     diagnostics_.first_failure_mirror = 0;
+    diagnostics_.attempt_count = 0;
+    diagnostics_.retry_count = 0;
+    diagnostics_.retry_waiting = 0;
     if (!beginMirror(now_ms)) { finishJob(false, rtcp_browser::internal); return false; }
     return true;
 }
@@ -233,10 +237,9 @@ bool RemoteBrowserService::parseJob() {
         country_count_ = 0;
         for (JsonObject object : doc.as<JsonArray>()) {
             if (country_count_ >= MAX_BROWSE_COUNTRIES) break;
-            const char* name = object["name"] | ""; const char* code = object["iso_3166_1"] | "";
-            if (!name[0] || std::strlen(code) != 2) continue;
+            const char* name = object["name"] | "";
+            if (!name[0]) continue;
             strlcpy(countries_[country_count_].name, name, sizeof countries_[0].name);
-            strlcpy(countries_[country_count_].code, code, sizeof countries_[0].code);
             ++country_count_;
         }
     } else if (job_ == Job::genres) {
@@ -266,7 +269,7 @@ bool RemoteBrowserService::parseJob() {
 }
 
 void RemoteBrowserService::poll(uint32_t now_ms) {
-    if (job_ == Job::none || !client_) return;
+    if (job_ == Job::none) return;
     if (WiFi.status() != WL_CONNECTED) {
         diagnostics_.transport_error = ESP_ERR_INVALID_STATE;
         diagnostics_.elapsed_ms = now_ms - job_started_ms_;
@@ -278,6 +281,15 @@ void RemoteBrowserService::poll(uint32_t now_ms) {
         }
         finishJob(false, rtcp_browser::network); return;
     }
+    if (retry_waiting_) {
+        if (int32_t(now_ms - retry_at_ms_) < 0) return;
+        retry_waiting_ = false;
+        diagnostics_.retry_waiting = 0;
+        mirror_ = 0;
+        if (!beginMirror(now_ms)) finishJob(false, rtcp_browser::internal);
+        return;
+    }
+    if (!client_) return;
     if (int32_t(now_ms - job_deadline_ms_) >= 0) {
         diagnostics_.transport_stage = RemoteBrowserTransportStage::deadline;
         diagnostics_.deadline_expired = 1;
@@ -314,8 +326,23 @@ void RemoteBrowserService::poll(uint32_t now_ms) {
         diagnostics_.first_http_status = diagnostics_.http_status;
         diagnostics_.first_failure_mirror = mirror_;
     }
-    if (++mirror_ < kMirrorLimit && mirror_ < RADIO_BROWSER_MIRROR_COUNT) {
+    const auto action = remote_browser_transport::failureAction(
+        result != ESP_OK, status, mirror_, kMirrorLimit, delayed_retry_used_);
+    if (action == remote_browser_transport::FailureAction::next_mirror) {
+        ++mirror_;
         if (beginMirror(now_ms)) return;
+        finishJob(false, rtcp_browser::internal); return;
+    }
+    if (action == remote_browser_transport::FailureAction::delayed_canonical_retry &&
+        attempt_count_ < remote_browser_transport::kMaximumAttempts) {
+        releaseHttp();
+        delayed_retry_used_ = true;
+        retry_waiting_ = true;
+        retry_at_ms_ = now_ms + remote_browser_transport::kRetryDelayMs;
+        diagnostics_.transport_stage = RemoteBrowserTransportStage::retry_wait;
+        diagnostics_.retry_count = 1;
+        diagnostics_.retry_waiting = 1;
+        return;
     }
     finishJob(false, rtcp_browser::network);
 }
@@ -366,9 +393,13 @@ uint8_t RemoteBrowserService::execute(const rtcp_browser::Command& command, uint
     if (command.operation == Operation::select_genre) {
         if (command.token != kAnyToken && command.token >= genre_count_) return invalid_argument;
         selected_genre_ = command.token; result_status_ = Status::loading; result_count_ = 0;
-        char country[24]{}, genre[128]{}, name[16]{};
-        if (selected_country_ != kAnyToken)
-            snprintf(country, sizeof country, "&countrycode=%s", countries_[selected_country_].code);
+        char country[BROWSE_COUNTRY_NAME_LEN * 3 + 32]{}, genre[128]{}, name[16]{};
+        if (selected_country_ != kAnyToken) {
+            char encoded[BROWSE_COUNTRY_NAME_LEN * 3]{};
+            if (!encode(countries_[selected_country_].name, encoded, sizeof encoded))
+                return invalid_argument;
+            snprintf(country, sizeof country, "&country=%s&countryExact=true", encoded);
+        }
         if (selected_genre_ != kAnyToken) {
             char encoded[96]{}; if (!encode(genres_[selected_genre_].name, encoded, sizeof encoded)) return invalid_argument;
             snprintf(genre, sizeof genre, "&tag=%s", encoded);
