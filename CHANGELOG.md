@@ -21,7 +21,18 @@ the Arduino callback or insecure certificate policy.
 
 Focused Browser policy (15/15), transport/deadline, bounded diagnostics and
 RTCP Browser model tests pass. Production build identity and hardware
-validation are recorded below after verification.
+validation are recorded below after verification. Production
+`esp32-lwip-psram` build at source
+`861401615b62d07176d4fe1ba6adeb54c379cc64` passes: BIN 2,202,032 bytes,
+SHA-256 `490183a47eea0871435600f04482d723378e3dc3680247cd6408cb20373dee80`;
+ELF 31,350,632 bytes, SHA-256
+`ad203ef34688f8d6822424e469a568df16eff6bf11824385cbe5c53f1e6e262c`;
+81,176 bytes static RAM, 2,195,461 bytes linked flash use and 943,696 bytes
+exact-image application-slot headroom. Embedded build ID is `861401615b62`.
+The Browser object references `esp_crt_bundle_attach`; the ELF links that
+native symbol and the configured X.509 bundle. The unrelated Arduino symbol
+remains present only because WiFiClientSecure is also linked. Existing
+third-party A2DP and deprecated ADC warnings are unchanged.
 
 ## 2026-10-30 - Radio Browser socket diagnostics checkpoint
 
