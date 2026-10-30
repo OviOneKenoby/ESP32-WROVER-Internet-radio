@@ -34,6 +34,13 @@ native symbol and the configured X.509 bundle. The unrelated Arduino symbol
 remains present only because WiFiClientSecure is also linked. Existing
 third-party A2DP and deprecated ADC warnings are unchanged.
 
+The authorized TUNER-only deployment stopped before writing at the mandatory
+device-identity gate. Windows enumerated only REMOTE's ESP32-S3 USB
+Serial/JTAG interface on COM3; the TUNER CH340 interface was absent. Candidate
+and current installed-image rollback hashes passed, but no TUNER port, chip or
+flash identity could be established. No device was accessed or modified, and
+Radio Browser hardware validation remains pending.
+
 ## 2026-10-30 - Radio Browser socket diagnostics checkpoint
 
 The cooperative Radio Browser now retains the socket errno returned by the
