@@ -27,6 +27,16 @@ ELF SHA-256
 `ef698d9b7e13618ecb44a038e03d1df5db0a214d7eedb2eb4a73f52522aae1fd`;
 static RAM 81,200 bytes and exact-image partition headroom 942,976 bytes.
 
+Hardware installation and exact readback passed, but the first Favorites test
+still produced the transient `TUNER disconnected` popup. Audio started once,
+metadata/state recovered and TUNER remained responsive. The immediate evidence
+showed a 2,323 us catalog response and a 51,768 us maximum TUNER response, while
+REMOTE again closed in READY after 3,008 ms with no queued response bytes;
+TUNER retained the matching peer EOF and no Wi-Fi disconnect. This disproves
+the synchronous Recent rewrite as the complete cause. Recent and source-
+transition testing stopped, and the correction remains hardware-failed pending
+retention of the exact awaited/request/response types at the close boundary.
+
 ## 2026-10-31 - Bluetooth navigation state and restartable handover
 
 Hardware evidence showed that a successful NEXT advanced the phone, audio and
