@@ -1,5 +1,29 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-31 - Bounded RTCP timeout correlation diagnostics
+
+Retained REMOTE close history identified the false station-start disconnect as
+a `menu_state` response timeout: the client closed from READY after 3,008 ms
+with `awaited=7`, `response_pending=1`, no socket error and no queued bytes.
+This establishes the exact transaction type, but the installed TUNER maps all
+Full Control requests to diagnostic `unknown` and therefore cannot establish
+whether that menu request arrived or whether its response was written.
+
+TUNER diagnostics now recognize every negotiated D-009, BTX and Full Control
+request type. A fixed four-entry close history retains the last received
+request type, client-to-server record counter and timestamp together with the
+last fully written response's originating request type, server-to-client
+record counter and timestamp. The live values and retained close records are
+exposed by the existing `/api/diagnostics` endpoint. Storage is exactly 296
+bytes, contains no payload or secret material and performs no dynamic
+allocation. RTCP framing, cryptography, counters, deadlines, single-in-flight
+semantics and application behavior are unchanged.
+
+Focused bounded-diagnostics checks passed 14/14. CCM wire 24/24, D-009 23/23,
+BTX 46/46, Full Control and catalog regressions also passed. Hardware
+correlation remains pending; this diagnostic change does not claim a cause or
+implement a functional correction.
+
 ## 2026-10-31 - Cooperative Recent persistence after deferred station start
 
 Hardware evidence separated the false disconnect from catalog admission: the

@@ -231,7 +231,8 @@ bool Server::sendApplication(const uint8_t* data, size_t size) {
     const int write_error = written == wire ? 0 : errno;
     const uint32_t allocation_after = SystemInfo::allocationFailureCount();
     diagnostics_.responseWrite(written, allocation_after >= allocation_before
-                                            ? allocation_after - allocation_before : 0);
+                                            ? allocation_after - allocation_before : 0,
+                               tx_counter_, millis());
     if (written != wire) diagnostics_.transport_error = write_error;
     if (written != wire) return false;
     ++tx_counter_; return true;
@@ -429,9 +430,10 @@ bool Server::processRecord(AudioPlayer& audio) {
         diagnostics_.close_reason = CloseReason::authentication_failed;
         return false;
     }
+    const uint64_t request_counter = rx_counter_;
     ++rx_counter_;
     diagnostics_.received(length ? diagnosticRequest(plain[0]) : DiagnosticRequest::unknown,
-                          freeInternal(), largestInternal());
+                          request_counter, millis(), freeInternal(), largestInternal());
     const size_t response_size = handleApplication(audio, plain.data(), length, response.data(), response.size());
     memset(plain.data(), 0, plain.size());
     if (response_size == kDeferredResponse) {

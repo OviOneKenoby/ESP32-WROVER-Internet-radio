@@ -181,6 +181,12 @@ void WebPortal::handleDiagnostics() {
     doc["rtcp_closes"] = rtcpDiagnostic.closes;
     doc["rtcp_close_reason"] = uint8_t(rtcpDiagnostic.close_reason);
     doc["rtcp_transport_error"] = rtcpDiagnostic.transport_error;
+    doc["rtcp_request"] = uint8_t(rtcpDiagnostic.request);
+    doc["rtcp_request_counter"] = rtcpDiagnostic.request_counter;
+    doc["rtcp_request_ms"] = rtcpDiagnostic.request_ms;
+    doc["rtcp_response_request"] = uint8_t(rtcpDiagnostic.response_request);
+    doc["rtcp_response_counter"] = rtcpDiagnostic.response_counter;
+    doc["rtcp_response_ms"] = rtcpDiagnostic.response_ms;
     doc["rtcp_close_history_count"] = rtcpDiagnostic.close_history_count;
     JsonArray closeHistory = doc["rtcp_close_history"].to<JsonArray>();
     for (uint8_t age = 0; age < rtcpDiagnostic.close_history_count &&
@@ -196,6 +202,11 @@ void WebPortal::handleDiagnostics() {
         row["reason"] = uint8_t(event.reason);
         row["socket_error"] = event.socket_error;
         row["request"] = uint8_t(event.request);
+        row["request_counter"] = event.request_counter;
+        row["request_ms"] = event.request_ms;
+        row["response_request"] = uint8_t(event.response_request);
+        row["response_counter"] = event.response_counter;
+        row["response_ms"] = event.response_ms;
         row["stage"] = uint8_t(event.stage);
     }
     doc["browser_start_requests"] = browserDiagnostic.start_requests;
