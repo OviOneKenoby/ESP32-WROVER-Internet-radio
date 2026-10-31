@@ -1,5 +1,27 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-31 - Full Control 1.3 integrated into main
+
+Fast-forwarded `main` from `4977b49` through the complete D-009, discovery,
+BTX, Full Control, PSRAM/TLS and Radio Browser history. The hardware-validated
+TUNER implementation remains `12b1b24` (2,202,496-byte BIN, SHA-256
+`809f66035d26e93c753c495225c8c0984c1398834341d7bad5a1b2d56522ef47`).
+Focused D-009, BTX, Full Control, deferred-start, Browser transport/reliability,
+discovery, display-service, latency, TLS-PSRAM, StationManager-PSRAM and
+production Wi-Fi policy tests passed at integration head `5da15a4`.
+
+The clean `esp32-lwip-psram` production build at that head passed: BIN
+2,202,496 bytes, SHA-256
+`13864ee352c15a94c0ed3ce830b1f1e1eb4fbd4c1058ceeea44ac4109d7f24de`;
+ELF SHA-256
+`c260869e912c17cc6769c4b7ac60b54a8435739e50dd8b52d781ef705fa6f841`;
+static RAM 81,192 bytes and exact-image application headroom 943,232 bytes.
+The hash differs from the installed image because documentation commits changed
+the embedded Git identity; no firmware implementation changed after the
+hardware-validated `12b1b24`. This integrated build was not flashed or
+hardware-tested. Only the historical dependency warnings remained. Extended
+soak and exhaustive Browser error/cancellation paths remain untested.
+
 ## 2026-10-31 - Deferred Radio Browser station startup hardware PASS
 
 Installed implementation `12b1b24` with exact 2,202,496-byte application
