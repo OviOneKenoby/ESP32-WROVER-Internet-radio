@@ -1,5 +1,21 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-31 - Deferred Radio Browser station startup hardware PASS
+
+Installed implementation `12b1b24` with exact 2,202,496-byte application
+readback SHA-256
+`809f66035d26e93c753c495225c8c0984c1398834341d7bad5a1b2d56522ef47`.
+With REMOTE `8fdabc6`, the owner completed Country -> Name -> Genre -> Results
+and selected one station. Audio started exactly once, with no stuck overlay or
+disconnect card; metadata, PLAYING and authoritative volume were correct.
+
+Post-test diagnostics recorded one Browser start/result, nine pages, three
+completed HTTPS jobs, HTTP 200, zero Browser failures, and MP3 PLAYING. The
+TUNER retained RTCP close history was unchanged from baseline and REMOTE added
+no retained close event. This verifies the deferred Browser PLAY correction
+for the tested flow; longer soak and exhaustive error/cancellation cases remain
+outside this checkpoint.
+
 ## 2026-10-31 - Deferred Radio Browser station startup
 
 Hardware evidence showed that Country/Name/Genre/Results browsing completed

@@ -1,5 +1,16 @@
 # REMOTE Full Control
 
+## 2026-10-31 Browser playback hardware checkpoint
+
+TUNER `12b1b24` and REMOTE `8fdabc6` passed exact application readback and one
+complete hardware Browser flow through Country, Name, Genre, Results and
+station selection. The selected MP3 station started once; audio, metadata,
+PLAYING and volume were correct, overlays cleared, and no disconnect card was
+shown. TUNER recorded HTTP 200, three completed Browser jobs, zero failures and
+no new retained RTCP close. The fixed deferred Browser-start path is therefore
+hardware PASS for this bounded scenario. Extended soak and exhaustive
+error/cancellation/empty-result paths are not claimed.
+
 ## 2026-10-31 Browser playback response correction
 
 Implementation `12b1b24` extends the existing fixed deferred station-start
