@@ -17,6 +17,16 @@ postcondition gates. RTCP, source fencing and dependency versions are
 unchanged. Focused software verification and hardware validation are recorded
 separately; this entry does not claim hardware PASS.
 
+Host playback-authority and cleanup-policy tests, BTX 21/21, RTCP BTX 46/46,
+Full Control, D-009 23/23 and deferred-start 14/14 checks passed. Production
+build `f09e766c4de3` passed with the existing dependency warnings only: BIN
+2,202,656 bytes, SHA-256
+`6ebaa899d3c0ad48b3859d33c0ba9484248040b979e8834eb65d375105a48da2`;
+ELF SHA-256
+`6c8ab099cd3dcc3301c8407d828b07f1955106ff208bce1de1fe553889d22592`;
+static RAM 81,192 bytes and exact-image partition headroom 943,072 bytes.
+Hardware installation and NEXT/PREV/source-transition validation remain pending.
+
 ## 2026-10-31 - Full Control 1.3 integrated into main
 
 Fast-forwarded `main` from `4977b49` through the complete D-009, discovery,
