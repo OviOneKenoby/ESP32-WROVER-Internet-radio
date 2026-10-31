@@ -18,6 +18,15 @@ mutation can run inside the RTCP owner and must not re-enter it. Hardware
 verification remains pending; this entry does not claim the transient timeout
 is closed until Favorites, Recent and Bluetooth-to-Radio pass on-device.
 
+Focused deferred-start 17/17, display-service 9/9, StationManager policy
+16/16, BTX integration 21/21 and D-009 integration 12/12 checks passed. The
+production `esp32-lwip-psram` build from implementation commit `adf1240`
+passed with only the established dependency warnings: BIN 2,202,752 bytes,
+SHA-256 `fea3ce16ae154ba0598f32170ba20fa69cb28a391c18ba555d0b909d938ea296`;
+ELF SHA-256
+`ef698d9b7e13618ecb44a038e03d1df5db0a214d7eedb2eb4a73f52522aae1fd`;
+static RAM 81,200 bytes and exact-image partition headroom 942,976 bytes.
+
 ## 2026-10-31 - Bluetooth navigation state and restartable handover
 
 Hardware evidence showed that a successful NEXT advanced the phone, audio and
