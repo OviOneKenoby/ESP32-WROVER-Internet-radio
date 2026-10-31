@@ -24,6 +24,16 @@ BTX 46/46, Full Control and catalog regressions also passed. Hardware
 correlation remains pending; this diagnostic change does not claim a cause or
 implement a functional correction.
 
+The production `esp32-lwip-psram` build from implementation commit `1c1c756`
+passed with only the established dependency warnings: BIN 2,203,872 bytes,
+SHA-256 `ed2e89d9a8d9ac8456ca9346d1b92b3cec225a3811d170e0ae091cbd9f0fb26c`;
+ELF SHA-256
+`41033770c11c6a18307c154f1d7a8d913718ae2c62eee421b97c17c0fd35a370`;
+static RAM 81,368 bytes and exact-image partition headroom 941,856 bytes.
+Compared with the installed station-start candidate, static RAM increases by
+168 bytes. Deployment requires TUNER only; REMOTE's installed retained history
+already exposes the awaited transaction and requires no diagnostic change.
+
 ## 2026-10-31 - Cooperative Recent persistence after deferred station start
 
 Hardware evidence separated the false disconnect from catalog admission: the
