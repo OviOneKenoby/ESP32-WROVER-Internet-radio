@@ -1,5 +1,26 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-31 - Deferred Radio Browser station startup
+
+Hardware evidence showed that Country/Name/Genre/Results browsing completed
+successfully, but selecting a station closed RTCP after REMOTE's three-second
+response deadline. REMOTE retained `response_timeout` while awaiting the
+authenticated mutation result; TUNER retained the subsequent peer EOF. The
+Browser command owner still called synchronous `playDiscoveredStation()`,
+unlike the already-corrected catalog path.
+
+Browser PLAY now admits the revision-fenced command into the existing fixed
+deferred audio slot and returns its encrypted result before stream opening.
+No task, protocol field, timeout, replay path or dynamic queue was added.
+Focused deferred-start, Browser transport, RTCP latency/display and D-009
+policy regressions pass. Clean `esp32-lwip-psram` production build PASS at
+implementation `12b1b24`: BIN 2,202,496 bytes, SHA-256
+`809f66035d26e93c753c495225c8c0984c1398834341d7bad5a1b2d56522ef47`;
+ELF SHA-256
+`ce410f0bd9e9da025bace110316b9d460c7837cd2a78fb484769e919a60fabc8`;
+static RAM 81,192 bytes and application headroom 943,232 bytes. Hardware
+installation and station-play validation remain pending.
+
 ## 2026-10-30 - Radio Browser bounded HTTPS reliability correction
 
 The native ESP-IDF certificate-bundle correction remains in place and TLS

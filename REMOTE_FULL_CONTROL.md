@@ -1,5 +1,15 @@
 # REMOTE Full Control
 
+## 2026-10-31 Browser playback response correction
+
+Implementation `12b1b24` extends the existing fixed deferred station-start
+slot to Radio Browser PLAY. Revision fencing and exactly-once admission remain
+on the RTCP owner; stream opening remains on the persistent audio task. This
+prevents synchronous network/audio startup from delaying the encrypted command
+result beyond REMOTE's response deadline. Browser navigation, HTTPS transport,
+physical TUNER priority and catalog semantics are unchanged. Offline focused
+tests and the production build pass; hardware validation is pending.
+
 ## 2026-10-29 action-time transport checkpoint
 
 Hardware on the `0ed0ffb` / `9142401` pair verified Bluetooth control and
