@@ -39,6 +39,20 @@ checks = {
     "deferred e-paper refresh remains bounded":
         "DEFERRED_PLAYBACK_DISPLAY_SETTLE_MS = 500" in main and
         "deferredDisplayReady" in main,
+    "browser playback uses shared deferred slot":
+        "deferredCatalogStart.browser = true" in main and
+        "audioPlayer.deferPlay(command.request, url, audioCodec)" in main and
+        "playDiscoveredStation(name, url, codec, false)" not in
+        main[main.index("uint8_t executeRtcpBrowser"):
+             main.index("// ============================================\n// Main Loop")],
+    "browser admission answers before playback completion":
+        main.index("deferredCatalogStart.active = true;",
+                   main.index("uint8_t executeRtcpBrowser")) <
+        main.index("return rtcp_browser::success; // admission",
+                   main.index("uint8_t executeRtcpBrowser")),
+    "browser revision is fenced at admission only":
+        "!deferredCatalogStart.browser" in main and
+        "remoteBrowser.execute(command, millis())" in main,
 }
 
 for name, passed in checks.items():

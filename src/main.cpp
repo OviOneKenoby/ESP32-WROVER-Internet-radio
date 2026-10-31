@@ -71,6 +71,7 @@ struct DeferredCatalogStart {
     uint16_t token{0};
     StationCodec codec{STATION_CODEC_MP3};
     char name[MAX_NAME_LENGTH]{};
+    bool browser{false};
     bool active{false};
 } deferredCatalogStart;
 
@@ -658,7 +659,8 @@ void cancelDeferredCatalogStart() {
 void serviceDeferredCatalogStart() {
     if (!deferredCatalogStart.active) return;
     DeferredPlayStatus status = audioPlayer.deferredPlayStatus(deferredCatalogStart.request);
-    if ((status == DeferredPlayStatus::queued || status == DeferredPlayStatus::running) &&
+    if (!deferredCatalogStart.browser &&
+        (status == DeferredPlayStatus::queued || status == DeferredPlayStatus::running) &&
         stationManager.getCatalogRevision() != deferredCatalogStart.expectedRevision) {
         audioPlayer.cancelDeferredPlay();
         status = DeferredPlayStatus::cancelled;
@@ -723,10 +725,24 @@ uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
         return stationManager.addToFavorites(name, url, codec)
             ? rtcp_browser::success : rtcp_browser::execution_failed;
     }
+    if (deferredCatalogStart.active) return rtcp_browser::busy;
+    const AudioCodec audioCodec = codec == STATION_CODEC_AAC
+        ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
+    if (!audioPlayer.deferPlay(command.request, url, audioCodec))
+        return rtcp_browser::busy;
+    deferredCatalogStart.request = command.request;
+    deferredCatalogStart.expectedRevision = command.expected_revision;
+    deferredCatalogStart.collection = rtcp_catalog::Collection::recent;
+    deferredCatalogStart.token = command.token;
+    deferredCatalogStart.codec = codec;
+    strncpy(deferredCatalogStart.name, name,
+            sizeof(deferredCatalogStart.name) - 1);
+    deferredCatalogStart.name[sizeof(deferredCatalogStart.name) - 1] = 0;
+    deferredCatalogStart.browser = true;
+    deferredCatalogStart.active = true;
     remoteBrowser.cancel(RemoteBrowserCancelReason::playback_started);
-    const bool played = playDiscoveredStation(name, url, codec, false);
-    publishRtcpProjection();
-    return played ? rtcp_browser::success : rtcp_browser::execution_failed;
+    rtcpServer.invalidateMediaContext();
+    return rtcp_browser::success; // admission; playback is confirmed authoritatively
 }
 
 // ============================================
