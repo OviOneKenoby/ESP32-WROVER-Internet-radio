@@ -22,6 +22,15 @@ public:
     bool begin();
     bool isReady() const { return recordStorage != nullptr; }
     uint64_t getCatalogRevision() const { return catalogRevision; }
+    // Preferences commits are synchronous. Give the application owner a
+    // bounded service point between Recent records so control traffic is not
+    // held behind the complete post-playback history rewrite. Favorites are
+    // also mutated from the RTCP owner and intentionally do not re-enter it.
+    void setPersistenceService(void (*callback)(const void*),
+                               const void* context = nullptr) {
+        persistenceService = callback;
+        persistenceServiceContext = context;
+    }
     
     // Station management
     uint8_t addStation(const char* name, const char* url, StationCodec codec = STATION_CODEC_MP3);
@@ -77,8 +86,11 @@ private:
 
     uint8_t favoriteCount;
     uint64_t catalogRevision;
+    void (*persistenceService)(const void*);
+    const void* persistenceServiceContext;
     void saveFavoritesToPrefs();
     void advanceCatalogRevision();
+    void servicePersistenceOwner();
 
     // User-managed station list, persisted separately from Favorites and
     // Recent so the web UI can safely manage it through NVS.

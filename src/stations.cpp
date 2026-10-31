@@ -22,11 +22,17 @@ StationManager::StationManager()
       currentStation(0),
       recentCount(0),
       favoriteCount(0),
-      catalogRevision(1) {
+      catalogRevision(1),
+      persistenceService(nullptr),
+      persistenceServiceContext(nullptr) {
 }
 
 void StationManager::advanceCatalogRevision() {
     if (catalogRevision != UINT64_MAX) ++catalogRevision;
+}
+
+void StationManager::servicePersistenceOwner() {
+    if (persistenceService) persistenceService(persistenceServiceContext);
 }
 
 StationManager::~StationManager() {
@@ -414,14 +420,18 @@ void StationManager::saveRecentToPrefs() {
     Preferences prefs;
     prefs.begin("recent", false); // read-write
     prefs.putUChar("count", recentCount);
+    servicePersistenceOwner();
     for (uint8_t i = 0; i < recentCount; i++) {
         char nameKey[8], urlKey[8], codecKey[8];
         snprintf(nameKey, sizeof(nameKey), "n%d", i);
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
         prefs.putString(nameKey, recentRecords()[i].name);
+        servicePersistenceOwner();
         prefs.putString(urlKey, recentRecords()[i].url);
+        servicePersistenceOwner();
         prefs.putUChar(codecKey, recentRecords()[i].codec);
+        servicePersistenceOwner();
     }
     prefs.end();
 }

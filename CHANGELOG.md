@@ -1,5 +1,23 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-31 - Cooperative Recent persistence after deferred station start
+
+Hardware evidence separated the false disconnect from catalog admission: the
+TUNER returned the correlated catalog result in 2,424 us, then REMOTE timed out
+in READY after 3,008 ms with no unread socket bytes while the station still
+started successfully. The successful deferred-start finalizer previously
+rewrote the complete Recent list through synchronous Preferences operations
+before publishing the new authoritative media state.
+
+The finalizer now publishes the completed radio state before persistence and
+services the existing main-loop RTCP owner between individual Recent-record
+writes. The fixed-size deferred slot, revision fencing, exactly-once request
+identity, three-second REMOTE deadline and wire protocol are unchanged.
+Favorites persistence is deliberately excluded from the callback because that
+mutation can run inside the RTCP owner and must not re-enter it. Hardware
+verification remains pending; this entry does not claim the transient timeout
+is closed until Favorites, Recent and Bluetooth-to-Radio pass on-device.
+
 ## 2026-10-31 - Bluetooth navigation state and restartable handover
 
 Hardware evidence showed that a successful NEXT advanced the phone, audio and

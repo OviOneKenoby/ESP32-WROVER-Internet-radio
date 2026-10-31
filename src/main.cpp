@@ -281,6 +281,7 @@ void setup() {
     // waiting for BUSY; service the same owner cooperatively, without a task,
     // queue, allocation, or protocol change.
     display.setBusyService(serviceRtcpWhileDisplayBusy);
+    stationManager.setPersistenceService(serviceRtcpWhileDisplayBusy);
     
     // Load default stations and switch to station selection
     currentMode = MODE_STATION_SELECT;
@@ -667,20 +668,31 @@ void serviceDeferredCatalogStart() {
     }
     if (status == DeferredPlayStatus::queued || status == DeferredPlayStatus::running) return;
     if (status == DeferredPlayStatus::succeeded) {
+        const bool discovered =
+            deferredCatalogStart.collection != rtcp_catalog::Collection::saved;
         if (deferredCatalogStart.collection == rtcp_catalog::Collection::saved) {
             selectedStation = uint8_t(deferredCatalogStart.token);
             stationManager.setCurrentStation(selectedStation);
             nowPlayingContext.set(deferredCatalogStart.codec, false);
         } else {
             nowPlayingContext.set(deferredCatalogStart.codec, true);
-            stationManager.addToRecent(deferredCatalogStart.name,
-                                       audioPlayer.getCurrentURL(),
-                                       deferredCatalogStart.codec);
         }
         strncpy(nowPlayingName, deferredCatalogStart.name, sizeof(nowPlayingName) - 1);
         nowPlayingName[sizeof(nowPlayingName) - 1] = 0;
         currentMode = MODE_PLAYING_RADIO;
         lastKnownPlaybackState = STATE_BUFFERING;
+        // Make the completed source transition authoritative before touching
+        // NVS. Favorites/Recent persistence rewrites several keys and each
+        // Preferences put is synchronous; the old ordering could leave a
+        // post-command source/menu request unanswered until REMOTE's 3 s
+        // deadline even though the admission result had arrived in 2.4 ms.
+        publishRtcpProjection();
+        rtcpServer.poll(audioPlayer);
+        if (discovered) {
+            stationManager.addToRecent(deferredCatalogStart.name,
+                                       audioPlayer.getCurrentURL(),
+                                       deferredCatalogStart.codec);
+        }
         // Publish and answer the post-command RTCP synchronization chain before
         // entering the synchronous e-paper refresh. Hardware evidence showed
         // the old ordering delaying a following snapshot/menu response until

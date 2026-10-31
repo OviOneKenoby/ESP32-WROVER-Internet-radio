@@ -6,6 +6,7 @@ audio_header = (root / "src/audio.h").read_text(encoding="utf-8")
 main = (root / "src/main.cpp").read_text(encoding="utf-8")
 server = (root / "src/rtcp_server.cpp").read_text(encoding="utf-8")
 protocol = (root / "src/rtcp_full_control.h").read_text(encoding="utf-8")
+stations = (root / "src/stations.cpp").read_text(encoding="utf-8")
 
 checks = {
     "single fixed deferred slot": "struct DeferredPlay" in audio_header and
@@ -39,6 +40,19 @@ checks = {
     "deferred e-paper refresh remains bounded":
         "DEFERRED_PLAYBACK_DISPLAY_SETTLE_MS = 500" in main and
         "deferredDisplayReady" in main,
+    "authoritative state precedes recent persistence":
+        main.index("publishRtcpProjection();",
+                   main.index("void serviceDeferredCatalogStart")) <
+        main.index("stationManager.addToRecent(",
+                   main.index("void serviceDeferredCatalogStart")),
+    "persistence cooperatively services RTCP":
+        "setPersistenceService(serviceRtcpWhileDisplayBusy)" in main and
+        "servicePersistenceOwner();" in
+        stations[stations.index("void StationManager::saveRecentToPrefs"):
+                 stations.index("bool StationManager::addToFavorites")],
+    "RTCP-owned favorites persistence does not re-enter server":
+        "servicePersistenceOwner();" not in
+        stations[stations.index("void StationManager::saveFavoritesToPrefs"):],
     "browser playback uses shared deferred slot":
         "deferredCatalogStart.browser = true" in main and
         "audioPlayer.deferPlay(command.request, url, audioCodec)" in main and

@@ -18,6 +18,9 @@ size_t allocatedBytes = 0;
 uint32_t allocatedCaps = 0;
 void* allocatedBase = nullptr;
 unsigned checks = 0;
+unsigned persistenceServices = 0;
+
+void servicePersistence(const void*) { ++persistenceServices; }
 
 void expect(bool value, const char* message) {
     ++checks;
@@ -77,6 +80,7 @@ int main() {
         expect(manager.begin(), "repeat begin is idempotent");
         expect(allocations == allocationsBefore + 1, "storage allocated exactly once");
         expect(manager.isReady(), "manager reports ready");
+        manager.setPersistenceService(servicePersistence);
 
         for (unsigned i = 0; i < MAX_STATIONS; ++i) {
             char name[16]; char url[32];
@@ -99,6 +103,8 @@ int main() {
             manager.addToRecent(name, url, STATION_CODEC_MP3);
         }
         expect(manager.getRecentCount() == MAX_RECENT, "recent capacity preserved");
+        expect(persistenceServices > MAX_RECENT,
+               "recent persistence yields repeatedly to the application owner");
         expect(std::strcmp(manager.getRecent(0)->name, "Recent 6") == 0,
                "recent list remains newest-first");
         manager.addToRecent("Recent moved", "http://recent/4", STATION_CODEC_AAC);
