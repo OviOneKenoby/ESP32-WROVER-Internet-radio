@@ -1,5 +1,22 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-10-31 - Bluetooth navigation state and restartable handover
+
+Hardware evidence showed that a successful NEXT advanced the phone, audio and
+metadata while a transient AVRCP `STOPPED` remained authoritative over the
+still-active A2DP stream. NEXT/PREV now open a bounded navigation transition:
+only a transient `STOPPED` paired with direct A2DP `PLAYING` is suppressed;
+PLAYING, PAUSED, an A2DP stop, disconnect or reset closes the transition.
+Exactly one AVRCP command is still submitted.
+
+Bluetooth teardown also treated `ESP_ERR_INVALID_STATE` from an idempotent
+profile deinit as failure whenever stack startup had completed. It now accepts
+only `ESP_OK` or the already-stopped `ESP_ERR_INVALID_STATE`, while retaining
+the existing disconnect, task, I2S, controller, Bluedroid and restartability
+postcondition gates. RTCP, source fencing and dependency versions are
+unchanged. Focused software verification and hardware validation are recorded
+separately; this entry does not claim hardware PASS.
+
 ## 2026-10-31 - Full Control 1.3 integrated into main
 
 Fast-forwarded `main` from `4977b49` through the complete D-009, discovery,

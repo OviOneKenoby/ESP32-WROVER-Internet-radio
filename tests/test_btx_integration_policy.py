@@ -31,8 +31,9 @@ check('audioPlayer.executeBluetoothRtcp(command)' in main,
       'owner executes through AudioPlayer')
 check('sendAvrcCommandChecked(ESP_AVRC_PT_CMD_PLAY)' in audio and
       'sendAvrcCommandChecked(ESP_AVRC_PT_CMD_PAUSE)' in audio and
-      'sendAvrcCommandChecked(ESP_AVRC_PT_CMD_BACKWARD)' in audio and
-      'sendAvrcCommandChecked(ESP_AVRC_PT_CMD_FORWARD)' in audio and
+      'sendBluetoothNavigation(ESP_AVRC_PT_CMD_BACKWARD)' in audio and
+      'sendBluetoothNavigation(ESP_AVRC_PT_CMD_FORWARD)' in audio and
+      'a2dp_sink.sendAvrcCommandChecked(command)' in audio and
       'avrcTransactionLabel = 5' in audio,
       'checked collision-free AVRCP operations')
 check('set_on_connection_state_changed' in audio and 'set_on_audio_state_changed' in audio,

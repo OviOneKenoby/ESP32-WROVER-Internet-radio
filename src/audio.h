@@ -188,6 +188,7 @@ private:
     char bluetoothNowPlayingSnapshot[256];
     portMUX_TYPE bluetoothMetadataMux = portMUX_INITIALIZER_UNLOCKED;
     void setBluetoothMetadata(uint8_t attribute, const char* value);
+    bool sendBluetoothNavigation(int command);
     void setBluetoothRtcpSource(rtcp_btx::Source source);
     void clearBluetoothMetadataLocked();
     rtcp_btx::SourceState bluetoothRtcpState{};

@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "bluetooth_cleanup_policy.h"
 #include "mp3_memory_diagnostics.h"
 #include "volume_target.h"
 #include "config.h"
@@ -158,15 +159,12 @@ public:
         const esp_err_t a2dpResult = esp_a2d_sink_deinit();
         delay_ms(50);
 
-        const bool profilesExpected = stackEventCompleted;
         const bool avrcControllerStopped =
-            deinitResultIsClean(avrcControllerResult, profilesExpected,
-                                "AVRCP controller");
+            deinitResultIsClean(avrcControllerResult, "AVRCP controller");
         const bool avrcTargetStopped =
-            deinitResultIsClean(avrcTargetResult, profilesExpected,
-                                "AVRCP target");
+            deinitResultIsClean(avrcTargetResult, "AVRCP target");
         const bool a2dpStopped =
-            deinitResultIsClean(a2dpResult, profilesExpected, "A2DP sink");
+            deinitResultIsClean(a2dpResult, "A2DP sink");
 
         app_task_shut_down();
         delay_ms(50);
@@ -181,12 +179,15 @@ public:
             esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED;
         const bool bluedroidRetained =
             esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED;
-        const bool profilesStopped = disconnectComplete &&
-                                     avrcControllerStopped &&
-                                     avrcTargetStopped && a2dpStopped;
-        const bool stopped = profilesStopped && taskStopped && i2sReleased &&
-                             controllerRetained && bluedroidRetained &&
-                             !is_start_disabled;
+        const BluetoothCleanupState cleanup{
+            disconnectComplete, avrcControllerStopped, avrcTargetStopped,
+            a2dpStopped, taskStopped, i2sReleased, controllerRetained,
+            bluedroidRetained, !is_start_disabled};
+        const bool profilesStopped = cleanup.disconnect_complete &&
+                                     cleanup.avrc_controller_stopped &&
+                                     cleanup.avrc_target_stopped &&
+                                     cleanup.a2dp_stopped;
+        const bool stopped = cleanup.complete();
 
         if (!stopped) {
             Serial.printf(
@@ -309,10 +310,9 @@ protected:
     }
 
 private:
-    static bool deinitResultIsClean(esp_err_t result, bool wasInitialized,
-                                    const char* component) {
-        const bool clean = result == ESP_OK ||
-                           (!wasInitialized && result == ESP_ERR_INVALID_STATE);
+    static bool deinitResultIsClean(esp_err_t result, const char* component) {
+        const bool clean = bluetoothProfileStopped(
+            int32_t(result), int32_t(ESP_OK), int32_t(ESP_ERR_INVALID_STATE));
         if (!clean) {
             Serial.printf("[AUDIO] %s deinit failed: %s (%d)\n",
                           component, esp_err_to_name(result), (int)result);
@@ -1078,10 +1078,10 @@ uint8_t AudioPlayer::executeBluetoothRtcp(const rtcp_btx::Command& command) {
             if (submitted) bluetoothPlaybackPaused = true;
             break;
         case rtcp_btx::Operation::previous:
-            submitted = a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_BACKWARD);
+            submitted = sendBluetoothNavigation(ESP_AVRC_PT_CMD_BACKWARD);
             break;
         case rtcp_btx::Operation::next:
-            submitted = a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_FORWARD);
+            submitted = sendBluetoothNavigation(ESP_AVRC_PT_CMD_FORWARD);
             break;
     }
     return submitted ? rtcp_btx::success : rtcp_btx::unavailable;
@@ -1104,8 +1104,21 @@ void AudioPlayer::bluetoothPlayPause() {
     }
 }
 
-void AudioPlayer::bluetoothNext() { if (btEnabled && a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_FORWARD)) Serial.println("[BT] AVRCP next requested"); }
-void AudioPlayer::bluetoothPrevious() { if (btEnabled && a2dp_sink.sendAvrcCommandChecked(ESP_AVRC_PT_CMD_BACKWARD)) Serial.println("[BT] AVRCP previous requested"); }
+bool AudioPlayer::sendBluetoothNavigation(int command) {
+    portENTER_CRITICAL(&bluetoothMetadataMux);
+    bluetoothPlaybackAuthority.beginNavigation();
+    portEXIT_CRITICAL(&bluetoothMetadataMux);
+    const bool submitted = a2dp_sink.sendAvrcCommandChecked(command);
+    if (!submitted) {
+        portENTER_CRITICAL(&bluetoothMetadataMux);
+        bluetoothPlaybackAuthority.cancelNavigation();
+        portEXIT_CRITICAL(&bluetoothMetadataMux);
+    }
+    return submitted;
+}
+
+void AudioPlayer::bluetoothNext() { if (btEnabled && sendBluetoothNavigation(ESP_AVRC_PT_CMD_FORWARD)) Serial.println("[BT] AVRCP next requested"); }
+void AudioPlayer::bluetoothPrevious() { if (btEnabled && sendBluetoothNavigation(ESP_AVRC_PT_CMD_BACKWARD)) Serial.println("[BT] AVRCP previous requested"); }
 
 void AudioPlayer::bluetoothMetadataCallback(uint8_t attribute, const uint8_t* value) {
     if (!value) return;
