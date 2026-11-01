@@ -1,5 +1,24 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-11-01 - Bluetooth corrections validated; station timeout history closed
+
+Owner hardware validation of implementation `f09e766` passed NEXT, PREV,
+PAUSE and PLAY after navigation, Bluetooth-to-Radio teardown, and the reverse
+Radio-to-Bluetooth transition. Audio, metadata and authoritative REMOTE state
+remained correct. These results validate the bounded AVRCP navigation authority
+and restartable Bluetooth cleanup changes.
+
+Implementation `adf1240` preserved station-start responsiveness and cooperative
+Recent persistence, but did not independently eliminate the transient REMOTE
+disconnect card. Correlation firmware `1c1c756` subsequently proved that TUNER
+answered its last received request promptly and retained the peer EOF while the
+station still started successfully. The final user-visible correction is on
+REMOTE: hardware validation of REMOTE source `eb2199c` selected West City Radio
+from the HOME Favorites shortcut, started audio exactly once, returned to HOME,
+and displayed no false `TUNER disconnected` card. TUNER protocol, timeout and
+station behavior were not changed further. The TUNER diagnostic firmware remains
+useful bounded evidence; it is not represented as the functional popup fix.
+
 ## 2026-10-31 - Bounded RTCP timeout correlation diagnostics
 
 Retained REMOTE close history identified the false station-start disconnect as
