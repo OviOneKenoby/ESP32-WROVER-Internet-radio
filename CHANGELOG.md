@@ -31,9 +31,18 @@ ELF SHA-256
 static RAM 81,368 bytes and exact-image partition headroom 941,536 bytes.
 Only the established dependency warnings were emitted.
 
-Hardware validation remains pending. The earlier Radio Browser short-read is
-not causally attributed to this weakness because retained REMOTE evidence
-cannot distinguish peer EOF from its own deadline expiring with partial data.
+Controlled hardware validation installed the exact candidate application and
+verified an independent 2,204,192-byte readback with the candidate SHA-256.
+Radio MP3, Bluetooth A2DP, metadata/artwork, REMOTE Play/Pause and volume, and
+the reverse source transition passed. The single isolated Browser operation
+kept RTCP authenticated: TUNER closes stayed 2 and REMOTE closes stayed 101,
+with no response-write failure, disconnect popup, audio interruption or Wi-Fi
+drop. The country list nevertheless failed to load because all four bounded
+HTTPS attempts returned `ESP_ERR_HTTP_CONNECT` (`28674`/`0x7002`) before an HTTP
+status existed. Therefore the overall Browser hardware criterion is **FAIL**,
+while this reproduction supplies no evidence of an RTCP partial-write failure.
+The earlier Radio Browser short-read remains not causally attributed solely to
+the sender weakness.
 
 ## 2026-10-31 - Bounded RTCP timeout correlation diagnostics
 

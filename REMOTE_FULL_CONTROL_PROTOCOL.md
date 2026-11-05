@@ -177,6 +177,17 @@ station text, packet bytes, identity, key or credential. The fields observe
 successful, loading, empty, failed, timed-out, cancelled and disconnected work;
 they do not alter job ownership, cancellation, deadlines or generation fences.
 
+### 2026-11-05 partial-write hardware checkpoint
+
+The bounded RTCP sender candidate was installed application-only and verified
+by exact-span SHA-256 readback. Basic Radio, Bluetooth, metadata and REMOTE
+control regressions passed. During the one controlled Browser START, the RTCP
+connection remained authenticated and both peers' close counts were unchanged.
+The Browser job still failed independently: four bounded HTTPS attempts ended
+with `ESP_ERR_HTTP_CONNECT` (`0x7002`) and no HTTP status, while radio audio and
+Wi-Fi remained continuous. This is not evidence of a sender partial-write
+failure, but the Browser hardware acceptance criterion remains failed.
+
 ## Other memory decisions
 
 Catalog wire objects, projection windows and mailbox storage are fixed-size.
