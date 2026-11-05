@@ -34,7 +34,11 @@ for field in ("browser_tls_probe_calls", "browser_tls_probe_failures",
               "browser_tls_probe_failure_internal_free",
               "browser_tls_probe_failure_internal_largest",
               "browser_tls_probe_allocation_failures_start",
-              "browser_tls_probe_allocation_failures_at_failure"):
+              "browser_tls_probe_allocation_failures_at_failure",
+              "browser_tls_probe_allocation_failure_last_size",
+              "browser_tls_probe_allocation_failure_last_caps",
+              "browser_tls_probe_allocation_failure_largest_size",
+              "browser_tls_probe_connection_state"):
     assert field in web
 probe = (root / "src/remote_browser_tls_probe.cpp").read_text(encoding="utf-8")
 assert "__wrap_esp_tls_conn_new_async" in probe

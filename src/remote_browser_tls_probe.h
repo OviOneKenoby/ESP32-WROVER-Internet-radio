@@ -19,7 +19,11 @@ struct Snapshot {
     uint32_t failure_psram_free{0};
     uint32_t allocation_failures_start{0};
     uint32_t allocation_failures_at_failure{0};
+    uint32_t allocation_failure_last_size{0};
+    uint32_t allocation_failure_last_caps{0};
+    uint32_t allocation_failure_largest_size{0};
     uint8_t available{0};
+    uint8_t connection_state{0};
 };
 
 void resetJob();

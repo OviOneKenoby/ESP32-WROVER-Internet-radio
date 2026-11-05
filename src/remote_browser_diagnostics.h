@@ -88,7 +88,11 @@ struct RemoteBrowserDiagnostics {
     uint32_t tls_probe_failure_psram_free{0};
     uint32_t tls_probe_allocation_failures_start{0};
     uint32_t tls_probe_allocation_failures_at_failure{0};
+    uint32_t tls_probe_allocation_failure_last_size{0};
+    uint32_t tls_probe_allocation_failure_last_caps{0};
+    uint32_t tls_probe_allocation_failure_largest_size{0};
     uint8_t tls_probe_available{0};
+    uint8_t tls_probe_connection_state{0};
 
     static void increment(uint32_t& value) {
         if (value != std::numeric_limits<uint32_t>::max()) ++value;
@@ -131,5 +135,5 @@ struct RemoteBrowserDiagnostics {
     }
 };
 
-static_assert(sizeof(RemoteBrowserDiagnostics) == 200,
+static_assert(sizeof(RemoteBrowserDiagnostics) == 216,
               "browser diagnostics must remain fixed and allocation-free");

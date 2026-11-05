@@ -266,6 +266,10 @@ void WebPortal::handleDiagnostics() {
     doc["browser_tls_probe_failure_psram_free"] = browserDiagnostic.tls_probe_failure_psram_free;
     doc["browser_tls_probe_allocation_failures_start"] = browserDiagnostic.tls_probe_allocation_failures_start;
     doc["browser_tls_probe_allocation_failures_at_failure"] = browserDiagnostic.tls_probe_allocation_failures_at_failure;
+    doc["browser_tls_probe_allocation_failure_last_size"] = browserDiagnostic.tls_probe_allocation_failure_last_size;
+    doc["browser_tls_probe_allocation_failure_last_caps"] = browserDiagnostic.tls_probe_allocation_failure_last_caps;
+    doc["browser_tls_probe_allocation_failure_largest_size"] = browserDiagnostic.tls_probe_allocation_failure_largest_size;
+    doc["browser_tls_probe_connection_state"] = browserDiagnostic.tls_probe_connection_state;
     doc["browser_elapsed_ms"] = browserDiagnostic.elapsed_ms;
     doc["browser_deadline_expired"] = browserDiagnostic.deadline_expired;
     doc["browser_first_failure_stage"] = uint8_t(browserDiagnostic.first_failure_stage);

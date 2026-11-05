@@ -66,7 +66,12 @@ extern "C" int __wrap_esp_tls_conn_new_async(const char* hostname,
         heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     probe.failure_psram_free =
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    probe.allocation_failures_at_failure = SystemInfo::allocationFailureCount();
+    const auto allocationFailures = SystemInfo::allocationFailures();
+    probe.allocation_failures_at_failure = allocationFailures.count;
+    probe.allocation_failure_last_size = allocationFailures.lastSize;
+    probe.allocation_failure_last_caps = allocationFailures.lastCaps;
+    probe.allocation_failure_largest_size = allocationFailures.largestSize;
+    probe.connection_state = tls ? uint8_t(tls->conn_state) : 0;
 
     // The pinned Arduino-ESP32 2.0.17 exposes the connection error handle on
     // esp_tls_t but does not provide the newer esp_tls_get_error_handle API.

@@ -323,7 +323,14 @@ void RemoteBrowserService::poll(uint32_t now_ms) {
     diagnostics_.tls_probe_allocation_failures_start = tlsProbe.allocation_failures_start;
     diagnostics_.tls_probe_allocation_failures_at_failure =
         tlsProbe.allocation_failures_at_failure;
+    diagnostics_.tls_probe_allocation_failure_last_size =
+        tlsProbe.allocation_failure_last_size;
+    diagnostics_.tls_probe_allocation_failure_last_caps =
+        tlsProbe.allocation_failure_last_caps;
+    diagnostics_.tls_probe_allocation_failure_largest_size =
+        tlsProbe.allocation_failure_largest_size;
     diagnostics_.tls_probe_available = tlsProbe.available;
+    diagnostics_.tls_probe_connection_state = tlsProbe.connection_state;
     // Capture errno while the client handle is still valid. Cleanup and the
     // next mirror can overwrite the transport's session-local error state.
     const int socket_error = result == ESP_OK ? 0 : esp_http_client_get_errno(client_);
