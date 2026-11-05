@@ -1,5 +1,6 @@
 #include "remote_browser.h"
 #include "remote_browser_transport_policy.h"
+#include "remote_browser_tls_probe.h"
 
 #include "audio.h"
 #include "browser.h"
@@ -165,6 +166,7 @@ bool RemoteBrowserService::beginMirror(uint32_t now_ms) {
     config.disable_auto_redirect = false;
     config.max_redirection_count = remote_browser_transport::kMaxRedirects;
     config.buffer_size = 1024; config.buffer_size_tx = 512;
+    RemoteBrowserTlsProbe::beginAttempt();
     client_ = esp_http_client_init(&config);
     if (attempt_count_ != UINT8_MAX) ++attempt_count_;
     diagnostics_.attempt_count = attempt_count_;
@@ -205,6 +207,7 @@ bool RemoteBrowserService::beginJob(Job job, const char* path, uint32_t now_ms) 
     diagnostics_.attempt_count = 0;
     diagnostics_.retry_count = 0;
     diagnostics_.retry_waiting = 0;
+    RemoteBrowserTlsProbe::resetJob();
     if (!beginMirror(now_ms)) { finishJob(false, rtcp_browser::internal); return false; }
     return true;
 }
@@ -304,6 +307,23 @@ void RemoteBrowserService::poll(uint32_t now_ms) {
         diagnostics_.transport_stage = RemoteBrowserTransportStage::connecting;
     const esp_err_t result = esp_http_client_perform(client_);
     if (result == ESP_ERR_HTTP_EAGAIN) return;
+    const auto tlsProbe = RemoteBrowserTlsProbe::snapshot();
+    diagnostics_.tls_probe_calls = tlsProbe.calls;
+    diagnostics_.tls_probe_failures = tlsProbe.failures;
+    diagnostics_.tls_probe_system_error = tlsProbe.system_error;
+    diagnostics_.tls_probe_mbedtls_error = tlsProbe.mbedtls_error;
+    diagnostics_.tls_probe_esp_error = tlsProbe.esp_error;
+    diagnostics_.tls_probe_cert_flags = tlsProbe.cert_flags;
+    diagnostics_.tls_probe_start_internal_free = tlsProbe.start_internal_free;
+    diagnostics_.tls_probe_start_internal_largest = tlsProbe.start_internal_largest;
+    diagnostics_.tls_probe_start_psram_free = tlsProbe.start_psram_free;
+    diagnostics_.tls_probe_failure_internal_free = tlsProbe.failure_internal_free;
+    diagnostics_.tls_probe_failure_internal_largest = tlsProbe.failure_internal_largest;
+    diagnostics_.tls_probe_failure_psram_free = tlsProbe.failure_psram_free;
+    diagnostics_.tls_probe_allocation_failures_start = tlsProbe.allocation_failures_start;
+    diagnostics_.tls_probe_allocation_failures_at_failure =
+        tlsProbe.allocation_failures_at_failure;
+    diagnostics_.tls_probe_available = tlsProbe.available;
     // Capture errno while the client handle is still valid. Cleanup and the
     // next mirror can overwrite the transport's session-local error state.
     const int socket_error = result == ESP_OK ? 0 : esp_http_client_get_errno(client_);

@@ -9,7 +9,7 @@ int main() {
     RemoteBrowserDiagnostics::increment(value.start_requests);
     RemoteBrowserDiagnostics::increment(value.start_requests);
     assert(value.start_requests == UINT32_MAX);
-    assert(sizeof(RemoteBrowserDiagnostics) == 144);
+    assert(sizeof(RemoteBrowserDiagnostics) == 204);
     assert(uint8_t(RemoteBrowserCancelReason::rtcp_closed) == 3);
 
     // Successful START followed by a page response.
@@ -92,5 +92,17 @@ int main() {
            value.first_tls_mbedtls_error == -0x7280 &&
            value.first_tls_cert_flags == 0x1234 &&
            value.first_tls_available == 15);
+    value.tls_probe_calls = 4;
+    value.tls_probe_failures = 4;
+    value.tls_probe_esp_error = 0x8001;
+    value.tls_probe_start_internal_free = 12000;
+    value.tls_probe_failure_internal_free = 4000;
+    value.tls_probe_allocation_failures_start = 2;
+    value.tls_probe_allocation_failures_at_failure = 3;
+    assert(value.tls_probe_calls == 4 && value.tls_probe_failures == 4 &&
+           value.tls_probe_esp_error == 0x8001 &&
+           value.tls_probe_failure_internal_free == 4000 &&
+           value.tls_probe_allocation_failures_at_failure -
+               value.tls_probe_allocation_failures_start == 1);
     std::puts("REMOTE browser diagnostics: PASS");
 }

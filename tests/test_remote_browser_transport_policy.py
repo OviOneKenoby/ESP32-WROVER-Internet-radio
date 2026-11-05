@@ -4,6 +4,7 @@ root = Path(__file__).parents[1]
 source = (root / "src/remote_browser.cpp").read_text(encoding="utf-8")
 header = (root / "src/remote_browser_diagnostics.h").read_text(encoding="utf-8")
 web = (root / "src/web_portal.cpp").read_text(encoding="utf-8")
+platformio = (root / "platformio.ini").read_text(encoding="utf-8")
 
 assert source.count("job_deadline_ms_ = now_ms + remote_browser_transport::kJobDeadlineMs") == 1
 assert "bool RemoteBrowserService::beginMirror(uint32_t now_ms)" in source
@@ -25,6 +26,23 @@ for field in ("browser_mirror", "browser_transport_stage", "browser_transport_er
               "browser_tls_system_error", "browser_tls_mbedtls_error",
               "browser_tls_esp_error", "browser_tls_cert_flags"):
     assert field in web
+for field in ("browser_tls_probe_calls", "browser_tls_probe_failures",
+              "browser_tls_probe_available", "browser_tls_probe_system_error",
+              "browser_tls_probe_mbedtls_error", "browser_tls_probe_esp_error",
+              "browser_tls_probe_cert_flags", "browser_tls_probe_start_internal_free",
+              "browser_tls_probe_start_internal_largest",
+              "browser_tls_probe_failure_internal_free",
+              "browser_tls_probe_failure_internal_largest",
+              "browser_tls_probe_allocation_failures_start",
+              "browser_tls_probe_allocation_failures_at_failure"):
+    assert field in web
+probe = (root / "src/remote_browser_tls_probe.cpp").read_text(encoding="utf-8")
+assert "__wrap_esp_tls_conn_new_async" in probe
+assert "esp_tls_get_error_handle" in probe
+assert "esp_tls_get_and_clear_error_type" in probe
+assert "heap_caps_get_free_size" in probe
+assert "malloc(" not in probe and "new " not in probe
+assert platformio.count("-Wl,--wrap=esp_tls_conn_new_async") == 1
 assert "esp_tls_get_and_clear_error_type" in source
 assert "recordTls" in source
 assert "esp_http_client_get_errno(client_)" in source
