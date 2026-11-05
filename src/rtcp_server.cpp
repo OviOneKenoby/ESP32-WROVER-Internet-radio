@@ -3,10 +3,12 @@
 #include "audio.h"
 #include "ccm_wire.h"
 #include "config.h"
+#include "rtcp_frame_sender.h"
 #include "system_info.h"
 #include <Preferences.h>
 #include <esp_heap_caps.h>
 #include <esp_system.h>
+#include <lwip/sockets.h>
 #include <mbedtls/gcm.h>
 #include <mbedtls/md.h>
 #include <cstring>
@@ -23,6 +25,41 @@ constexpr uint8_t kBluetoothStateRequest = 13, kBluetoothCommand = 15;
 constexpr uint8_t kFullControlCapabilityRequest = 16;
 constexpr uint8_t kSourceStateRequest = 18, kSourceSelectRequest = 20;
 constexpr size_t kDeferredResponse = SIZE_MAX;
+constexpr uint32_t kFrameSendBudgetMs = 500;
+
+class SocketFrameTransport {
+public:
+    explicit SocketFrameTransport(int socket) : socket_(socket) {}
+
+    uint32_t nowMs() const { return millis(); }
+
+    int waitWritable(uint32_t timeout_ms) {
+        fd_set writable;
+        FD_ZERO(&writable);
+        FD_SET(socket_, &writable);
+        timeval timeout{};
+        timeout.tv_sec = timeout_ms / 1000;
+        timeout.tv_usec = (timeout_ms % 1000) * 1000;
+        errno = 0;
+        const int selected = lwip_select(socket_ + 1, nullptr, &writable,
+                                         nullptr, &timeout);
+        error_ = selected < 0 ? errno : 0;
+        return selected > 0 && FD_ISSET(socket_, &writable) ? 1 : selected;
+    }
+
+    int send(const uint8_t* data, size_t size) {
+        errno = 0;
+        const int sent = lwip_send(socket_, data, size, MSG_DONTWAIT);
+        error_ = sent < 0 ? errno : 0;
+        return sent;
+    }
+
+    int error() const { return error_; }
+
+private:
+    int socket_{-1};
+    int error_{0};
+};
 
 uint32_t freeInternal() {
     return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -226,15 +263,15 @@ bool Server::sendApplication(const uint8_t* data, size_t size) {
     const size_t wire = kRecordHeader + size + kTagBytes;
     diagnostics_.responseBuilt(wire);
     const uint32_t allocation_before = SystemInfo::allocationFailureCount();
-    errno = 0;
-    const size_t written = client_.write(tx_.data(), wire);
-    const int write_error = written == wire ? 0 : errno;
+    SocketFrameTransport transport(client_.fd());
+    const FrameSendResult send = sendFrameBounded(
+        transport, tx_.data(), wire, millis() + kFrameSendBudgetMs);
     const uint32_t allocation_after = SystemInfo::allocationFailureCount();
-    diagnostics_.responseWrite(written, allocation_after >= allocation_before
+    diagnostics_.responseWrite(send.written, allocation_after >= allocation_before
                                             ? allocation_after - allocation_before : 0,
                                tx_counter_, millis());
-    if (written != wire) diagnostics_.transport_error = write_error;
-    if (written != wire) return false;
+    if (!send.complete()) diagnostics_.transport_error = send.error;
+    if (!send.complete()) return false;
     ++tx_counter_; return true;
 }
 size_t Server::handleApplication(AudioPlayer& audio, const uint8_t* p, size_t n,
