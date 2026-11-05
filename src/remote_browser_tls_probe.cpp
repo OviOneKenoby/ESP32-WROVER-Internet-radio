@@ -68,8 +68,11 @@ extern "C" int __wrap_esp_tls_conn_new_async(const char* hostname,
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     probe.allocation_failures_at_failure = SystemInfo::allocationFailureCount();
 
-    esp_tls_error_handle_t handle = nullptr;
-    if (esp_tls_get_error_handle(tls, &handle) != ESP_OK || !handle) return result;
+    // The pinned Arduino-ESP32 2.0.17 exposes the connection error handle on
+    // esp_tls_t but does not provide the newer esp_tls_get_error_handle API.
+    // Read it synchronously while the failed async connection still exists.
+    esp_tls_error_handle_t handle = tls ? tls->error_handle : nullptr;
+    if (!handle) return result;
     if (esp_tls_get_and_clear_error_type(handle, ESP_TLS_ERR_TYPE_SYSTEM,
                                          &probe.system_error) == ESP_OK)
         probe.available |= 1u;

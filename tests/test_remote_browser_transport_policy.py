@@ -38,7 +38,7 @@ for field in ("browser_tls_probe_calls", "browser_tls_probe_failures",
     assert field in web
 probe = (root / "src/remote_browser_tls_probe.cpp").read_text(encoding="utf-8")
 assert "__wrap_esp_tls_conn_new_async" in probe
-assert "esp_tls_get_error_handle" in probe
+assert "tls ? tls->error_handle : nullptr" in probe
 assert "esp_tls_get_and_clear_error_type" in probe
 assert "heap_caps_get_free_size" in probe
 assert "malloc(" not in probe and "new " not in probe

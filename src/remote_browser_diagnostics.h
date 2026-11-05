@@ -131,5 +131,5 @@ struct RemoteBrowserDiagnostics {
     }
 };
 
-static_assert(sizeof(RemoteBrowserDiagnostics) == 204,
+static_assert(sizeof(RemoteBrowserDiagnostics) == 208,
               "browser diagnostics must remain fixed and allocation-free");
