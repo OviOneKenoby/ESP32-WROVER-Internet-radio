@@ -1,5 +1,40 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-11-05 - Bounded RTCP partial-frame transmission
+
+The RTCP server previously passed each complete encrypted frame to one
+`WiFiClient::write()` call and closed the authenticated connection whenever
+that call returned fewer bytes than requested. The pinned framework retries
+internally but can still return a positive partial count after its bounded
+waits. Closing at that point discards the unsent suffix and can leave the peer
+with an incomplete authenticated record.
+
+RTCP responses now use the existing owned socket with nonblocking `send()` and
+an offset-preserving writable wait. Positive progress advances to the first
+unsent byte without replaying the transmitted prefix. `EAGAIN`,
+`EWOULDBLOCK`, and `EINTR` remain retryable under one absolute 500 ms frame
+deadline; zero progress, peer closure, terminal errors, and deadline expiry
+remain deterministic failures that close the desynchronized connection.
+Wire framing, encryption, counters, response ordering, ownership, pairing and
+protocol definitions are unchanged. The sender adds no task, frame buffer or
+heap allocation.
+
+Focused sender and integration tests passed, including complete and chained
+partial writes, offset integrity, retryable errors, zero progress, peer close,
+terminal errors and partial-frame deadline expiry. Existing CCM, D-009, BTX,
+Full Control, Catalog, Browser, diagnostics, latency and display-service
+regressions passed. The production `esp32-lwip-psram` build from implementation
+commit `46e87ac` passed: BIN 2,204,192 bytes, SHA-256
+`94b4f40e6b8138add3babc860d46ba54802d0090898454276c5970a15df178a5`;
+ELF SHA-256
+`376247413d3be85f1ee2f9ccaf81a6ac4ce1e603a6d65d12aae22cb6d29c76d8`;
+static RAM 81,368 bytes and exact-image partition headroom 941,536 bytes.
+Only the established dependency warnings were emitted.
+
+Hardware validation remains pending. The earlier Radio Browser short-read is
+not causally attributed to this weakness because retained REMOTE evidence
+cannot distinguish peer EOF from its own deadline expiring with partial data.
+
 ## 2026-10-31 - Bounded RTCP timeout correlation diagnostics
 
 Retained REMOTE close history identified the false station-start disconnect as
