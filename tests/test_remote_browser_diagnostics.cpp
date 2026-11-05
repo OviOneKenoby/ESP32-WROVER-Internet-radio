@@ -9,7 +9,7 @@ int main() {
     RemoteBrowserDiagnostics::increment(value.start_requests);
     RemoteBrowserDiagnostics::increment(value.start_requests);
     assert(value.start_requests == UINT32_MAX);
-    assert(sizeof(RemoteBrowserDiagnostics) == 208);
+    assert(sizeof(RemoteBrowserDiagnostics) == 200);
     assert(uint8_t(RemoteBrowserCancelReason::rtcp_closed) == 3);
 
     // Successful START followed by a page response.
