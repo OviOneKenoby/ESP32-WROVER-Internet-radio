@@ -2,8 +2,11 @@
 
 ## 2026-11-06 - A failed Browse pick restarts the previous station (follow-up)
 
-Status: **SOFTWARE ONLY - HARDWARE NOT VALIDATED.** Still a test of the
-loop-starvation hypothesis, not a claimed fix.
+Status: **HARDWARE PARTIALLY VALIDATED** (7 valid trials, one boot of `37de2bf`;
+not a formal PASS). The failed-pick path and pause-first were **not** tested on
+hardware. This is a test of the loop-starvation hypothesis; the mechanism is not
+proven and the stall is not claimed to be fixed. See "Summary of hardware
+evidence and limits" at the end of this entry.
 
 Defect found on hardware with candidate `e4a48c6`: when the station picked in
 Remote Browse could not open (`Can't open HTTPS request`, `Failed to open
@@ -62,8 +65,8 @@ Browse session with a 2 s status probe, ending in a pick (D1, D3, D7) or in
 leaving Browse (D2, D4, D5, D6). One trial (D6, first attempt) was void under the
 delayed-reply rule and was repeated.
 
-- Browse jobs: the longest probe latency before the pick or cancel was 1,315 ms
-  in every trial, with no probe timeouts and every list loaded.
+- Browse jobs: in every trial the longest probe latency before the pick or
+  cancel was at most 1,315 ms, with no probe timeouts and every list loaded.
 - Leaving Browse restarted the previous station each time (MP3 and AAC, correct
   codec), and a pick played the new station, with the expected `[BROWSE]` serial
   lines.
@@ -84,10 +87,30 @@ yet.** Zero Browse-job stalls in 7 trials does not show that the stall is fixed
 hypothesis, not a confirmed fix. The choppy AAC audio is a separate, unrelated
 issue.
 
+Summary of hardware evidence and limits:
+- Original firmware `f37ac8b72c14`: a remote Browse stalled the main loop for
+  about 15-17 s in 6 of 6 recorded attempts while a station was playing (3 in the
+  A/B series, 3 in a later control), and loaded normally while paused.
+- This candidate: no Browse-job stall in 7 of 7 valid trials (longest probe
+  latency before the pick or cancel 1,315 ms). The series is not a formal PASS:
+  4 of 7 trials had an RTCP close after a station start. With 0 failures in 7
+  trials the 95% upper bound on the failure rate is about 41%.
+- Pre-existing behavior, not caused by this change: a fresh station start is
+  often followed by an RTCP close 2.9-3.4 s later (5 of 5 starts on the original
+  firmware; 4 of 7 trials here). It comes from the network/TLS open running on
+  `AudioTask`.
+- Not tested on hardware: the failed-pick restart, pause-first (START while
+  already paused), REMOTE disconnect in the middle of Browse, START while the
+  stream is under 60 s old, re-entering Browse while a restart is pending, and
+  the boot serial output of `37de2bf` (it was not captured).
+- Mechanism not proven: pausing removes `AudioTask` load, but that does not show
+  that `AudioTask` starvation was the cause.
+
 ## 2026-11-06 - Pause playback during a remote Browse session (hypothesis test)
 
-Status: **SOFTWARE ONLY - HARDWARE NOT VALIDATED.** This is a test of a
-hypothesis, not a claimed root-cause fix.
+Status: first implementation (`e4a48c6`); hardware evidence is recorded in the
+follow-up entry above. This is a test of a hypothesis, not a claimed root-cause
+fix.
 
 Hardware evidence (private A/B series on build `f37ac8b72c14`): a remote Browse
 stalled the main loop for about 15-17 s in 3 of 3 attempts while a station was
@@ -124,7 +147,8 @@ session can leave playback paused on the saved stream and cause a restart at
 session end (the REMOTE UI has no play/pause control on its Browse screens and
 sends CANCEL when leaving Browse; physical TUNER presses were not covered). The
 restart is requested from the RTCP service path and completed from `loop()`.
-Hardware acceptance (A/B protocol, fresh and 60 s old streams) is still pending.
+Hardware acceptance was partial: it exposed the failed-pick defect fixed in
+`37de2bf` (see the entry above).
 
 Software results: the new state-table test (`test_browse_playback_policy.cpp`)
 and the hook-placement test (`test_browse_playback_policy_integration.py`, 16
@@ -136,7 +160,8 @@ passes. The production `esp32-lwip-psram` build from implementation commit
 `80aa1b9c93a3915f860524f7575d8db35571c01be6466e7cd9ccee4adc8316df`, ELF SHA-256
 `ef65bc4fcd9c6c941ebc2a921807ab1c6bcf9c7fbf63cce7e20f75f862a2a69a`, static RAM
 81,800 B (baseline 81,528, +272), linked program 2,202,117 B (baseline
-2,201,161, +956), partition headroom 937,040 bytes. Not flashed.
+2,201,161, +956), partition headroom 937,040 bytes. This build was flashed once
+for a short test and replaced by `37de2bf`.
 
 ## 2026-11-05 - Bounded RTCP partial-frame transmission
 
