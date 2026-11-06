@@ -19,6 +19,221 @@ and displayed no false `TUNER disconnected` card. TUNER protocol, timeout and
 station behavior were not changed further. The TUNER diagnostic firmware remains
 useful bounded evidence; it is not represented as the functional popup fix.
 
+## 2026-11-06 - A failed Browse pick restarts the previous station (follow-up)
+
+Status: **HARDWARE PARTIALLY VALIDATED** (7 valid trials, one boot of `37de2bf`;
+not a formal PASS; one pause-first check passed). The failed-pick restart path
+was **not** tested on hardware. This is a test of the loop-starvation hypothesis; the mechanism is not
+proven and the stall is not claimed to be fixed. See "Summary of hardware
+evidence and limits" at the end of this entry.
+
+Defect found on hardware with candidate `e4a48c6`: when the station picked in
+Remote Browse could not open (`Can't open HTTPS request`, `Failed to open
+stream`), the previously playing station stayed paused. The installed build
+keeps the old stream playing in that case, because `playDeferredNow` fails before
+tearing the old chain down. The cause was discarding the saved station at the
+moment the pick was admitted instead of when it actually played.
+
+Change (decision logic in `src/browse_playback_policy.h`, hooks in
+`src/main.cpp`):
+- A pick admitted by `deferPlay` no longer discards the saved station; the pick's
+  request id is remembered (`onPickAdmitted`).
+- When the pick's deferred play resolves (`serviceDeferredCatalogStart`, after the
+  slot is cleared): succeeded - the saved station is discarded (`[BROWSE] Station
+  chosen, no restore`); failed or cancelled before it played - the previous
+  station is restarted through the same restart path (`[BROWSE] Picked station
+  failed, restarting previous`), unless the player was changed by someone else
+  meanwhile (resume, another station, physical stop), which is never overridden.
+- A cancel command or RTCP close while the pick is pending queues nothing (the
+  deferred play slot is busy); the pick resolution decides
+  (`[BROWSE] Session ended while a pick is pending, pick decides`).
+
+Unchanged: RTCP server and client, timeouts, Browser transport policy, TLS,
+`AudioTask` yield and priority, e-paper, AAC, NVS and the REMOTE firmware.
+
+Analysis recorded with this change (private evidence, installed build
+`f37ac8b72c14` and candidate): a normal fresh station start (REMOTE favourites
+play) was followed 2.9-3.4 s later by an RTCP session close in 5 of 5 starts on the
+installed build, once with 3.39 s of RTCP silence on the TUNER. `playDeferredNow`
+runs on `AudioTask`; its own comment says the network/TLS open can starve the
+lower-priority Arduino loop that owns RTCP. The restart after a cancelled Browse
+session shows the same behaviour (3.12 s of RTCP silence, REMOTE READY timeout),
+so this slowdown is pre-existing and not specific to Browse; the candidate does
+add one station start at the end of a cancelled Browse session. The display
+refresh gap is not a valid stall indicator (a paused player emits no refresh
+lines even with a healthy loop).
+
+Software results: the state-table test (`test_browse_playback_policy.cpp`) now
+covers pick succeeded, pick failed, pick cancelled, close while the pick is pending,
+a different request resolving, and the player changed meanwhile; the
+hook-placement test has 21 checks. Both pass and every previously passing host
+and policy test still passes.
+
+Production `esp32-lwip-psram` build from implementation commit `37de2bf`: BIN
+2209136 bytes (baseline 2,207,744), SHA-256
+`e68827717de435b4ca924b83422f53dfad52aaac901d61bfcabc0c55139fbd39`, ELF SHA-256
+`3c3ec50d785a18ccaece46df02ae23554cae3cbc5c9ddf014c3280366a7fef84`, static RAM
+81,816 B (baseline 81,528), linked program 2,202,565 B (baseline 2,201,161),
+headroom 936592 bytes; same library warnings as the baseline build and none in
+the changed files.
+
+Hardware results (one boot of `37de2bf`, TUNER only flashed; the REMOTE kept
+`ad390a4` and its first-failure snapshot, which stayed unchanged). Seven valid
+trials were run: West City Radio or kissFM playing for at least 60 s, then a
+Browse session with a 2 s status probe, ending in a pick (D1, D3, D7) or in
+leaving Browse (D2, D4, D5, D6). One trial (D6, first attempt) was void under the
+delayed-reply rule and was repeated.
+
+- Browse jobs: in every trial the longest probe latency before the pick or
+  cancel was at most 1,315 ms, with no probe timeouts and every list loaded.
+- Leaving Browse restarted the previous station each time (MP3 and AAC, correct
+  codec), and a pick played the new station, with the expected `[BROWSE]` serial
+  lines.
+- Slow probe samples of 1.7-4.7 s occurred only after a pick or a restart began,
+  while the new stream was opening. This is the start-time slowdown described
+  above, not a Browse-job stall.
+- An RTCP close followed the station start in 4 of 7 trials (D1, D2, D5, D6).
+  The fixed "no REMOTE close during the trial" criterion therefore fails for
+  those trials. One further close happened during idle playback while the REMOTE
+  was in system sleep.
+- No TUNER reset or panic. REMOTE `rtcp_close_count` saturates at 255, so close
+  deltas were taken from the TUNER close history and the REMOTE session number.
+
+Not run: trials D8-D10 (repeats), and D11-D14, which cover pause-first cases and
+the failed-pick restart. **The failed-pick fix itself has no hardware evidence
+yet.** Zero Browse-job stalls in 7 trials does not show that the stall is fixed
+(95% upper bound on the failure rate is about 41%); the pause is a test of the
+hypothesis, not a confirmed fix. The choppy AAC audio is a separate, unrelated
+issue.
+
+Summary of hardware evidence and limits:
+- Original firmware `f37ac8b72c14`: a remote Browse stalled the main loop for
+  about 15-17 s in 6 of 6 recorded attempts while a station was playing (3 in the
+  A/B series, 3 in a later control), and loaded normally while paused.
+- This candidate: no Browse-job stall in 7 of 7 valid trials (longest probe
+  latency before the pick or cancel 1,315 ms). The series is not a formal PASS:
+  4 of 7 trials had an RTCP close after a station start. With 0 failures in 7
+  trials the 95% upper bound on the failure rate is about 41%.
+- Pre-existing behavior, not caused by this change: a fresh station start is
+  often followed by an RTCP close 2.9-3.4 s later (5 of 5 starts on the original
+  firmware; 4 of 7 trials here). It comes from the network/TLS open running on
+  `AudioTask`.
+- Pause-first (START while already paused): one hardware check passed. Serial
+  showed `Playback was not playing, nothing to restore`, the station stayed
+  paused and silent after leaving Browse, and nothing was restarted.
+- Failed-pick restart: **NOT tested on hardware.** Two attempts used a station
+  that opened and then dropped about 1.5 s later (`Stream ended or decode error,
+  stopping`), so the failed-open path never ran; in that case the previous
+  station is deliberately not restored and playback stops. This is expected from
+  the design and is not a regression, but no station that fails to open was
+  available to exercise the restart.
+- Not tested on hardware: REMOTE disconnect in the middle of Browse, START while
+  the stream is under 60 s old, re-entering Browse while a restart is pending,
+  and the boot serial output of `37de2bf` (it was not captured).
+- Mechanism not proven: pausing removes `AudioTask` load, but that does not show
+  that `AudioTask` starvation was the cause.
+
+## 2026-11-06 - Pause playback during a remote Browse session (hypothesis test)
+
+Status: first implementation (`e4a48c6`); hardware evidence is recorded in the
+follow-up entry above. This is a test of a hypothesis, not a claimed root-cause
+fix.
+
+Hardware evidence (private A/B series on build `f37ac8b72c14`): a remote Browse
+stalled the main loop for about 15-17 s in 3 of 3 attempts while a station was
+playing (the REMOTE's 3 s response deadline then expired and it dropped the RTCP
+link), and loaded in 4 of 4 attempts while playback was paused. The leading,
+unproven explanation is that `AudioTask` (core 1, priority 5) starves `loop()`
+(core 1, priority 1) while the Browser HTTPS job runs its TLS handshake on the
+loop task.
+
+Behavior added (decision logic in `src/browse_playback_policy.h`, hooks in
+`src/main.cpp`):
+- At a remote Browse START, if a radio station is PLAYING, remember its URL and
+  codec and pause. If playback is already paused or stopped (or the source is
+  not radio), nothing is remembered and nothing is ever started afterwards.
+- The three Browse jobs (START, letter, genre) never restore playback;
+  `finishJob` is not hooked.
+- Station chosen from Browse: the saved station is discarded and the new
+  station plays through the existing deferred play path, which reapplies the
+  radio gain.
+- Session ends without a choice (REMOTE cancel command, or RTCP close): if the
+  player is still paused on the saved stream, the station is restarted through
+  the existing deferred play path (fresh connect). `resume()` is never used: a
+  stream paused for a long time is dropped by the server and resume fails. If
+  anything else changed playback during the session (resume, another station,
+  physical navigation stopped it), nothing is restored.
+- Serial log lines at each decision, prefixed `[BROWSE]`.
+
+Unchanged: RTCP server and protocol, timeouts and deadlines, Browser transport
+policy and TLS, `AudioTask` yield and priority, e-paper, AAC, NVS, and the REMOTE
+firmware.
+
+Known limits: a REMOTE or physical resume followed by a pause during the same
+session can leave playback paused on the saved stream and cause a restart at
+session end (the REMOTE UI has no play/pause control on its Browse screens and
+sends CANCEL when leaving Browse; physical TUNER presses were not covered). The
+restart is requested from the RTCP service path and completed from `loop()`.
+Hardware acceptance was partial: it exposed the failed-pick defect fixed in
+`37de2bf` (see the entry above).
+
+Software results: the new state-table test (`test_browse_playback_policy.cpp`)
+and the hook-placement test (`test_browse_playback_policy_integration.py`, 16
+checks) pass; every existing host and policy test that built before still
+passes. The production `esp32-lwip-psram` build from implementation commit
+`e4a48c6` passed with the same 6 library warnings as a baseline rebuild of
+`f37ac8b72c14` in the same toolchain and none in the changed files: BIN
+2,208,688 bytes (baseline 2,207,744, +944), SHA-256
+`80aa1b9c93a3915f860524f7575d8db35571c01be6466e7cd9ccee4adc8316df`, ELF SHA-256
+`ef65bc4fcd9c6c941ebc2a921807ab1c6bcf9c7fbf63cce7e20f75f862a2a69a`, static RAM
+81,800 B (baseline 81,528, +272), linked program 2,202,117 B (baseline
+2,201,161, +956), partition headroom 937,040 bytes. This build was flashed once
+for a short test and replaced by `37de2bf`.
+
+## 2026-11-05 - Bounded RTCP partial-frame transmission
+
+The RTCP server previously passed each complete encrypted frame to one
+`WiFiClient::write()` call and closed the authenticated connection whenever
+that call returned fewer bytes than requested. The pinned framework retries
+internally but can still return a positive partial count after its bounded
+waits. Closing at that point discards the unsent suffix and can leave the peer
+with an incomplete authenticated record.
+
+RTCP responses now use the existing owned socket with nonblocking `send()` and
+an offset-preserving writable wait. Positive progress advances to the first
+unsent byte without replaying the transmitted prefix. `EAGAIN`,
+`EWOULDBLOCK`, and `EINTR` remain retryable under one absolute 500 ms frame
+deadline; zero progress, peer closure, terminal errors, and deadline expiry
+remain deterministic failures that close the desynchronized connection.
+Wire framing, encryption, counters, response ordering, ownership, pairing and
+protocol definitions are unchanged. The sender adds no task, frame buffer or
+heap allocation.
+
+Focused sender and integration tests passed, including complete and chained
+partial writes, offset integrity, retryable errors, zero progress, peer close,
+terminal errors and partial-frame deadline expiry. Existing CCM, D-009, BTX,
+Full Control, Catalog, Browser, diagnostics, latency and display-service
+regressions passed. The production `esp32-lwip-psram` build from implementation
+commit `46e87ac` passed: BIN 2,204,192 bytes, SHA-256
+`94b4f40e6b8138add3babc860d46ba54802d0090898454276c5970a15df178a5`;
+ELF SHA-256
+`376247413d3be85f1ee2f9ccaf81a6ac4ce1e603a6d65d12aae22cb6d29c76d8`;
+static RAM 81,368 bytes and exact-image partition headroom 941,536 bytes.
+Only the established dependency warnings were emitted.
+
+Controlled hardware validation installed the exact candidate application and
+verified an independent 2,204,192-byte readback with the candidate SHA-256.
+Radio MP3, Bluetooth A2DP, metadata/artwork, REMOTE Play/Pause and volume, and
+the reverse source transition passed. The single isolated Browser operation
+kept RTCP authenticated: TUNER closes stayed 2 and REMOTE closes stayed 101,
+with no response-write failure, disconnect popup, audio interruption or Wi-Fi
+drop. The country list nevertheless failed to load because all four bounded
+HTTPS attempts returned `ESP_ERR_HTTP_CONNECT` (`28674`/`0x7002`) before an HTTP
+status existed. Therefore the overall Browser hardware criterion is **FAIL**,
+while this reproduction supplies no evidence of an RTCP partial-write failure.
+The earlier Radio Browser short-read remains not causally attributed solely to
+the sender weakness.
+
 ## 2026-10-31 - Bounded RTCP timeout correlation diagnostics
 
 Retained REMOTE close history identified the false station-start disconnect as
