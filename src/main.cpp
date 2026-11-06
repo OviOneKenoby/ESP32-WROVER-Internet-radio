@@ -152,6 +152,7 @@ uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command);
 void serviceDeferredCatalogStart();
 void cancelDeferredCatalogStart();
 void serviceBrowseRestart();
+void browsePickResolved(uint64_t request, DeferredPlayStatus status);
 bool projectRtcpBrowser(const rtcp_browser::Query& query,
                         rtcp_browser::StateView& view);
 uint8_t executeRtcpBrowser(const rtcp_browser::Command& command);
@@ -707,9 +708,14 @@ void serviceDeferredCatalogStart() {
         currentMode = MODE_ERROR;
         display.showError("Failed to play station");
     }
+    const bool browsePick = deferredCatalogStart.browser;
+    const uint64_t pickRequest = deferredCatalogStart.request;
     audioPlayer.clearDeferredPlay(deferredCatalogStart.request);
     deferredCatalogStart = DeferredCatalogStart{};
     publishRtcpProjection();
+    // After the slot is free: a pick that did not play may restart the previous
+    // station through the same slot.
+    if (browsePick) browsePickResolved(pickRequest, status);
 }
 
 bool projectRtcpBrowser(const rtcp_browser::Query& query,
@@ -754,22 +760,53 @@ void browseSessionStart() {
     }
 }
 
+// Restart the saved station through the normal deferred play path.
+void browseQueueRestart(const char* logLine) {
+    const AudioCodec codec = browsePlayback.codec() == STATION_CODEC_AAC
+        ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
+    // High bit keeps these ids apart from the REMOTE's request ids.
+    const uint64_t request = (uint64_t(1) << 63) | ++browseRestartCounter;
+    if (audioPlayer.deferPlay(request, browsePlayback.url(), codec)) {
+        browseRestartRequest = request;
+        Serial.println(logLine);
+    } else {
+        Serial.println("[BROWSE] Restart skipped, player busy");
+    }
+}
+
 void browseSessionEnd() {
     using Result = BrowsePlaybackPolicy::EndResult;
     switch (browsePlayback.onSessionEnd(browsePlayerView(), audioPlayer.getCurrentURL())) {
-        case Result::restart: {
-            const AudioCodec codec = browsePlayback.codec() == STATION_CODEC_AAC
-                ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
-            // High bit keeps these ids apart from the REMOTE's request ids.
-            const uint64_t request = (uint64_t(1) << 63) | ++browseRestartCounter;
-            if (audioPlayer.deferPlay(request, browsePlayback.url(), codec)) {
-                browseRestartRequest = request;
-                Serial.println("[BROWSE] Restart station after cancel/close");
-            } else {
-                Serial.println("[BROWSE] Restart skipped, player busy");
-            }
+        case Result::restart:
+            browseQueueRestart("[BROWSE] Restart station after cancel/close");
             break;
-        }
+        case Result::playback_changed:
+            Serial.println("[BROWSE] Playback changed during session, no restore");
+            break;
+        case Result::pick_pending:
+            Serial.println("[BROWSE] Session ended while a pick is pending, pick decides");
+            break;
+        case Result::nothing_saved:
+            break;
+    }
+}
+
+// The picked station's deferred play finished (called from
+// serviceDeferredCatalogStart() once the slot is free). Played: the saved
+// station is discarded. Failed to open, or cancelled before it played: the
+// previous station comes back through the same restart path.
+void browsePickResolved(uint64_t request, DeferredPlayStatus status) {
+    using Result = BrowsePlaybackPolicy::PickResult;
+    switch (browsePlayback.onPickResolved(request, status == DeferredPlayStatus::succeeded,
+                                          browsePlayerView(), audioPlayer.getCurrentURL())) {
+        case Result::station_chosen:
+            Serial.println("[BROWSE] Station chosen, no restore");
+            break;
+        case Result::restart:
+            browseQueueRestart(status == DeferredPlayStatus::failed
+                ? "[BROWSE] Picked station failed, restarting previous"
+                : "[BROWSE] Picked station cancelled, restarting previous");
+            break;
         case Result::playback_changed:
             Serial.println("[BROWSE] Playback changed during session, no restore");
             break;
@@ -832,8 +869,8 @@ uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
     deferredCatalogStart.browser = true;
     deferredCatalogStart.active = true;
     remoteBrowser.cancel(RemoteBrowserCancelReason::playback_started);
-    if (browsePlayback.onStationChosen())
-        Serial.println("[BROWSE] Station chosen, no restore");
+    // Keep the saved station until the pick plays or fails (see browsePickResolved).
+    browsePlayback.onPickAdmitted(command.request);
     rtcpServer.invalidateMediaContext();
     return rtcp_browser::success; // admission; playback is confirmed authoritatively
 }

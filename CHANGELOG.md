@@ -1,5 +1,52 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-11-06 - A failed Browse pick restarts the previous station (follow-up)
+
+Status: **SOFTWARE ONLY - HARDWARE NOT VALIDATED.** Still a test of the
+loop-starvation hypothesis, not a claimed fix.
+
+Defect found on hardware with candidate `e4a48c6`: when the station picked in
+Remote Browse could not open (`Can't open HTTPS request`, `Failed to open
+stream`), the previously playing station stayed paused. The installed build
+keeps the old stream playing in that case, because `playDeferredNow` fails before
+tearing the old chain down. The cause was discarding the saved station at the
+moment the pick was admitted instead of when it actually played.
+
+Change (decision logic in `src/browse_playback_policy.h`, hooks in
+`src/main.cpp`):
+- A pick admitted by `deferPlay` no longer discards the saved station; the pick's
+  request id is remembered (`onPickAdmitted`).
+- When the pick's deferred play resolves (`serviceDeferredCatalogStart`, after the
+  slot is cleared): succeeded - the saved station is discarded (`[BROWSE] Station
+  chosen, no restore`); failed or cancelled before it played - the previous
+  station is restarted through the same restart path (`[BROWSE] Picked station
+  failed, restarting previous`), unless the player was changed by someone else
+  meanwhile (resume, another station, physical stop), which is never overridden.
+- A cancel command or RTCP close while the pick is pending queues nothing (the
+  deferred play slot is busy); the pick resolution decides
+  (`[BROWSE] Session ended while a pick is pending, pick decides`).
+
+Unchanged: RTCP server and client, timeouts, Browser transport policy, TLS,
+`AudioTask` yield and priority, e-paper, AAC, NVS and the REMOTE firmware.
+
+Analysis recorded with this change (private evidence, installed build
+`f37ac8b72c14` and candidate): a normal fresh station start (REMOTE favourites
+play) was followed 2.9-3.4 s later by an RTCP session close in 5 of 5 starts on the
+installed build, once with 3.39 s of RTCP silence on the TUNER. `playDeferredNow`
+runs on `AudioTask`; its own comment says the network/TLS open can starve the
+lower-priority Arduino loop that owns RTCP. The restart after a cancelled Browse
+session shows the same behaviour (3.12 s of RTCP silence, REMOTE READY timeout),
+so this slowdown is pre-existing and not specific to Browse; the candidate does
+add one station start at the end of a cancelled Browse session. The display
+refresh gap is not a valid stall indicator (a paused player emits no refresh
+lines even with a healthy loop).
+
+Software results: the state-table test (`test_browse_playback_policy.cpp`) now
+covers pick succeeded, pick failed, pick cancelled, close while the pick is pending,
+a different request resolving, and the player changed meanwhile; the
+hook-placement test has 21 checks. Both pass and every previously passing host
+and policy test still passes.
+
 ## 2026-11-06 - Pause playback during a remote Browse session (hypothesis test)
 
 Status: **SOFTWARE ONLY - HARDWARE NOT VALIDATED.** This is a test of a

@@ -15,6 +15,7 @@ owner = between(main, "uint8_t executeRtcpBrowser(const rtcp_browser::Command& c
 close = between(main, "void closeRtcpBrowser() {", "uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {")
 block = between(main, "// ---- Pause playback while the REMOTE browses", "uint8_t executeRtcpBrowser(")
 loop = between(main, "void loop() {", "timeService.update();")
+svc = between(main, "void serviceDeferredCatalogStart() {", "bool projectRtcpBrowser(")
 
 checks = {
     "header included": '#include "browse_playback_policy.h"' in main,
@@ -26,12 +27,22 @@ checks = {
     "rtcp close ends the session after the job is cancelled":
         close.index("remoteBrowser.cancel(RemoteBrowserCancelReason::rtcp_closed)") <
         close.index("browseSessionEnd()"),
-    "station chosen discards the saved station after the admitted play":
+    "pick keeps the saved station until it resolves (admitted after deferPlay)":
         owner.index("audioPlayer.deferPlay(command.request, url, audioCodec)") <
-        owner.index("browsePlayback.onStationChosen()"),
+        owner.index("browsePlayback.onPickAdmitted(command.request)") and
+        "onStationChosen" not in main + policy,
+    "pick resolution runs after the deferred slot is cleared (restart needs the free slot)":
+        svc.index("audioPlayer.clearDeferredPlay(deferredCatalogStart.request)") <
+        svc.index("browsePickResolved(pickRequest, status)"),
+    "pick resolution only for Browse picks": "if (browsePick) browsePickResolved" in svc,
+    "pick resolution uses the policy and the shared restart helper":
+        "browsePlayback.onPickResolved(request, status == DeferredPlayStatus::succeeded" in block and
+        block.count("browseQueueRestart(") >= 3,
+    "session end while a pick is pending queues nothing": "case Result::pick_pending:" in block,
     "pause only on the policy's request":
         "case Result::pause:\n            audioPlayer.pause();" in block,
     "restart uses the deferred play path": "audioPlayer.deferPlay(request, browsePlayback.url(), codec)" in block,
+    "restart goes through one helper": "void browseQueueRestart(const char* logLine)" in block,
     "restart request id kept apart from REMOTE ids": "uint64_t(1) << 63" in block,
     "restart request is cleared": "audioPlayer.clearDeferredPlay(browseRestartRequest)" in block,
     "restart finished from loop": "serviceBrowseRestart();" in loop,
@@ -40,6 +51,7 @@ checks = {
     "decision log lines": all(s in block + owner for s in (
         "[BROWSE] Paused for session", "[BROWSE] Station chosen, no restore",
         "[BROWSE] Restart station after cancel/close",
+        "[BROWSE] Picked station failed, restarting previous",
         "[BROWSE] Playback was not playing, nothing to restore")),
     "new play path restores the radio gain":
         audio.index("i2sOutput->SetGain(currentVolume / 100.0f);",
