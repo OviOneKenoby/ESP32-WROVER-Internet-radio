@@ -13,6 +13,7 @@
 #include "time_service.h"
 #include "correctness_guards.h"
 #include "current_station_context.h"
+#include "browse_playback_policy.h"
 #include "system_info.h"
 #include "network_progress.h"
 #include <esp_heap_caps.h>
@@ -150,6 +151,7 @@ bool projectRtcpCatalog(const rtcp_catalog::Query& query,
 uint8_t executeRtcpCatalog(const rtcp_catalog::Command& command);
 void serviceDeferredCatalogStart();
 void cancelDeferredCatalogStart();
+void serviceBrowseRestart();
 bool projectRtcpBrowser(const rtcp_browser::Query& query,
                         rtcp_browser::StateView& view);
 uint8_t executeRtcpBrowser(const rtcp_browser::Command& command);
@@ -715,14 +717,91 @@ bool projectRtcpBrowser(const rtcp_browser::Query& query,
     return remoteBrowser.view(query, view);
 }
 
+// ---- Pause playback while the REMOTE browses (hypothesis test, TASK 019) ----
+// A remote Browse runs its HTTPS jobs on this task while AudioTask competes for
+// the same core, so playback is paused for the whole Browse session and the
+// station is restarted through the normal deferred play path (never resume():
+// a stream paused for a long time is dropped by the server). Decisions live in
+// browse_playback_policy.h.
+BrowsePlaybackPolicy browsePlayback;
+uint64_t browseRestartRequest = 0;
+uint64_t browseRestartCounter = 0;
+
+BrowsePlaybackPolicy::Player browsePlayerView() {
+    if (audioPlayer.getSource() != AUDIO_SOURCE_INTERNET_RADIO)
+        return BrowsePlaybackPolicy::Player::other;
+    const PlaybackState state = audioPlayer.getState();
+    return state == STATE_PLAYING ? BrowsePlaybackPolicy::Player::playing
+         : state == STATE_PAUSED ? BrowsePlaybackPolicy::Player::paused
+                                 : BrowsePlaybackPolicy::Player::other;
+}
+
+void browseSessionStart() {
+    using Result = BrowsePlaybackPolicy::StartResult;
+    switch (browsePlayback.onStart(browsePlayerView(), audioPlayer.getCurrentURL(),
+                                   uint8_t(nowPlayingContext.codec))) {
+        case Result::pause:
+            audioPlayer.pause();
+            publishRtcpProjection();
+            Serial.println("[BROWSE] Paused for session");
+            break;
+        case Result::session_kept:
+            Serial.println("[BROWSE] Session restarted, saved station kept");
+            break;
+        case Result::not_playing:
+            Serial.println("[BROWSE] Playback was not playing, nothing to restore");
+            break;
+    }
+}
+
+void browseSessionEnd() {
+    using Result = BrowsePlaybackPolicy::EndResult;
+    switch (browsePlayback.onSessionEnd(browsePlayerView(), audioPlayer.getCurrentURL())) {
+        case Result::restart: {
+            const AudioCodec codec = browsePlayback.codec() == STATION_CODEC_AAC
+                ? AUDIO_CODEC_AAC : AUDIO_CODEC_MP3;
+            // High bit keeps these ids apart from the REMOTE's request ids.
+            const uint64_t request = (uint64_t(1) << 63) | ++browseRestartCounter;
+            if (audioPlayer.deferPlay(request, browsePlayback.url(), codec)) {
+                browseRestartRequest = request;
+                Serial.println("[BROWSE] Restart station after cancel/close");
+            } else {
+                Serial.println("[BROWSE] Restart skipped, player busy");
+            }
+            break;
+        }
+        case Result::playback_changed:
+            Serial.println("[BROWSE] Playback changed during session, no restore");
+            break;
+        case Result::nothing_saved:
+            break;
+    }
+}
+
+// Called from loop(): finish a restart requested above. playDeferredNow()
+// reapplies the radio gain, so no separate gain restore is needed.
+void serviceBrowseRestart() {
+    if (!browseRestartRequest) return;
+    const DeferredPlayStatus status = audioPlayer.deferredPlayStatus(browseRestartRequest);
+    if (status == DeferredPlayStatus::queued || status == DeferredPlayStatus::running) return;
+    Serial.println(status == DeferredPlayStatus::succeeded
+                       ? "[BROWSE] Station restarted"
+                       : "[BROWSE] Station restart did not start");
+    audioPlayer.clearDeferredPlay(browseRestartRequest);
+    browseRestartRequest = 0;
+}
+
 void closeRtcpBrowser() {
     remoteBrowser.cancel(RemoteBrowserCancelReason::rtcp_closed);
+    browseSessionEnd();
 }
 
 uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
     using rtcp_browser::Operation;
     uint8_t error = remoteBrowser.execute(command, millis());
     if (error != rtcp_browser::success) return error;
+    if (command.operation == Operation::start) { browseSessionStart(); return error; }
+    if (command.operation == Operation::cancel) { browseSessionEnd(); return error; }
     if (command.operation != Operation::play &&
         command.operation != Operation::add_favorite) return error;
     char name[MAX_NAME_LENGTH]{}, url[MAX_URL_LENGTH]{};
@@ -753,6 +832,8 @@ uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
     deferredCatalogStart.browser = true;
     deferredCatalogStart.active = true;
     remoteBrowser.cancel(RemoteBrowserCancelReason::playback_started);
+    if (browsePlayback.onStationChosen())
+        Serial.println("[BROWSE] Station chosen, no restore");
     rtcpServer.invalidateMediaContext();
     return rtcp_browser::success; // admission; playback is confirmed authoritatively
 }
@@ -789,6 +870,7 @@ void loop() {
     // owner. It stays disabled until a private pairing record exists.
     rtcpServer.poll(audioPlayer);
     serviceDeferredCatalogStart();
+    serviceBrowseRestart();
     webPortal.handle();
     // Service again after a potentially longer web-manager turn so control
     // traffic does not wait for the next full application-loop cycle.

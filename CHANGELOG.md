@@ -1,5 +1,47 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-11-06 - Pause playback during a remote Browse session (hypothesis test)
+
+Status: **SOFTWARE ONLY - HARDWARE NOT VALIDATED.** This is a test of a
+hypothesis, not a claimed root-cause fix.
+
+Hardware evidence (private A/B series on build `f37ac8b72c14`): a remote Browse
+stalled the main loop for about 15-17 s in 3 of 3 attempts while a station was
+playing (the REMOTE's 3 s response deadline then expired and it dropped the RTCP
+link), and loaded in 4 of 4 attempts while playback was paused. The leading,
+unproven explanation is that `AudioTask` (core 1, priority 5) starves `loop()`
+(core 1, priority 1) while the Browser HTTPS job runs its TLS handshake on the
+loop task.
+
+Behavior added (decision logic in `src/browse_playback_policy.h`, hooks in
+`src/main.cpp`):
+- At a remote Browse START, if a radio station is PLAYING, remember its URL and
+  codec and pause. If playback is already paused or stopped (or the source is
+  not radio), nothing is remembered and nothing is ever started afterwards.
+- The three Browse jobs (START, letter, genre) never restore playback;
+  `finishJob` is not hooked.
+- Station chosen from Browse: the saved station is discarded and the new
+  station plays through the existing deferred play path, which reapplies the
+  radio gain.
+- Session ends without a choice (REMOTE cancel command, or RTCP close): if the
+  player is still paused on the saved stream, the station is restarted through
+  the existing deferred play path (fresh connect). `resume()` is never used: a
+  stream paused for a long time is dropped by the server and resume fails. If
+  anything else changed playback during the session (resume, another station,
+  physical navigation stopped it), nothing is restored.
+- Serial log lines at each decision, prefixed `[BROWSE]`.
+
+Unchanged: RTCP server and protocol, timeouts and deadlines, Browser transport
+policy and TLS, `AudioTask` yield and priority, e-paper, AAC, NVS, and the REMOTE
+firmware.
+
+Known limits: a REMOTE or physical resume followed by a pause during the same
+session can leave playback paused on the saved stream and cause a restart at
+session end (the REMOTE UI has no play/pause control on its Browse screens and
+sends CANCEL when leaving Browse; physical TUNER presses were not covered). The
+restart is requested from the RTCP service path and completed from `loop()`.
+Hardware acceptance (A/B protocol, fresh and 60 s old streams) is still pending.
+
 ## 2026-11-05 - Bounded RTCP partial-frame transmission
 
 The RTCP server previously passed each complete encrypted frame to one
