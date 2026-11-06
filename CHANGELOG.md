@@ -42,6 +42,18 @@ sends CANCEL when leaving Browse; physical TUNER presses were not covered). The
 restart is requested from the RTCP service path and completed from `loop()`.
 Hardware acceptance (A/B protocol, fresh and 60 s old streams) is still pending.
 
+Software results: the new state-table test (`test_browse_playback_policy.cpp`)
+and the hook-placement test (`test_browse_playback_policy_integration.py`, 16
+checks) pass; every existing host and policy test that built before still
+passes. The production `esp32-lwip-psram` build from implementation commit
+`e4a48c6` passed with the same 6 library warnings as a baseline rebuild of
+`f37ac8b72c14` in the same toolchain and none in the changed files: BIN
+2,208,688 bytes (baseline 2,207,744, +944), SHA-256
+`80aa1b9c93a3915f860524f7575d8db35571c01be6466e7cd9ccee4adc8316df`, ELF SHA-256
+`ef65bc4fcd9c6c941ebc2a921807ab1c6bcf9c7fbf63cce7e20f75f862a2a69a`, static RAM
+81,800 B (baseline 81,528, +272), linked program 2,202,117 B (baseline
+2,201,161, +956), partition headroom 937,040 bytes. Not flashed.
+
 ## 2026-11-05 - Bounded RTCP partial-frame transmission
 
 The RTCP server previously passed each complete encrypted frame to one
