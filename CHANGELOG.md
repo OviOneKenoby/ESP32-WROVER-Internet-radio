@@ -47,6 +47,14 @@ a different request resolving, and the player changed meanwhile; the
 hook-placement test has 21 checks. Both pass and every previously passing host
 and policy test still passes.
 
+Production `esp32-lwip-psram` build from implementation commit `37de2bf`: BIN
+2209136 bytes (baseline 2,207,744), SHA-256
+`e68827717de435b4ca924b83422f53dfad52aaac901d61bfcabc0c55139fbd39`, ELF SHA-256
+`3c3ec50d785a18ccaece46df02ae23554cae3cbc5c9ddf014c3280366a7fef84`, static RAM
+81,816 B (baseline 81,528), linked program 2,202,565 B (baseline 2,201,161),
+headroom 936592 bytes; same library warnings as the baseline build and none in
+the changed files. Not yet flashed.
+
 ## 2026-11-06 - Pause playback during a remote Browse session (hypothesis test)
 
 Status: **SOFTWARE ONLY - HARDWARE NOT VALIDATED.** This is a test of a
