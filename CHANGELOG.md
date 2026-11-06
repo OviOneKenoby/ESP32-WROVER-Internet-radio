@@ -53,7 +53,36 @@ Production `esp32-lwip-psram` build from implementation commit `37de2bf`: BIN
 `3c3ec50d785a18ccaece46df02ae23554cae3cbc5c9ddf014c3280366a7fef84`, static RAM
 81,816 B (baseline 81,528), linked program 2,202,565 B (baseline 2,201,161),
 headroom 936592 bytes; same library warnings as the baseline build and none in
-the changed files. Not yet flashed.
+the changed files.
+
+Hardware results (one boot of `37de2bf`, TUNER only flashed; the REMOTE kept
+`ad390a4` and its first-failure snapshot, which stayed unchanged). Seven valid
+trials were run: West City Radio or kissFM playing for at least 60 s, then a
+Browse session with a 2 s status probe, ending in a pick (D1, D3, D7) or in
+leaving Browse (D2, D4, D5, D6). One trial (D6, first attempt) was void under the
+delayed-reply rule and was repeated.
+
+- Browse jobs: the longest probe latency before the pick or cancel was 1,315 ms
+  in every trial, with no probe timeouts and every list loaded.
+- Leaving Browse restarted the previous station each time (MP3 and AAC, correct
+  codec), and a pick played the new station, with the expected `[BROWSE]` serial
+  lines.
+- Slow probe samples of 1.7-4.7 s occurred only after a pick or a restart began,
+  while the new stream was opening. This is the start-time slowdown described
+  above, not a Browse-job stall.
+- An RTCP close followed the station start in 4 of 7 trials (D1, D2, D5, D6).
+  The fixed "no REMOTE close during the trial" criterion therefore fails for
+  those trials. One further close happened during idle playback while the REMOTE
+  was in system sleep.
+- No TUNER reset or panic. REMOTE `rtcp_close_count` saturates at 255, so close
+  deltas were taken from the TUNER close history and the REMOTE session number.
+
+Not run: trials D8-D10 (repeats), and D11-D14, which cover pause-first cases and
+the failed-pick restart. **The failed-pick fix itself has no hardware evidence
+yet.** Zero Browse-job stalls in 7 trials does not show that the stall is fixed
+(95% upper bound on the failure rate is about 41%); the pause is a test of the
+hypothesis, not a confirmed fix. The choppy AAC audio is a separate, unrelated
+issue.
 
 ## 2026-11-06 - Pause playback during a remote Browse session (hypothesis test)
 
