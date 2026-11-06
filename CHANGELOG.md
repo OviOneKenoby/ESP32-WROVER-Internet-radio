@@ -3,8 +3,8 @@
 ## 2026-11-06 - A failed Browse pick restarts the previous station (follow-up)
 
 Status: **HARDWARE PARTIALLY VALIDATED** (7 valid trials, one boot of `37de2bf`;
-not a formal PASS). The failed-pick path and pause-first were **not** tested on
-hardware. This is a test of the loop-starvation hypothesis; the mechanism is not
+not a formal PASS; one pause-first check passed). The failed-pick restart path
+was **not** tested on hardware. This is a test of the loop-starvation hypothesis; the mechanism is not
 proven and the stall is not claimed to be fixed. See "Summary of hardware
 evidence and limits" at the end of this entry.
 
@@ -99,10 +99,18 @@ Summary of hardware evidence and limits:
   often followed by an RTCP close 2.9-3.4 s later (5 of 5 starts on the original
   firmware; 4 of 7 trials here). It comes from the network/TLS open running on
   `AudioTask`.
-- Not tested on hardware: the failed-pick restart, pause-first (START while
-  already paused), REMOTE disconnect in the middle of Browse, START while the
-  stream is under 60 s old, re-entering Browse while a restart is pending, and
-  the boot serial output of `37de2bf` (it was not captured).
+- Pause-first (START while already paused): one hardware check passed. Serial
+  showed `Playback was not playing, nothing to restore`, the station stayed
+  paused and silent after leaving Browse, and nothing was restarted.
+- Failed-pick restart: **NOT tested on hardware.** Two attempts used a station
+  that opened and then dropped about 1.5 s later (`Stream ended or decode error,
+  stopping`), so the failed-open path never ran; in that case the previous
+  station is deliberately not restored and playback stops. This is expected from
+  the design and is not a regression, but no station that fails to open was
+  available to exercise the restart.
+- Not tested on hardware: REMOTE disconnect in the middle of Browse, START while
+  the stream is under 60 s old, re-entering Browse while a restart is pending,
+  and the boot serial output of `37de2bf` (it was not captured).
 - Mechanism not proven: pausing removes `AudioTask` load, but that does not show
   that `AudioTask` starvation was the cause.
 
