@@ -9,7 +9,13 @@ espressif32@7.0.1, framework 3.20017.241212+sha.dcc1105b, Xtensa
 Build SUCCESS, RAM 81816 B, flash 2205757 B. The code is the same as the
 hardware-checked build 074f328758c3 (tasks 045 and 046) plus licence comments
 in four vendored files and documentation; the build id and the path strings
-differ. This file does not claim a hardware test of this exact image.
+differ.
+
+Hardware status: this exact image (build id 684abe7bee3a, firmware 1.1.12,
+SHA-256 below) was flashed on one TUNER (ESP32-WROVER) on 2026-11-07 and
+smoke-tested: it booted, played one plain-http station and one https station
+for 60 s each with stream titles, and showed no reconnect loop or restart.
+This is a smoke test, not a full validation.
 
 - BIN 2212336 B: firmware-1.1.12-684abe7bee3a.bin.
   SHA256 76C4D9230BA5764C1BDB9C161DA6776E7DAFCFEE09058A647BB3D1AC55A3615B.
