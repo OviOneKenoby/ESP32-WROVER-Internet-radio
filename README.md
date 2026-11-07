@@ -297,7 +297,7 @@ If getting low memory warnings:
 
 ## License
 
-This project is provided as-is for educational and personal use.
+This project is licensed under the GNU General Public License, version 3 (see LICENSE). Third-party components keep their own licences; see THIRD_PARTY_NOTICES.md.
 
 ## Contributing
 
