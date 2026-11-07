@@ -47,7 +47,7 @@ library used.
 | Component | Version | Licence information found on disk | Used for |
 |---|---|---|---|
 | Arduino core for the ESP32 (`framework-arduinoespressif32`) and its libraries (WiFi, WebServer, HTTPClient, WiFiClientSecure, Preferences, ESPmDNS, SPI and others) | package 3.20017.241212 (Arduino-ESP32 2.0.17) | `package.json`: "LGPL-2.1-or-later"; source headers, for example `cores/esp32/Arduino.h`: "Copyright (c) 2005-2013 Arduino Team.  All right reserved." and the GNU Lesser General Public License, version 2.1 or later (licence text B) | board support, networking, storage |
-| Espressif ESP-IDF prebuilt libraries inside the Arduino core (`tools/sdk/esp32`) | ESP-IDF v4.4.7 (`versions.txt`) | headers, for example `esp_system.h`: "Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD" and "Licensed under the Apache License, Version 2.0" (licence text C). The prebuilt libraries include components from other projects (for example lwIP, mbedTLS, wpa_supplicant, Bluetooth controller libraries); their own licence texts are not reproduced in this file | Wi-Fi, TLS, TCP/IP, Bluetooth |
+| Espressif ESP-IDF prebuilt libraries inside the Arduino core (`tools/sdk/esp32`) | ESP-IDF v4.4.7 (`versions.txt`) | headers, for example `esp_system.h`: "Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD" and "Licensed under the Apache License, Version 2.0" (licence text C). The prebuilt libraries include components from other projects (for example lwIP, mbedTLS, wpa_supplicant, Bluetooth controller libraries); their notices and licence texts are in sections 5 and 6 of this file | Wi-Fi, TLS, TCP/IP, Bluetooth |
 | GCC runtime libraries (libgcc, libstdc++) and newlib C library, from `toolchain-xtensa-esp32` | 8.4.0+2021r2-patch5 | the toolchain ships `share/licenses/gcc/COPYING.RUNTIME` (licence text K), `share/licenses/gcc/COPYING3` and `share/licenses/newlib/COPYING.NEWLIB` (licence text L) | C and C++ runtime |
 
 The firmware images stored under `artifacts/` contain the same kind of linked
@@ -4239,5 +4239,3169 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+~~~~~~~~~~
+
+
+## 5. ESP-IDF v4.4.7 components linked into the firmware image
+
+The Arduino core 2.0.17 used by the build ships ESP-IDF v4.4.7 as prebuilt libraries (`tools/sdk/esp32`). The components below were identified from the archives that contribute code or data to the verified build (the linker map of the firmware), and their notices were read from a checkout of `https://github.com/espressif/esp-idf` at tag `v4.4.7` (commit `38eeba213aa695aabfd6d89aa9f5078dbe5a94c3`) with the submodules at the commits recorded in that tag. For the Espressif binary libraries (`esp32-bt-lib`, `esp32-wifi-lib`, `esp-phy-lib`) the archive files in the checkout are byte-identical to the ones in the Arduino core (SHA-256 compared). Copyright lines are quoted from the source file headers as found (each distinct line once; the number in brackets is the count of files carrying it). Where a component has no licence file of its own, its source files carry SPDX/header notices, recorded below, and the licence text is the one named. The SPDX counts are counts of source files that carry an SPDX tag in their first lines; other files of the same component carry the older boilerplate notices (for example the Apache License 2.0 paragraph) or other notices, which are not counted here.
+
+### bt (Bluetooth host)
+
+- Linked archive(s): `libbt.a`
+- Upstream path: `components/bt` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (686 source files read): `Apache-2.0` (190)
+- Licence file(s) in the component: `components/bt/controller/lib_esp32/LICENSE` (licence text M1)
+- Copyright line(s) found:
+  - `Copyright (C) 1999-2012 Broadcom Corporation` [78]
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [74]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [73]
+  - `Copyright (C) 2003-2012 Broadcom Corporation` [55]
+  - `SPDX-FileCopyrightText: 2017 Intel Corporation` [40]
+  - `Copyright (C) 2014 The Android Open Source Project` [36]
+  - `Copyright (C) 2014 Google, Inc.` [35]
+  - `Copyright (C) 2002-2012 Broadcom Corporation` [28]
+  - `Copyright (C) 2017 by Intel Corporation, All Rights Reserved.` [27]
+  - `Copyright (C) 2004-2012 Broadcom Corporation` [19]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [17]
+  - `Copyright 2003 - 2004 Open Interface North America, Inc. All rights reserved.` [15]
+  - `Copyright (C) 2005-2012 Broadcom Corporation` [14]
+  - `Copyright (C) 2016 The Android Open Source Project` [13]
+  - `Copyright (C) 2009-2012 Broadcom Corporation` [12]
+  - `Copyright (c) 2014 The Android Open Source Project` [12]
+  - `Copyright 2002 - 2004 Open Interface North America, Inc. All rights reserved.` [12]
+  - `Copyright (C) 2009-2013 Broadcom Corporation` [11]
+  - `Copyright (C) 2006-2012 Broadcom Corporation` [9]
+  - `Copyright (C) 2015 Google, Inc.` [8]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [8]
+  - `Copyright (c) 2014, Kenneth MacKay` [8]
+  - `SPDX-FileCopyrightText: 2018 Vikrant More` [8]
+  - `Copyright (C) 2008-2012 Broadcom Corporation` [7]
+  - `Copyright (C) 2000-2012 Broadcom Corporation` [7]
+  - (51 further distinct copyright lines are present in the upstream files)
+
+### bt controller library (esp32-bt-lib)
+
+- Linked archive(s): `libbtdm_app.a`
+- Upstream path: `components/bt/controller/lib_esp32` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers: none found (0 source files read).
+- Licence file(s) in the component: `components/bt/controller/lib_esp32/LICENSE` (licence text M1)
+- Copyright line(s) found: none in the file headers read.
+
+### esp_wifi libraries (esp32-wifi-lib)
+
+- Linked archive(s): `libnet80211.a`, `libpp.a`, `libcore.a`, `libmesh.a`, `libcoexist.a`, `libsmartconfig.a`
+- Upstream path: `components/esp_wifi/lib` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers: none found (0 source files read).
+- Licence file(s) in the component: `components/esp_wifi/lib/LICENSE` (licence text M1)
+- Copyright line(s) found: none in the file headers read.
+
+### esp_wifi
+
+- Linked archive(s): `libesp_wifi.a`
+- Upstream path: `components/esp_wifi` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (29 source files read): `Apache-2.0` (18)
+- Licence file(s) in the component: `components/esp_wifi/lib/LICENSE` (licence text M1)
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [7]
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [6]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2018-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2017-2018 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2010-2017 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2010-2022 Espressif Systems (Shanghai) CO LTD` [1]
+
+### esp_phy libraries (esp-phy-lib)
+
+- Linked archive(s): `libphy.a`, `librtc.a`
+- Upstream path: `components/esp_phy/lib` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers: none found (0 source files read).
+- Licence file(s) in the component: `components/esp_phy/lib/LICENSE` (licence text M1)
+- Copyright line(s) found: none in the file headers read.
+
+### esp_phy
+
+- Linked archive(s): `libesp_phy.a`
+- Upstream path: `components/esp_phy` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (11 source files read): `Apache-2.0` (9)
+- Licence file(s) in the component: `components/esp_phy/lib/LICENSE` (licence text M1)
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2016-2021 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2016-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2016-2020 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [1]
+
+### wpa_supplicant
+
+- Linked archive(s): `libwpa_supplicant.a`
+- Upstream path: `components/wpa_supplicant` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (237 source files read): `Apache-2.0` (24); `CC0-1.0` (2)
+- Licence file(s) in the component: `components/wpa_supplicant/COPYING` (licence text M10)
+- Copyright line(s) found:
+  - `Copyright (c) 2006-2011, Jouni Malinen <j@w1.fi>` [16]
+  - `Copyright (c) 2006-2009, Jouni Malinen <j@w1.fi>` [10]
+  - `Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>` [10]
+  - `Copyright (c) 2008, Jouni Malinen <j@w1.fi>` [10]
+  - `Copyright (c) 2004-2007, Jouni Malinen <j@w1.fi>` [9]
+  - `Copyright (c) 2003-2012, Jouni Malinen <j@w1.fi>` [8]
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `Copyright (c) 2003-2007, Jouni Malinen <j@w1.fi>` [6]
+  - `Copyright (c) 2006, Jouni Malinen <j@w1.fi>` [6]
+  - `Copyright (c) 2002-2007, Jouni Malinen <j@w1.fi>` [5]
+  - `Copyright (c) 2004-2012, Jouni Malinen <j@w1.fi>` [5]
+  - `SPDX-FileCopyrightText: 2020-2023 Espressif Systems (Shanghai) CO LTD` [4]
+  - `Copyright (c) 2004-2008, Jouni Malinen <j@w1.fi>` [4]
+  - `Copyright (c) 2017, Qualcomm Atheros, Inc.` [4]
+  - `Copyright (c) 2012, Jouni Malinen <j@w1.fi>` [4]
+  - `Copyright (c) 2015, Pali Rohár <pali.rohar@gmail.com>` [4]
+  - `Copyright (c) 2008-2012, Jouni Malinen <j@w1.fi>` [4]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2019-2023 Espressif Systems (Shanghai) CO LTD` [3]
+  - `Copyright (c) 2007-2012, Jouni Malinen <j@w1.fi>` [3]
+  - `Copyright (c) 2004-2011, Jouni Malinen <j@w1.fi>` [3]
+  - `Copyright (c) 2012-2016, Jouni Malinen <j@w1.fi>` [3]
+  - `Copyright (c) 2019, The Linux Foundation` [3]
+  - (65 further distinct copyright lines are present in the upstream files)
+
+### mbedtls
+
+- Linked archive(s): `libmbedcrypto.a`, `libmbedx509.a`, `libmbedtls.a`, `libmbedtls_2.a`
+- Upstream path: `components/mbedtls` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (388 source files read): `Apache-2.0 OR GPL-2.0-or-later` (283); `Apache-2.0` (52)
+- Licence file(s) in the component: `components/mbedtls/mbedtls/LICENSE` (licence text M5)
+- Copyright line(s) found:
+  - `Copyright The Mbed TLS Contributors` [284]
+  - `Copyright (C) 2006-2015, ARM Limited, All Rights Reserved` [33]
+  - `Copyright (c) INRIA and Microsoft Corporation. All rights reserved.` [16]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [10]
+  - `Copyright 2016-2018 INRIA and Microsoft Corporation` [8]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [5]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2019-2020 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `Copyright 2018-2019 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2017-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2020-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2018-2022 Espressif Systems (Shanghai) CO LTD` [1]
+
+### lwip
+
+- Linked archive(s): `liblwip.a`
+- Upstream path: `components/lwip` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (329 source files read): `Apache-2.0` (2); `BSD-3-Clause` (1)
+- Licence file(s) in the component: `components/lwip/lwip/COPYING` (licence text M4)
+- Copyright line(s) found:
+  - `Copyright (c) 2001-2004 Swedish Institute of Computer Science.` [95]
+  - `Copyright (c) 2010 Inico Technologies Ltd.` [16]
+  - `Copyright (c) 2006 Axon Digital Design B.V., The Netherlands.` [14]
+  - `Copyright (c) 2001-2003 Swedish Institute of Computer Science.` [12]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [11]
+  - `Copyright (c) 2017 Simon Goldschmidt` [11]
+  - `Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.` [11]
+  - `Copyright (C) 2009 Paul Bakker <polarssl_maintainer at polarssl dot org>` [10]
+  - `Copyright (c) 2018 Simon Goldschmidt` [6]
+  - `Copyright (c) 2016 Elias Oenal.` [6]
+  - `Copyright (c) 2003 by Marc Boucher, Services Informatiques (MBSI) inc.` [6]
+  - `Copyright (c) 2015 Inico Technologies Ltd.` [5]
+  - `Copyright (c) 2017 Joel Cunningham, Garmin International, Inc. <joel.cunningham@garmin.com>` [4]
+  - `Copyright (c) 2015 Verisure Innovation AB` [4]
+  - `Copyright (c) 2003-2004 Leon Woestenberg <leon.woestenberg@axon.tv>` [4]
+  - `Copyright (c) 2003-2004 Axon Digital Design B.V., The Netherlands.` [4]
+  - `Copyright (c) 2017 Simon Goldschmidt.` [4]
+  - `Copyright (c) 2003 Paul Mackerras. All rights reserved.` [4]
+  - `Copyright (c) 1995 Eric Rosenquist. All rights reserved.` [4]
+  - `Copyright (c) 1999 Tommi Komulainen. All rights reserved.` [4]
+  - `Copyright 2017 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright (c) 2007-2009 Frédéric Bernon, Simon Goldschmidt` [3]
+  - `Copyright (c) Deltatee Enterprises Ltd. 2013` [3]
+  - `Copyright (c) 2007 Dominik Spies <kontakt@dspies.de>` [3]
+  - `Copyright (c) 2001-2004 Leon Woestenberg <leon.woestenberg@gmx.net>` [3]
+  - (48 further distinct copyright lines are present in the upstream files)
+
+### esp_hw_support
+
+- Linked archive(s): `libesp_hw_support.a`
+- Upstream path: `components/esp_hw_support` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (209 source files read): `Apache-2.0` (206)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [88]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [51]
+  - `SPDX-FileCopyrightText: 2010-2021 Espressif Systems (Shanghai) CO LTD` [14]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [11]
+  - `SPDX-FileCopyrightText: 2013-2021 Espressif Systems (Shanghai) CO LTD` [8]
+  - `SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD` [7]
+  - `SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD` [6]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [4]
+  - `SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2016-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2024 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/esp_hw_support/clk_ctrl_os.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <freertos/FreeRTOS.h>
+#include "soc/clk_ctrl_os.h"
+~~~~
+
+### hal
+
+- Linked archive(s): `libhal.a`
+- Upstream path: `components/hal` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (367 source files read): `Apache-2.0` (127)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [108]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [73]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [26]
+  - `SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD` [21]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [17]
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [16]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [13]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [11]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [11]
+  - `Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD` [11]
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [10]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [8]
+  - `SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD` [7]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [6]
+  - `SPDX-FileCopyrightText: 2021-2023 Espressif Systems (Shanghai) CO LTD` [6]
+  - `Copyright 2020-2021 Espressif Systems (Shanghai) CO LTD` [5]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [4]
+  - `Copyright 2010-2019 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2020-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2021 Espressif Systems (Shanghai)` [1]
+  - `Copyright 2020-2021 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2019-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - (2 further distinct copyright lines are present in the upstream files)
+- Header notice, verbatim, from `components/hal/adc_hal.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <sys/param.h>
+#include "sdkconfig.h"
+~~~~
+
+### soc
+
+- Linked archive(s): `libsoc.a`
+- Upstream path: `components/soc` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (586 source files read): `Apache-2.0` (91)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [186]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [50]
+  - `Copyright 2017-2021 Espressif Systems (Shanghai) PTE LTD` [43]
+  - `Copyright 2017-2018 Espressif Systems (Shanghai) PTE LTD` [38]
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [27]
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [24]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [22]
+  - `Copyright 2010-2016 Espressif Systems (Shanghai) PTE LTD` [19]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [19]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [17]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [16]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [15]
+  - `Copyright 2010-2020 Espressif Systems (Shanghai) PTE LTD` [12]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [10]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [9]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [6]
+  - `SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD` [5]
+  - `Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD` [5]
+  - `Copyright 2017-2020 Espressif Systems (Shanghai) PTE LTD` [5]
+  - `Copyright 2021 Espressif Systems (Shanghai) Co. Ltd.` [4]
+  - `SPDX-FileCopyrightText: 2017-2022 Espressif Systems (Shanghai) CO LTD` [4]
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2010-2022 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2020-2023 Espressif Systems (Shanghai) CO LTD` [3]
+  - (17 further distinct copyright lines are present in the upstream files)
+- Header notice, verbatim, from `components/soc/esp32/interrupts.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "soc/interrupts.h"
+
+~~~~
+
+### xtensa
+
+- Linked archive(s): `libxtensa.a`, `libxt_hal.a`
+- Upstream path: `components/xtensa` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (58 source files read): `Apache-2.0` (2)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright (c) 2006-2015 Cadence Design Systems Inc.` [4]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright (c) 1999-2018 Tensilica Inc.` [2]
+  - `Copyright (c) 2005-2015 Cadence Design Systems, Inc.` [2]
+  - `Copyright (c) 1999-2018 Cadence Design Systems Inc.` [2]
+  - `Copyright (c) 2005-2011 Tensilica Inc.` [2]
+  - `Copyright (c) 2016 Cadence Design Systems, Inc.` [2]
+  - `Copyright (c) 2005-2014 Cadence Design Systems, Inc.` [1]
+  - `Copyright (c) 2003-2004 Tensilica Inc.` [1]
+  - `Copyright (c) 1998-2002 Tensilica Inc.` [1]
+  - `Copyright (c) 2000-2010 Tensilica Inc.` [1]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright (c) 2001-2014 Cadence Design Systems, Inc.` [1]
+  - `Copyright (c) 2001-2009 Tensilica Inc.` [1]
+  - `Copyright (c) 2012 Tensilica Inc.` [1]
+  - `Copyright (c) 2000-2014 Tensilica Inc.` [1]
+  - `Copyright (c) 1999-2015 Cadence Design Systems, Inc.` [1]
+  - `SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright (c) 2006-2012 Tensilica Inc.` [1]
+  - `Copyright (c) 2016 Cadence Design Systems Inc.` [1]
+  - `Copyright (c) 2004-2008 Tensilica Inc.` [1]
+  - `Copyright (c) 2006-2018 Tensilica Inc.` [1]
+  - `Copyright (c) 1999-2008 Tensilica Inc.` [1]
+  - `Copyright (c) 2012-2013 Tensilica Inc.` [1]
+  - (3 further distinct copyright lines are present in the upstream files)
+- Header notice, verbatim, from `components/xtensa/include/xt_instr_macros.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### esp_system
+
+- Linked archive(s): `libesp_system.a`
+- Upstream path: `components/esp_system` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (86 source files read): `Apache-2.0` (24)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [11]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [10]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [8]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [5]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [3]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2019-2020 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2017 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2018-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2010-2020 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright (c) 2016, Linaro Limited` [1]
+  - `SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/esp_system/debug_stubs.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// This module implements debug/trace stubs. The stub is a piece of special code which can invoked by OpenOCD
+// Currently one stub is used for GCOV functionality
+~~~~
+
+### freertos
+
+- Linked archive(s): `libfreertos.a`
+- Upstream path: `components/freertos` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (62 source files read): `Apache-2.0` (13); `MIT` (2)
+- Licence file(s) in the component: `components/freertos/LICENSE.md` (licence text M2)
+- Copyright line(s) found:
+  - `COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER` [29]
+  - `Copyright (C) 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.` [26]
+  - `Copyright (c) 2003-2015 Cadence Design Systems, Inc.` [7]
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [5]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [4]
+  - `Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright (C) 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.` [2]
+  - `Copyright (c) 2006-2015 Cadence Design Systems Inc.` [2]
+  - `Copyright 2020 Espressif Systems (Shanghai) Co., Ltd.` [1]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2020 Amazon.com, Inc. or its affiliates` [1]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2017 Amazon.com, Inc. or its affiliates` [1]
+  - `SPDX-FileCopyrightText: 2015-2019 Cadence Design Systems, Inc.` [1]
+  - `Copyright (C) 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.` [1]
+  - `Copyright (c) 2015-2019 Cadence Design Systems, Inc.` [1]
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright (c) 2015-2015 Cadence Design Systems Inc.` [1]
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright (c) 2017, Intel Corporation` [1]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [1]
+
+### heap
+
+- Linked archive(s): `libheap.a`
+- Upstream path: `components/heap` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (28 source files read): `Apache-2.0` (4)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [11]
+  - `Copyright (c) 2006-2016, Matthew Conte` [4]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2010-2016 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2017 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2010-2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/heap/multi_heap_platform.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#pragma once
+
+#ifdef MULTI_HEAP_FREERTOS
+~~~~
+
+### spi_flash
+
+- Linked archive(s): `libspi_flash.a`
+- Upstream path: `components/spi_flash` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (82 source files read): `Apache-2.0` (43)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [26]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [14]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [10]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [6]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [3]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2024 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/spi_flash/cache_utils.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <stdlib.h>
+#include <assert.h>
+~~~~
+
+### nvs_flash
+
+- Linked archive(s): `libnvs_flash.a`
+- Upstream path: `components/nvs_flash` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (37 source files read): `Apache-2.0` (19)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [14]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [12]
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/nvs_flash/include/nvs.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#ifndef ESP_NVS_H
+#define ESP_NVS_H
+
+~~~~
+
+### vfs
+
+- Linked archive(s): `libvfs.a`
+- Upstream path: `components/vfs` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (17 source files read): `Apache-2.0` (14)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [9]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2021-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.` [1]
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/vfs/openocd_semihosting.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### esp_netif
+
+- Linked archive(s): `libesp_netif.a`
+- Upstream path: `components/esp_netif` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (21 source files read): `Apache-2.0` (6)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [11]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [5]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/esp_netif/esp_netif_defaults.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "esp_netif.h"
+#include "esp_wifi_default.h"
+~~~~
+
+### efuse
+
+- Linked archive(s): `libefuse.a`
+- Upstream path: `components/efuse` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (45 source files read): `Apache-2.0` (45)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [15]
+  - `SPDX-FileCopyrightText: 2017-2022 Espressif Systems (Shanghai) CO LTD` [13]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [12]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [5]
+- Header notice, verbatim, from `components/efuse/esp32/esp_efuse_fields.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "esp_efuse.h"
+#include "esp_efuse_utility.h"
+~~~~
+
+### esp_event
+
+- Linked archive(s): `libesp_event.a`
+- Upstream path: `components/esp_event` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers: none found (14 source files read).
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [9]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [2]
+
+### esp_timer
+
+- Linked archive(s): `libesp_timer.a`
+- Upstream path: `components/esp_timer` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (9 source files read): `Apache-2.0` (5)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [5]
+  - `Copyright 2017 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2010-2017 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/esp_timer/include/esp_timer.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### esp_pm
+
+- Linked archive(s): `libesp_pm.a`
+- Upstream path: `components/esp_pm` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (11 source files read): `Apache-2.0` (2)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2016-2017 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `SPDX-FileCopyrightText: 2016-2023 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [2]
+- Header notice, verbatim, from `components/esp_pm/pm_impl.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2016-2023 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <stdlib.h>
+#include <stdbool.h>
+~~~~
+
+### esp_ipc
+
+- Linked archive(s): `libesp_ipc.a`
+- Upstream path: `components/esp_ipc` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (6 source files read): `Apache-2.0` (5)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2017-2022 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/esp_ipc/include/esp_ipc_isr.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### log
+
+- Linked archive(s): `liblog.a`
+- Upstream path: `components/log` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (9 source files read): `Apache-2.0` (6)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [5]
+  - `Copyright 2010-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/log/log.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+ * Log library implementation notes.
+~~~~
+
+### pthread
+
+- Linked archive(s): `libpthread.a`
+- Upstream path: `components/pthread` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (6 source files read): `Apache-2.0` (2)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2017 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/pthread/pthread.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <time.h>
+#include <errno.h>
+~~~~
+
+### cxx
+
+- Linked archive(s): `libcxx.a`
+- Upstream path: `components/cxx` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (2 source files read): `Apache-2.0` (2)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/cxx/cxx_exception_stubs.cpp`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include <cstdlib>
+#include <cstdio>
+#include <exception>
+~~~~
+
+### esp_rom
+
+- Linked archive(s): `libesp_rom.a`
+- Upstream path: `components/esp_rom` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (158 source files read): `Apache-2.0` (28)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [35]
+  - `Copyright 2010-2020 Espressif Systems (Shanghai) PTE LTD` [15]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [15]
+  - `Copyright 2010-2016 Espressif Systems (Shanghai) PTE LTD` [12]
+  - `Copyright 2019-2020 Espressif Systems (Shanghai) PTE LTD` [9]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [7]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [6]
+  - `Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>` [6]
+  - `Copyright(c) 2015,2016 Intel Corporation.` [6]
+  - `SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD` [5]
+  - `Copyright(c) 2017 PHYTEC Messtechnik GmbH` [4]
+  - `Copyright (C) 2012, ChaN, all right reserved.` [2]
+  - `SPDX-FileCopyrightText: 2020-2023 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `copyright (c) Espressif System 2019` [2]
+  - `Copyright (c) 2017 PHYTEC Messtechnik GmbH` [2]
+  - `Copyright (c) 2016 Intel Corporation.` [2]
+  - `Copyright (C) 2006 Bertrik Sikken (bertrik@sikken.nl)` [2]
+  - `Copyright (c) 2016 Intel Corporation` [2]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2010-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - (9 further distinct copyright lines are present in the upstream files)
+- Header notice, verbatim, from `components/esp_rom/esp32/esp_rom_caps.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### app_update
+
+- Linked archive(s): `libapp_update.a`
+- Upstream path: `components/app_update` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (3 source files read): `Apache-2.0` (3)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/app_update/esp_app_desc.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <assert.h>
+#include <sys/param.h>
+~~~~
+
+### bootloader_support
+
+- Linked archive(s): `libbootloader_support.a`
+- Upstream path: `components/bootloader_support` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (83 source files read): `Apache-2.0` (83)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [31]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [22]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [9]
+  - `SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD` [8]
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [6]
+  - `SPDX-FileCopyrightText: 2010-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2016-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2024 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/bootloader_support/include/bootloader_clock.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### espcoredump
+
+- Linked archive(s): `libespcoredump.a`
+- Upstream path: `components/espcoredump` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (20 source files read): `Apache-2.0` (2)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [9]
+  - `Copyright 2015-2020 Espressif Systems (Shanghai) PTE LTD` [5]
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/espcoredump/include_core_dump/esp_core_dump_types.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef ESP_CORE_DUMP_PRIV_H_
+#define ESP_CORE_DUMP_PRIV_H_
+~~~~
+
+### driver
+
+- Linked archive(s): `libdriver.a`
+- Upstream path: `components/driver` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (99 source files read): `Apache-2.0` (96); `ISC` (2)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [44]
+  - `SPDX-FileCopyrightText: 2016-2021 Espressif Systems (Shanghai) CO LTD` [16]
+  - `SPDX-FileCopyrightText: 2010-2021 Espressif Systems (Shanghai) CO LTD` [11]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [10]
+  - `SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD` [6]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [4]
+  - `SPDX-FileCopyrightText: 2006 Uwe Stuehler <uwe@openbsd.org>` [2]
+  - `Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>` [2]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2021-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/driver/adc.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2016-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <esp_types.h>
+#include <stdlib.h>
+~~~~
+
+### esp_common
+
+- Linked archive(s): `libesp_common.a`
+- Upstream path: `components/esp_common` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (9 source files read): `Apache-2.0` (2)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2010-2019 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2016-2019 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2010-2016 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/esp_common/include/esp_attr.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef __ESP_ATTR_H__
+#define __ESP_ATTR_H__
+~~~~
+
+### esp_ringbuf
+
+- Linked archive(s): `libesp_ringbuf.a`
+- Upstream path: `components/esp_ringbuf` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (2 source files read): `Apache-2.0` (1)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/esp_ringbuf/ringbuf.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <stdlib.h>
+#include <string.h>
+~~~~
+
+### esp_eth
+
+- Linked archive(s): `libesp_eth.a`
+- Upstream path: `components/esp_eth` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (26 source files read): `Apache-2.0` (6); `MIT` (1)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [12]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [3]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2019-2021 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright (c) 2021 Vladimir Chistyakov` [2]
+  - `SPDX-FileCopyrightText: 2019-2023 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2021 Vladimir Chistyakov` [1]
+- Header notice, verbatim, from `components/esp_eth/src/dm9051.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2019-2023 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### tcpip_adapter
+
+- Linked archive(s): `libtcpip_adapter.a`
+- Upstream path: `components/tcpip_adapter` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (4 source files read): `Apache-2.0` (1)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/tcpip_adapter/tcpip_adapter_compat.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "esp_netif.h"
+#include "esp_private/wifi.h"
+~~~~
+
+### esp_http_client
+
+- Linked archive(s): `libesp_http_client.a`
+- Upstream path: `components/esp_http_client` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (8 source files read): `Apache-2.0` (8)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [8]
+- Header notice, verbatim, from `components/esp_http_client/esp_http_client.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+#include <string.h>
+~~~~
+
+### esp-tls
+
+- Linked archive(s): `libesp-tls.a`
+- Upstream path: `components/esp-tls` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (11 source files read): `Apache-2.0` (11)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [5]
+  - `SPDX-FileCopyrightText: 2020-2021 Espressif Systems (Shanghai) CO LTD` [3]
+  - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/esp-tls/esp_tls.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+~~~~
+
+### tcp_transport
+
+- Linked archive(s): `libtcp_transport.a`
+- Upstream path: `components/tcp_transport` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (9 source files read): `Apache-2.0` (4)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [3]
+  - `Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/tcp_transport/transport.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+#include <stdlib.h>
+~~~~
+
+### mdns
+
+- Linked archive(s): `libmdns.a`
+- Upstream path: `components/mdns` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (28 source files read): `Apache-2.0` (1)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [19]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>` [1]
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/mdns/mdns.c`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "mdns.h"
+#include "mdns_private.h"
+~~~~
+
+### wifi_provisioning
+
+- Linked archive(s): `libwifi_provisioning.a`
+- Upstream path: `components/wifi_provisioning` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (20 source files read): `Apache-2.0` (4)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2019 Espressif Systems (Shanghai) PTE LTD` [9]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2018-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [1]
+- Header notice, verbatim, from `components/wifi_provisioning/include/wifi_provisioning/wifi_config.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2018-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef _WIFI_PROV_CONFIG_H_
+#define _WIFI_PROV_CONFIG_H_
+~~~~
+
+### protocomm
+
+- Linked archive(s): `libprotocomm.a`
+- Upstream path: `components/protocomm` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (25 source files read): `Apache-2.0` (6)
+- Licence file in the component: none; see the header notice and the licence text of the Espressif ESP-IDF top-level `LICENSE` (text M1).
+- Copyright line(s) found:
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [11]
+  - `SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2018-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD` [1]
+- Header notice, verbatim, from `components/protocomm/include/transports/protocomm_ble.h`:
+
+~~~~
+/*
+ * SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#pragma once
+
+~~~~
+
+### nghttp
+
+- Linked archive(s): `libnghttp.a`
+- Upstream path: `components/nghttp` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers: none found (233 source files read).
+- Licence file(s) in the component: `components/nghttp/COPYING` (licence text M7), `components/nghttp/LICENSE` (licence text M8), `components/nghttp/nghttp2/COPYING` (licence text M7), `components/nghttp/nghttp2/LICENSE` (licence text M8)
+- Copyright line(s) found:
+  - `Copyright (c) 2012 Tatsuhiro Tsujikawa` [68]
+  - `Copyright (c) 2015 Tatsuhiro Tsujikawa` [35]
+  - `Copyright (c) 2016 Tatsuhiro Tsujikawa` [33]
+  - `Copyright (c) 2014 Tatsuhiro Tsujikawa` [30]
+  - `Copyright (c) 2013 Tatsuhiro Tsujikawa` [26]
+  - `Copyright (c) 2021 Tatsuhiro Tsujikawa` [13]
+  - `Copyright (c) 2019 nghttp2 contributors` [6]
+  - `Copyright (c) 2023 nghttp2 contributors` [4]
+  - `Copyright (c) 2012, 2013 Tatsuhiro Tsujikawa` [3]
+  - `Copyright (c) 2022 nghttp3 contributors` [2]
+  - `Copyright (c) 2022 nghttp2 contributors` [2]
+  - `Copyright (c) 2017 ngtcp2 contributors` [2]
+  - `Copyright (c) 2012 nghttp2 contributors` [2]
+  - `Copyright (c) 2023 sfparse contributors` [2]
+  - `Copyright (c) 2019 nghttp3 contributors` [2]
+  - `Copyright (c) 2015 nghttp2 contributors` [2]
+  - `Copyright (c) 2015 British Broadcasting Corporation` [2]
+  - `Copyright (c) 2013, 2014 Tatsuhiro Tsujikawa` [1]
+  - `copyright Joyent, Inc. and other Node contributors. All rights reserved.` [1]
+  - `Copyright Joyent, Inc. and other Node contributors. All rights reserved.` [1]
+
+### protobuf-c
+
+- Linked archive(s): `libprotobuf-c.a`
+- Upstream path: `components/protobuf-c` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers: none found (40 source files read).
+- Licence file(s) in the component: `components/protobuf-c/protobuf-c/LICENSE` (licence text M9)
+- Copyright line(s) found:
+  - `Copyright 2008 Google Inc. All rights reserved.` [26]
+  - `Copyright (c) 2008-2013, Dave Benson. All rights reserved.` [25]
+  - `Copyright (c) 2008-2022, Dave Benson and the protobuf-c authors.` [2]
+  - `Copyright (c) 2008-2014, Dave Benson and the protobuf-c authors.` [1]
+  - `Copyright (c) 2014, The protobuf-c authors.` [1]
+
+### json (cJSON)
+
+- Linked archive(s): `libjson.a`
+- Upstream path: `components/json` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers: none found (8 source files read).
+- Licence file(s) in the component: `components/json/cJSON/LICENSE` (licence text M3)
+- Copyright line(s) found:
+  - `Copyright (c) 2009-2017 Dave Gamble and cJSON contributors` [6]
+
+### newlib (ESP-IDF glue)
+
+- Linked archive(s): `libnewlib.a`
+- Upstream path: `components/newlib` (ESP-IDF v4.4.7)
+- SPDX licence identifiers in the source headers (37 source files read): `Apache-2.0` (8); `BSD-2-Clause-FreeBSD AND Apache-2.0` (1)
+- Licence file(s) in the component: `components/newlib/COPYING.NEWLIB` (licence text M6)
+- Copyright line(s) found:
+  - `Copyright 2018 Espressif Systems (Shanghai) PTE LTD` [11]
+  - `Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD` [4]
+  - `Copyright 2020 Espressif Systems (Shanghai) PTE LTD` [3]
+  - `SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD` [2]
+  - `SPDX-FileCopyrightText: 2018-2021 Espressif Systems (Shanghai) CO LTD` [2]
+  - `Copyright 2021 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2019-2020 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `Copyright 2017 Espressif Systems (Shanghai) PTE LTD` [1]
+  - `SPDX-FileCopyrightText: 2020 Francesco Giancane <francesco.giancane@accenture.com>` [1]
+  - `SPDX-FileCopyrightText: 2002 Thomas Moestl <tmm@FreeBSD.org>` [1]
+  - `Copyright (c) 2002 Thomas Moestl <tmm@FreeBSD.org>` [1]
+  - `SPDX-FileCopyrightText: 2018-2022 Espressif Systems (Shanghai) CO LTD` [1]
+  - `Copyright 2018-2019 Espressif Systems (Shanghai) PTE LTD` [1]
+
+### Not resolved (explicit gaps)
+
+- `libesp_diagnostics.a`: not part of ESP-IDF v4.4.7 (component of Espressif's Insights SDK shipped inside the Arduino core); no source or licence file in the clone.
+- `libc.a, libm.a, libgcc.a, libstdc++.a`: toolchain runtime, covered by licence texts K and L.
+- The prebuilt Espressif libraries in the Arduino core are binary only; their notices are the `LICENSE` files of the three binary-library repositories listed above (Apache License 2.0 text).
+
+## 6. Licence texts for section 5
+
+Each text below is copied verbatim from the file named under it in the ESP-IDF v4.4.7 checkout (line endings normalised to LF). Identical files are shown once.
+
+### Licence text M1
+
+Text copied from: `LICENSE`; `components/bt/controller/lib_esp32/LICENSE`; `components/esp_phy/lib/LICENSE`; `components/esp_wifi/lib/LICENSE` (identical files)
+
+~~~~~~~~~~
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+~~~~~~~~~~
+
+### Licence text M2
+
+Text copied from: `components/freertos/LICENSE.md`
+
+~~~~~~~~~~
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+~~~~~~~~~~
+
+### Licence text M3
+
+Text copied from: `components/json/cJSON/LICENSE`
+
+~~~~~~~~~~
+Copyright (c) 2009-2017 Dave Gamble and cJSON contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+~~~~~~~~~~
+
+### Licence text M4
+
+Text copied from: `components/lwip/lwip/COPYING`
+
+~~~~~~~~~~
+/*
+ * Copyright (c) 2001, 2002 Swedish Institute of Computer Science.
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * This file is part of the lwIP TCP/IP stack.
+ * 
+ * Author: Adam Dunkels <adam@sics.se>
+ *
+ */
+~~~~~~~~~~
+
+### Licence text M5
+
+Text copied from: `components/mbedtls/mbedtls/LICENSE`
+
+~~~~~~~~~~
+Mbed TLS files are provided under a dual [Apache-2.0](https://spdx.org/licenses/Apache-2.0.html)
+OR [GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html) license.
+This means that users may choose which of these licenses they take the code
+under.
+
+The full text of each of these licenses is given below.
+
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+
+===============================================================================
+
+
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 2, June 1991
+
+ Copyright (C) 1989, 1991 Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+                            Preamble
+
+  The licenses for most software are designed to take away your
+freedom to share and change it.  By contrast, the GNU General Public
+License is intended to guarantee your freedom to share and change free
+software--to make sure the software is free for all its users.  This
+General Public License applies to most of the Free Software
+Foundation's software and to any other program whose authors commit to
+using it.  (Some other Free Software Foundation software is covered by
+the GNU Lesser General Public License instead.)  You can apply it to
+your programs, too.
+
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+this service if you wish), that you receive source code or can get it
+if you want it, that you can change the software or use pieces of it
+in new free programs; and that you know you can do these things.
+
+  To protect your rights, we need to make restrictions that forbid
+anyone to deny you these rights or to ask you to surrender the rights.
+These restrictions translate to certain responsibilities for you if you
+distribute copies of the software, or if you modify it.
+
+  For example, if you distribute copies of such a program, whether
+gratis or for a fee, you must give the recipients all the rights that
+you have.  You must make sure that they, too, receive or can get the
+source code.  And you must show them these terms so they know their
+rights.
+
+  We protect your rights with two steps: (1) copyright the software, and
+(2) offer you this license which gives you legal permission to copy,
+distribute and/or modify the software.
+
+  Also, for each author's protection and ours, we want to make certain
+that everyone understands that there is no warranty for this free
+software.  If the software is modified by someone else and passed on, we
+want its recipients to know that what they have is not the original, so
+that any problems introduced by others will not reflect on the original
+authors' reputations.
+
+  Finally, any free program is threatened constantly by software
+patents.  We wish to avoid the danger that redistributors of a free
+program will individually obtain patent licenses, in effect making the
+program proprietary.  To prevent this, we have made it clear that any
+patent must be licensed for everyone's free use or not licensed at all.
+
+  The precise terms and conditions for copying, distribution and
+modification follow.
+
+                    GNU GENERAL PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. This License applies to any program or other work which contains
+a notice placed by the copyright holder saying it may be distributed
+under the terms of this General Public License.  The "Program", below,
+refers to any such program or work, and a "work based on the Program"
+means either the Program or any derivative work under copyright law:
+that is to say, a work containing the Program or a portion of it,
+either verbatim or with modifications and/or translated into another
+language.  (Hereinafter, translation is included without limitation in
+the term "modification".)  Each licensee is addressed as "you".
+
+Activities other than copying, distribution and modification are not
+covered by this License; they are outside its scope.  The act of
+running the Program is not restricted, and the output from the Program
+is covered only if its contents constitute a work based on the
+Program (independent of having been made by running the Program).
+Whether that is true depends on what the Program does.
+
+  1. You may copy and distribute verbatim copies of the Program's
+source code as you receive it, in any medium, provided that you
+conspicuously and appropriately publish on each copy an appropriate
+copyright notice and disclaimer of warranty; keep intact all the
+notices that refer to this License and to the absence of any warranty;
+and give any other recipients of the Program a copy of this License
+along with the Program.
+
+You may charge a fee for the physical act of transferring a copy, and
+you may at your option offer warranty protection in exchange for a fee.
+
+  2. You may modify your copy or copies of the Program or any portion
+of it, thus forming a work based on the Program, and copy and
+distribute such modifications or work under the terms of Section 1
+above, provided that you also meet all of these conditions:
+
+    a) You must cause the modified files to carry prominent notices
+    stating that you changed the files and the date of any change.
+
+    b) You must cause any work that you distribute or publish, that in
+    whole or in part contains or is derived from the Program or any
+    part thereof, to be licensed as a whole at no charge to all third
+    parties under the terms of this License.
+
+    c) If the modified program normally reads commands interactively
+    when run, you must cause it, when started running for such
+    interactive use in the most ordinary way, to print or display an
+    announcement including an appropriate copyright notice and a
+    notice that there is no warranty (or else, saying that you provide
+    a warranty) and that users may redistribute the program under
+    these conditions, and telling the user how to view a copy of this
+    License.  (Exception: if the Program itself is interactive but
+    does not normally print such an announcement, your work based on
+    the Program is not required to print an announcement.)
+
+These requirements apply to the modified work as a whole.  If
+identifiable sections of that work are not derived from the Program,
+and can be reasonably considered independent and separate works in
+themselves, then this License, and its terms, do not apply to those
+sections when you distribute them as separate works.  But when you
+distribute the same sections as part of a whole which is a work based
+on the Program, the distribution of the whole must be on the terms of
+this License, whose permissions for other licensees extend to the
+entire whole, and thus to each and every part regardless of who wrote it.
+
+Thus, it is not the intent of this section to claim rights or contest
+your rights to work written entirely by you; rather, the intent is to
+exercise the right to control the distribution of derivative or
+collective works based on the Program.
+
+In addition, mere aggregation of another work not based on the Program
+with the Program (or with a work based on the Program) on a volume of
+a storage or distribution medium does not bring the other work under
+the scope of this License.
+
+  3. You may copy and distribute the Program (or a work based on it,
+under Section 2) in object code or executable form under the terms of
+Sections 1 and 2 above provided that you also do one of the following:
+
+    a) Accompany it with the complete corresponding machine-readable
+    source code, which must be distributed under the terms of Sections
+    1 and 2 above on a medium customarily used for software interchange; or,
+
+    b) Accompany it with a written offer, valid for at least three
+    years, to give any third party, for a charge no more than your
+    cost of physically performing source distribution, a complete
+    machine-readable copy of the corresponding source code, to be
+    distributed under the terms of Sections 1 and 2 above on a medium
+    customarily used for software interchange; or,
+
+    c) Accompany it with the information you received as to the offer
+    to distribute corresponding source code.  (This alternative is
+    allowed only for noncommercial distribution and only if you
+    received the program in object code or executable form with such
+    an offer, in accord with Subsection b above.)
+
+The source code for a work means the preferred form of the work for
+making modifications to it.  For an executable work, complete source
+code means all the source code for all modules it contains, plus any
+associated interface definition files, plus the scripts used to
+control compilation and installation of the executable.  However, as a
+special exception, the source code distributed need not include
+anything that is normally distributed (in either source or binary
+form) with the major components (compiler, kernel, and so on) of the
+operating system on which the executable runs, unless that component
+itself accompanies the executable.
+
+If distribution of executable or object code is made by offering
+access to copy from a designated place, then offering equivalent
+access to copy the source code from the same place counts as
+distribution of the source code, even though third parties are not
+compelled to copy the source along with the object code.
+
+  4. You may not copy, modify, sublicense, or distribute the Program
+except as expressly provided under this License.  Any attempt
+otherwise to copy, modify, sublicense or distribute the Program is
+void, and will automatically terminate your rights under this License.
+However, parties who have received copies, or rights, from you under
+this License will not have their licenses terminated so long as such
+parties remain in full compliance.
+
+  5. You are not required to accept this License, since you have not
+signed it.  However, nothing else grants you permission to modify or
+distribute the Program or its derivative works.  These actions are
+prohibited by law if you do not accept this License.  Therefore, by
+modifying or distributing the Program (or any work based on the
+Program), you indicate your acceptance of this License to do so, and
+all its terms and conditions for copying, distributing or modifying
+the Program or works based on it.
+
+  6. Each time you redistribute the Program (or any work based on the
+Program), the recipient automatically receives a license from the
+original licensor to copy, distribute or modify the Program subject to
+these terms and conditions.  You may not impose any further
+restrictions on the recipients' exercise of the rights granted herein.
+You are not responsible for enforcing compliance by third parties to
+this License.
+
+  7. If, as a consequence of a court judgment or allegation of patent
+infringement or for any other reason (not limited to patent issues),
+conditions are imposed on you (whether by court order, agreement or
+otherwise) that contradict the conditions of this License, they do not
+excuse you from the conditions of this License.  If you cannot
+distribute so as to satisfy simultaneously your obligations under this
+License and any other pertinent obligations, then as a consequence you
+may not distribute the Program at all.  For example, if a patent
+license would not permit royalty-free redistribution of the Program by
+all those who receive copies directly or indirectly through you, then
+the only way you could satisfy both it and this License would be to
+refrain entirely from distribution of the Program.
+
+If any portion of this section is held invalid or unenforceable under
+any particular circumstance, the balance of the section is intended to
+apply and the section as a whole is intended to apply in other
+circumstances.
+
+It is not the purpose of this section to induce you to infringe any
+patents or other property right claims or to contest validity of any
+such claims; this section has the sole purpose of protecting the
+integrity of the free software distribution system, which is
+implemented by public license practices.  Many people have made
+generous contributions to the wide range of software distributed
+through that system in reliance on consistent application of that
+system; it is up to the author/donor to decide if he or she is willing
+to distribute software through any other system and a licensee cannot
+impose that choice.
+
+This section is intended to make thoroughly clear what is believed to
+be a consequence of the rest of this License.
+
+  8. If the distribution and/or use of the Program is restricted in
+certain countries either by patents or by copyrighted interfaces, the
+original copyright holder who places the Program under this License
+may add an explicit geographical distribution limitation excluding
+those countries, so that distribution is permitted only in or among
+countries not thus excluded.  In such case, this License incorporates
+the limitation as if written in the body of this License.
+
+  9. The Free Software Foundation may publish revised and/or new versions
+of the General Public License from time to time.  Such new versions will
+be similar in spirit to the present version, but may differ in detail to
+address new problems or concerns.
+
+Each version is given a distinguishing version number.  If the Program
+specifies a version number of this License which applies to it and "any
+later version", you have the option of following the terms and conditions
+either of that version or of any later version published by the Free
+Software Foundation.  If the Program does not specify a version number of
+this License, you may choose any version ever published by the Free Software
+Foundation.
+
+  10. If you wish to incorporate parts of the Program into other free
+programs whose distribution conditions are different, write to the author
+to ask for permission.  For software which is copyrighted by the Free
+Software Foundation, write to the Free Software Foundation; we sometimes
+make exceptions for this.  Our decision will be guided by the two goals
+of preserving the free status of all derivatives of our free software and
+of promoting the sharing and reuse of software generally.
+
+                            NO WARRANTY
+
+  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+REPAIR OR CORRECTION.
+
+  12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
+INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
+OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
+TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
+YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
+PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+                     END OF TERMS AND CONDITIONS
+
+            How to Apply These Terms to Your New Programs
+
+  If you develop a new program, and you want it to be of the greatest
+possible use to the public, the best way to achieve this is to make it
+free software which everyone can redistribute and change under these terms.
+
+  To do so, attach the following notices to the program.  It is safest
+to attach them to the start of each source file to most effectively
+convey the exclusion of warranty; and each file should have at least
+the "copyright" line and a pointer to where the full notice is found.
+
+    <one line to give the program's name and a brief idea of what it does.>
+    Copyright (C) <year>  <name of author>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+Also add information on how to contact you by electronic and paper mail.
+
+If the program is interactive, make it output a short notice like this
+when it starts in an interactive mode:
+
+    Gnomovision version 69, Copyright (C) year name of author
+    Gnomovision comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+    This is free software, and you are welcome to redistribute it
+    under certain conditions; type `show c' for details.
+
+The hypothetical commands `show w' and `show c' should show the appropriate
+parts of the General Public License.  Of course, the commands you use may
+be called something other than `show w' and `show c'; they could even be
+mouse-clicks or menu items--whatever suits your program.
+
+You should also get your employer (if you work as a programmer) or your
+school, if any, to sign a "copyright disclaimer" for the program, if
+necessary.  Here is a sample; alter the names:
+
+  Yoyodyne, Inc., hereby disclaims all copyright interest in the program
+  `Gnomovision' (which makes passes at compilers) written by James Hacker.
+
+  <signature of Ty Coon>, 1 April 1989
+  Ty Coon, President of Vice
+
+This General Public License does not permit incorporating your program into
+proprietary programs.  If your program is a subroutine library, you may
+consider it more useful to permit linking proprietary applications with the
+library.  If this is what you want to do, use the GNU Lesser General
+Public License instead of this License.
+~~~~~~~~~~
+
+### Licence text M6
+
+Text copied from: `components/newlib/COPYING.NEWLIB`
+
+~~~~~~~~~~
+The newlib subdirectory is a collection of software from several sources.
+
+Each file may have its own copyright/license that is embedded in the source
+file.  Unless otherwise noted in the body of the source file(s), the following copyright
+notices will apply to the contents of the newlib subdirectory:
+
+(1) Red Hat Incorporated
+
+Copyright (c) 1994-2009  Red Hat, Inc. All rights reserved.
+
+This copyrighted material is made available to anyone wishing to use,
+modify, copy, or redistribute it subject to the terms and conditions
+of the BSD License.   This program is distributed in the hope that
+it will be useful, but WITHOUT ANY WARRANTY expressed or implied,
+including the implied warranties of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE.  A copy of this license is available at
+http://www.opensource.org/licenses. Any Red Hat trademarks that are
+incorporated in the source code or documentation are not subject to
+the BSD License and may only be used or replicated with the express
+permission of Red Hat, Inc.
+
+(2) University of California, Berkeley
+
+Copyright (c) 1981-2000 The Regents of the University of California.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of the University nor the names of its contributors
+      may be used to endorse or promote products derived from this software
+      without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+OF SUCH DAMAGE.
+
+(3) David M. Gay (AT&T 1991, Lucent 1998)
+
+The author of this software is David M. Gay.
+
+Copyright (c) 1991 by AT&T.
+
+Permission to use, copy, modify, and distribute this software for any
+purpose without fee is hereby granted, provided that this entire notice
+is included in all copies of any software which is or includes a copy
+or modification of this software and in all copies of the supporting
+documentation for such software.
+
+THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTY.  IN PARTICULAR, NEITHER THE AUTHOR NOR AT&T MAKES ANY
+REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
+OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
+
+-------------------------------------------------------------------
+
+The author of this software is David M. Gay.
+
+Copyright (C) 1998-2001 by Lucent Technologies
+All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and
+its documentation for any purpose and without fee is hereby
+granted, provided that the above copyright notice appear in all
+copies and that both that the copyright notice and this
+permission notice and warranty disclaimer appear in supporting
+documentation, and that the name of Lucent or any of its entities
+not be used in advertising or publicity pertaining to
+distribution of the software without specific, written prior
+permission.
+
+LUCENT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.
+IN NO EVENT SHALL LUCENT OR ANY OF ITS ENTITIES BE LIABLE FOR ANY
+SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+
+
+(4) Advanced Micro Devices
+
+Copyright 1989, 1990 Advanced Micro Devices, Inc.
+
+This software is the property of Advanced Micro Devices, Inc  (AMD)  which
+specifically  grants the user the right to modify, use and distribute this
+software provided this notice is not removed or altered.  All other rights
+are reserved by AMD.
+
+AMD MAKES NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, WITH REGARD TO THIS
+SOFTWARE.  IN NO EVENT SHALL AMD BE LIABLE FOR INCIDENTAL OR CONSEQUENTIAL
+DAMAGES IN CONNECTION WITH OR ARISING FROM THE FURNISHING, PERFORMANCE, OR
+USE OF THIS SOFTWARE.
+
+So that all may benefit from your experience, please report  any  problems
+or  suggestions about this software to the 29K Technical Support Center at
+800-29-29-AMD (800-292-9263) in the USA, or 0800-89-1131  in  the  UK,  or
+0031-11-1129 in Japan, toll free.  The direct dial number is 512-462-4118.
+
+Advanced Micro Devices, Inc.
+29K Support Products
+Mail Stop 573
+5900 E. Ben White Blvd.
+Austin, TX 78741
+800-292-9263
+
+(5)
+
+(6)
+
+(7) Sun Microsystems
+
+Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+
+Developed at SunPro, a Sun Microsystems, Inc. business.
+Permission to use, copy, modify, and distribute this
+software is freely granted, provided that this notice is preserved.
+
+(8) Hewlett Packard
+
+(c) Copyright 1986 HEWLETT-PACKARD COMPANY
+
+To anyone who acknowledges that this file is provided "AS IS"
+without any express or implied warranty:
+    permission to use, copy, modify, and distribute this file
+for any purpose is hereby granted without fee, provided that
+the above copyright notice and this notice appears in all
+copies, and that the name of Hewlett-Packard Company not be
+used in advertising or publicity pertaining to distribution
+of the software without specific, written prior permission.
+Hewlett-Packard Company makes no representations about the
+suitability of this software for any purpose.
+
+(9) Hans-Peter Nilsson
+
+Copyright (C) 2001 Hans-Peter Nilsson
+
+Permission to use, copy, modify, and distribute this software is
+freely granted, provided that the above copyright notice, this notice
+and the following disclaimer are preserved with no changes.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.
+
+(10) Stephane Carrez (m68hc11-elf/m68hc12-elf targets only)
+
+Copyright (C) 1999, 2000, 2001, 2002 Stephane Carrez (stcarrez@nerim.fr)
+
+The authors hereby grant permission to use, copy, modify, distribute,
+and license this software and its documentation for any purpose, provided
+that existing copyright notices are retained in all copies and that this
+notice is included verbatim in any distributions. No written agreement,
+license, or royalty fee is required for any of the authorized uses.
+Modifications to this software may be copyrighted by their authors
+and need not follow the licensing terms described here, provided that
+the new terms are clearly indicated on the first page of each file where
+they apply.
+
+(11) Christopher G. Demetriou
+
+Copyright (c) 2001 Christopher G. Demetriou
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. The name of the author may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(12) SuperH, Inc.
+
+Copyright 2002 SuperH, Inc. All rights reserved
+
+This software is the property of SuperH, Inc (SuperH) which specifically
+grants the user the right to modify, use and distribute this software
+provided this notice is not removed or altered.  All other rights are
+reserved by SuperH.
+
+SUPERH MAKES NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, WITH REGARD TO
+THIS SOFTWARE.  IN NO EVENT SHALL SUPERH BE LIABLE FOR INDIRECT, SPECIAL,
+INCIDENTAL OR CONSEQUENTIAL DAMAGES IN CONNECTION WITH OR ARISING FROM
+THE FURNISHING, PERFORMANCE, OR USE OF THIS SOFTWARE.
+
+So that all may benefit from your experience, please report any problems
+or suggestions about this software to the SuperH Support Center via
+e-mail at softwaresupport@superh.com .
+
+SuperH, Inc.
+405 River Oaks Parkway
+San Jose
+CA 95134
+USA
+
+(13) Royal Institute of Technology
+
+Copyright (c) 1999 Kungliga Tekniska Högskolan
+(Royal Institute of Technology, Stockholm, Sweden).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+3. Neither the name of KTH nor the names of its contributors may be
+   used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY KTH AND ITS CONTRIBUTORS ``AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL KTH OR ITS CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(14) Alexey Zelkin
+
+Copyright (c) 2000, 2001 Alexey Zelkin <phantom@FreeBSD.org>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+(15) Andrey A. Chernov
+
+Copyright (C) 1997 by Andrey A. Chernov, Moscow, Russia.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+(16) FreeBSD
+
+Copyright (c) 1997-2002 FreeBSD Project.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+(17) S. L. Moshier
+
+Author:  S. L. Moshier.
+
+Copyright (c) 1984,2000 S.L. Moshier
+
+Permission to use, copy, modify, and distribute this software for any
+purpose without fee is hereby granted, provided that this entire notice
+is included in all copies of any software which is or includes a copy
+or modification of this software and in all copies of the supporting
+documentation for such software.
+
+THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTY.  IN PARTICULAR,  THE AUTHOR MAKES NO REPRESENTATION
+OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY OF THIS
+SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
+
+(18) Citrus Project
+
+Copyright (c)1999 Citrus Project,
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+(19) Todd C. Miller
+
+Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. The name of the author may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(20) DJ Delorie (i386)
+Copyright (C) 1991 DJ Delorie
+All rights reserved.
+
+Redistribution, modification, and use in source and binary forms is permitted
+provided that the above copyright notice and following paragraph are
+duplicated in all such forms.
+
+This file is distributed WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+(21) Free Software Foundation LGPL License (*-linux* targets only)
+
+   Copyright (C) 1990-1999, 2000, 2001    Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+   Contributed by Mark Kettenis <kettenis@phys.uva.nl>, 1997.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA.
+
+(22) Xavier Leroy LGPL License (i[3456]86-*-linux* targets only)
+
+Copyright (C) 1996 Xavier Leroy (Xavier.Leroy@inria.fr)
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Library General Public License for more details.
+
+(23) Intel (i960)
+
+Copyright (c) 1993 Intel Corporation
+
+Intel hereby grants you permission to copy, modify, and distribute this
+software and its documentation.  Intel grants this permission provided
+that the above copyright notice appears in all copies and that both the
+copyright notice and this permission notice appear in supporting
+documentation.  In addition, Intel grants this permission provided that
+you prominently mark as "not part of the original" any modifications
+made to this software or documentation, and that the name of Intel
+Corporation not be used in advertising or publicity pertaining to
+distribution of the software or the documentation without specific,
+written prior permission.
+
+Intel Corporation provides this AS IS, WITHOUT ANY WARRANTY, EXPRESS OR
+IMPLIED, INCLUDING, WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY
+OR FITNESS FOR A PARTICULAR PURPOSE.  Intel makes no guarantee or
+representations regarding the use of, or the results of the use of,
+the software and documentation in terms of correctness, accuracy,
+reliability, currentness, or otherwise; and you rely on the software,
+documentation and results solely at your own risk.
+
+IN NO EVENT SHALL INTEL BE LIABLE FOR ANY LOSS OF USE, LOSS OF BUSINESS,
+LOSS OF PROFITS, INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES
+OF ANY KIND.  IN NO EVENT SHALL INTEL'S TOTAL LIABILITY EXCEED THE SUM
+PAID TO INTEL FOR THE PRODUCT LICENSED HEREUNDER.
+
+(24) Hewlett-Packard  (hppa targets only)
+
+(c) Copyright 1986 HEWLETT-PACKARD COMPANY
+
+To anyone who acknowledges that this file is provided "AS IS"
+without any express or implied warranty:
+    permission to use, copy, modify, and distribute this file
+for any purpose is hereby granted without fee, provided that
+the above copyright notice and this notice appears in all
+copies, and that the name of Hewlett-Packard Company not be
+used in advertising or publicity pertaining to distribution
+of the software without specific, written prior permission.
+Hewlett-Packard Company makes no representations about the
+suitability of this software for any purpose.
+
+(25) Henry Spencer (only *-linux targets)
+
+Copyright 1992, 1993, 1994 Henry Spencer.  All rights reserved.
+This software is not subject to any license of the American Telephone
+and Telegraph Company or of the Regents of the University of California.
+
+Permission is granted to anyone to use this software for any purpose on
+any computer system, and to alter it and redistribute it, subject
+to the following restrictions:
+
+1. The author is not responsible for the consequences of use of this
+   software, no matter how awful, even if they arise from flaws in it.
+
+2. The origin of this software must not be misrepresented, either by
+   explicit claim or by omission.  Since few users ever read sources,
+   credits must appear in the documentation.
+
+3. Altered versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.  Since few users
+   ever read sources, credits must appear in the documentation.
+
+4. This notice may not be removed or altered.
+
+(26) Mike Barcroft
+
+Copyright (c) 2001 Mike Barcroft <mike@FreeBSD.org>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+(27) Konstantin Chuguev (--enable-newlib-iconv)
+
+Copyright (c) 1999, 2000
+   Konstantin Chuguev.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+   iconv (Charset Conversion Library) v2.0
+
+(28) Artem Bityuckiy (--enable-newlib-iconv)
+
+Copyright (c) 2003, Artem B. Bityuckiy, SoftMine Corporation.
+Rights transferred to Franklin Electronic Publishers.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+(29) IBM, Sony, Toshiba (only spu-* targets)
+
+  (C) Copyright 2001,2006,
+  International Business Machines Corporation,
+  Sony Computer Entertainment, Incorporated,
+  Toshiba Corporation,
+
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the names of the copyright holders nor the names of their
+      contributors may be used to endorse or promote products derived from this
+      software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
+
+(30) - Alex Tatmanjants (targets using libc/posix)
+
+  Copyright (c) 1995 Alex Tatmanjants <alex@elvisti.kiev.ua>
+ 		at Electronni Visti IA, Kiev, Ukraine.
+ 			All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+  SUCH DAMAGE.
+
+(31) - M. Warner Losh (targets using libc/posix)
+
+  Copyright (c) 1998, M. Warner Losh <imp@freebsd.org>
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+  SUCH DAMAGE.
+
+(32) - Andrey A. Chernov (targets using libc/posix)
+
+  Copyright (C) 1996 by Andrey A. Chernov, Moscow, Russia.
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+  SUCH DAMAGE.
+
+(33) - Daniel Eischen (targets using libc/posix)
+
+  Copyright (c) 2001 Daniel Eischen <deischen@FreeBSD.org>.
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+  SUCH DAMAGE.
+
+
+(34) - Jon Beniston (only lm32-* targets)
+
+ Contributed by Jon Beniston <jon@beniston.com>
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+
+(35) - ARM Ltd (arm and thumb variant targets only)
+
+ Copyright (c) 2009 ARM Ltd
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. The name of the company may not be used to endorse or promote
+    products derived from this software without specific prior written
+    permission.
+
+ THIS SOFTWARE IS PROVIDED BY ARM LTD ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ IN NO EVENT SHALL ARM LTD BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(36) - Xilinx, Inc. (microblaze-* and powerpc-* targets)
+
+Copyright (c) 2004, 2009 Xilinx, Inc.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+1.  Redistributions source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+2.  Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+3.  Neither the name of Xilinx nor the names of its contributors may be
+used to endorse or promote products derived from this software without
+specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS "AS
+IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+(37) Texas Instruments Incorporated (tic6x-*, *-tirtos targets)
+
+Copyright (c) 1996-2010,2014 Texas Instruments Incorporated
+http://www.ti.com/
+
+ Redistribution and  use in source  and binary forms, with  or without
+ modification,  are permitted provided  that the  following conditions
+ are met:
+
+    Redistributions  of source  code must  retain the  above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    Redistributions in binary form  must reproduce the above copyright
+    notice, this  list of conditions  and the following  disclaimer in
+    the  documentation  and/or   other  materials  provided  with  the
+    distribution.
+
+    Neither the  name of Texas Instruments Incorporated  nor the names
+    of its  contributors may  be used to  endorse or  promote products
+    derived  from   this  software  without   specific  prior  written
+    permission.
+
+ THIS SOFTWARE  IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS
+ "AS IS"  AND ANY  EXPRESS OR IMPLIED  WARRANTIES, INCLUDING,  BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL  DAMAGES  (INCLUDING, BUT  NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF  LIABILITY, WHETHER IN CONTRACT, STRICT  LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(38) National Semiconductor (cr16-* and crx-* targets)
+
+Copyright (c) 2004 National Semiconductor Corporation
+
+The authors hereby grant permission to use, copy, modify, distribute,
+and license this software and its documentation for any purpose, provided
+that existing copyright notices are retained in all copies and that this
+notice is included verbatim in any distributions. No written agreement,
+license, or royalty fee is required for any of the authorized uses.
+Modifications to this software may be copyrighted by their authors
+and need not follow the licensing terms described here, provided that
+the new terms are clearly indicated on the first page of each file where
+they apply.
+
+(39) - Adapteva, Inc. (epiphany-* targets)
+
+Copyright (c) 2011, Adapteva, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+ * Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+ * Neither the name of Adapteva nor the names of its contributors may be used
+   to endorse or promote products derived from this software without specific
+   prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(40) - Altera Corportion (nios2-* targets)
+
+Copyright (c) 2003 Altera Corporation
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+   o Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+   o Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+   o Neither the name of Altera Corporation nor the names of its
+     contributors may be used to endorse or promote products derived from
+     this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY ALTERA CORPORATION, THE COPYRIGHT HOLDER,
+AND ITS CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(41) Ed Schouten - Free BSD
+
+Copyright (c) 2008 Ed Schouten <ed@FreeBSD.org>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+~~~~~~~~~~
+
+### Licence text M7
+
+Text copied from: `components/nghttp/COPYING`; `components/nghttp/nghttp2/COPYING` (identical files)
+
+~~~~~~~~~~
+The MIT License
+
+Copyright (c) 2012, 2014, 2015, 2016 Tatsuhiro Tsujikawa
+Copyright (c) 2012, 2014, 2015, 2016 nghttp2 contributors
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+~~~~~~~~~~
+
+### Licence text M8
+
+Text copied from: `components/nghttp/LICENSE`; `components/nghttp/nghttp2/LICENSE` (identical files)
+
+~~~~~~~~~~
+See COPYING
+~~~~~~~~~~
+
+### Licence text M9
+
+Text copied from: `components/protobuf-c/protobuf-c/LICENSE`
+
+~~~~~~~~~~
+Copyright (c) 2008-2022, Dave Benson and the protobuf-c authors.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The code generated by the protoc-gen-c code generator and by the
+protoc-c compiler is owned by the owner of the input files used when
+generating it. This code is not standalone and requires a support
+library to be linked with it. This support library is covered by the
+above license.
+~~~~~~~~~~
+
+### Licence text M10
+
+Text copied from: `components/wpa_supplicant/COPYING`
+
+~~~~~~~~~~
+wpa_supplicant and hostapd
+--------------------------
+
+Copyright (c) 2002-2016, Jouni Malinen <j@w1.fi> and contributors
+All Rights Reserved.
+
+
+See the README file for the current license terms.
+
+This software was previously distributed under BSD/GPL v2 dual license
+terms that allowed either of those license alternatives to be
+selected. As of February 11, 2012, the project has chosen to use only
+the BSD license option for future distribution. As such, the GPL v2
+license option is no longer used. It should be noted that the BSD
+license option (the one with advertisement clause removed) is compatible
+with GPL and as such, does not prevent use of this software in projects
+that use GPL.
+
+Some of the files may still include pointers to GPL version 2 license
+terms. However, such copyright and license notifications are maintained
+only for attribution purposes and any distribution of this software
+after February 11, 2012 is no longer under the GPL v2 option.
 ~~~~~~~~~~
 
