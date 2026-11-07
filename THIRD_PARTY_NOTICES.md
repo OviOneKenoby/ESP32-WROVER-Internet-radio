@@ -4430,7 +4430,7 @@ The Arduino core 2.0.17 used by the build ships ESP-IDF v4.4.7 as prebuilt libra
   - `Copyright (c) Deltatee Enterprises Ltd. 2013` [3]
   - `Copyright (c) 2007 Dominik Spies <kontakt@dspies.de>` [3]
   - `Copyright (c) 2001-2004 Leon Woestenberg <leon.woestenberg@gmx.net>` [3]
-  - (48 further distinct copyright lines are present in the upstream files)
+  - (47 further distinct copyright lines are present in the upstream files)
 
 ### esp_hw_support
 
@@ -4654,7 +4654,6 @@ The Arduino core 2.0.17 used by the build ships ESP-IDF v4.4.7 as prebuilt libra
 - SPDX licence identifiers in the source headers (62 source files read): `Apache-2.0` (13); `MIT` (2)
 - Licence file(s) in the component: `components/freertos/LICENSE.md` (licence text M2)
 - Copyright line(s) found:
-  - `COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER` [29]
   - `Copyright (C) 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.` [26]
   - `Copyright (c) 2003-2015 Cadence Design Systems, Inc.` [7]
   - `SPDX-FileCopyrightText: 2017-2021 Espressif Systems (Shanghai) CO LTD` [5]
