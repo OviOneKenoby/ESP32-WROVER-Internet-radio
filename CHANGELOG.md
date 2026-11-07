@@ -1,5 +1,32 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-11-07 - Input hardening: names and URLs cleaned, stream titles bounds-checked
+
+Status: hardware-checked in single sessions on build `074f328758c3` (tasks 045
+and 046); not a full validation.
+
+- Station names and URLs from the web portal, Browse, favorites and recents are
+  cleaned before use. Names follow the Browse rules: control characters become
+  spaces, invalid UTF-8 becomes "?", cuts happen on character boundaries and an
+  empty name becomes "(no name)". Stored lists are cleaned in memory when they
+  are loaded. The catalog page, the station menu and the now-playing text clean
+  names and titles before encoding, and the web API escapes every control
+  character in the names, URLs and SSIDs it returns.
+- URLs that contain a space, a control character or a non-ASCII byte are
+  rejected, not cleaned: the portal answers HTTP 400, and a Browse pick is
+  refused (the previous station restarts once).
+- The stream title (ICY metadata) reader was rewritten with bounds checks and
+  is shared by plain-http and https streams (`src/icy_metadata.h`). A title
+  longer than the buffer is cut on a character boundary instead of being
+  dropped. Plain http streams use a vendored copy of the library class
+  (`AudioFileSourcePlainICYStream`) with unchanged timing and HTTP handling.
+- Licence notices added: `THIRD_PARTY_NOTICES.md` lists the third-party
+  components and licence texts. No `LICENSE` file for the project's own code
+  was added.
+- Not fixed: a stream that fails or stops after "Playing", the RTCP close that
+  can follow a station start, and the false "playback not confirmed" popup on
+  https starts.
+
 ## 2026-11-07 - Browse: oversized URLs rejected, names sanitized
 
 Status: hardware-checked in single sessions on build `2b7c3f80e1bb` (tasks 037
