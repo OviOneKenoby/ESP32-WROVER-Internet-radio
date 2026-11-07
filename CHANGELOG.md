@@ -1,5 +1,22 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-11-07 - Browse: oversized URLs rejected, names sanitized
+
+Status: hardware-checked in single sessions on build `2b7c3f80e1bb` (tasks 037
+and 039); not a full validation.
+
+- Browse result URLs of 256 characters or more are rejected instead of being
+  cut; the previous station restarts once and the REMOTE shows "Station
+  unavailable".
+- Browse country, genre and station names are sanitized when parsed: control
+  characters become spaces, invalid UTF-8 becomes "?", cuts happen on character
+  boundaries, and an empty name becomes "(no name)" or "(unknown)". A bad name
+  can no longer drop the RTCP link ("TUNER disconnected"); a list that used to
+  disconnect (Afghanistan / classical) now loads.
+- Not fixed: some streams fail to open or stop shortly after they start (cause
+  not established), and an RTCP close shortly after a station start can still
+  occur.
+
 ## 2026-11-06 - A failed Browse pick restarts the previous station (follow-up)
 
 Status: **HARDWARE PARTIALLY VALIDATED** (7 valid trials, one boot of `37de2bf`;
