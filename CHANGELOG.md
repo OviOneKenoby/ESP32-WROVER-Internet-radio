@@ -23,6 +23,9 @@ and 046); not a full validation.
 - Licence files added: `LICENSE` (GNU General Public License, version 3) for
   the project's own code, and `THIRD_PARTY_NOTICES.md`, which lists the
   third-party components and their licence texts.
+- A release image (application BIN only) built from commit `684abe7bee3a` was
+  added under `artifacts/RELEASE_1.1.12_INPUT_HARDENING/` with its SHA-256 and
+  build notes. Existing files in `artifacts/` are unchanged.
 - Not fixed: a stream that fails or stops after "Playing", the RTCP close that
   can follow a station start, and the false "playback not confirmed" popup on
   https starts.
