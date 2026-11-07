@@ -14,6 +14,7 @@
 #include "correctness_guards.h"
 #include "current_station_context.h"
 #include "browse_playback_policy.h"
+#include "url_fit.h"
 #include "system_info.h"
 #include "network_progress.h"
 #include <esp_heap_caps.h>
@@ -833,6 +834,23 @@ void closeRtcpBrowser() {
     browseSessionEnd();
 }
 
+// A Browse result whose URL does not fit MAX_URL_LENGTH (NUL included) was kept
+// out of every buffer at parse time (remote_browser.cpp). It must never be played
+// or saved: truncating it would open a DIFFERENT address. A rejected play behaves
+// like a pick whose open failed: the Browse session is ended here, the REMOTE gets
+// a failed result (it closes Browse and shows "Station unavailable"), and the
+// saved previous station, if any, is restarted once through browsePickResolved().
+uint8_t rejectBrowsePickUrl(const rtcp_browser::Command& command, size_t urlLength) {
+    Serial.printf("[BROWSE] Pick rejected: URL length %u does not fit capacity %u (NUL included)\n",
+                  unsigned(urlLength), unsigned(MAX_URL_LENGTH));
+    if (command.operation != rtcp_browser::Operation::play) return rtcp_browser::execution_failed;
+    if (deferredCatalogStart.active) return rtcp_browser::busy;
+    remoteBrowser.cancel(RemoteBrowserCancelReason::playback_started);
+    browsePlayback.onPickAdmitted(command.request);
+    browsePickResolved(command.request, DeferredPlayStatus::failed);
+    return rtcp_browser::execution_failed;
+}
+
 uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
     using rtcp_browser::Operation;
     uint8_t error = remoteBrowser.execute(command, millis());
@@ -841,6 +859,9 @@ uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
     if (command.operation == Operation::cancel) { browseSessionEnd(); return error; }
     if (command.operation != Operation::play &&
         command.operation != Operation::add_favorite) return error;
+    size_t urlLength = 0;
+    if (remoteBrowser.urlTooLong(command.token, urlLength))
+        return rejectBrowsePickUrl(command, urlLength);
     char name[MAX_NAME_LENGTH]{}, url[MAX_URL_LENGTH]{};
     StationCodec codec = STATION_CODEC_MP3;
     if (!remoteBrowser.takePlay(command.token, name, sizeof name,

@@ -1,6 +1,7 @@
 #include "remote_browser.h"
 #include "remote_browser_transport_policy.h"
 #include "remote_browser_tls_probe.h"
+#include "url_fit.h"
 
 #include "audio.h"
 #include "browser.h"
@@ -264,7 +265,11 @@ bool RemoteBrowserService::parseJob() {
             else if (codec.indexOf("AAC") >= 0) type = STATION_CODEC_AAC;
             else continue;
             auto& result = results_[result_count_++];
-            strlcpy(result.name, name, sizeof result.name); strlcpy(result.url, url, sizeof result.url);
+            strlcpy(result.name, name, sizeof result.name);
+            const size_t urlLength = strlen(url);
+            result.url_length = urlLength > UINT16_MAX ? UINT16_MAX : uint16_t(urlLength);
+            if (urlFitsBuffer(urlLength, sizeof result.url)) strlcpy(result.url, url, sizeof result.url);
+            else result.url[0] = '\0';  // never keep a truncated address
             result.codec = type;
         }
     }
@@ -443,8 +448,15 @@ uint8_t RemoteBrowserService::execute(const rtcp_browser::Command& command, uint
 bool RemoteBrowserService::takePlay(uint16_t token, char* name, size_t name_size,
                                     char* url, size_t url_size, StationCodec& codec) const {
     if (!results_ || token >= result_count_ || !name || !url) return false;
+    if (!urlFitsBuffer(size_t(results_[token].url_length), sizeof results_[token].url)) return false;
     strlcpy(name, results_[token].name, name_size); strlcpy(url, results_[token].url, url_size);
     codec = results_[token].codec; return true;
+}
+
+bool RemoteBrowserService::urlTooLong(uint16_t token, size_t& length) const {
+    if (!results_ || token >= result_count_) return false;
+    length = results_[token].url_length;
+    return !urlFitsBuffer(length, sizeof results_[token].url);
 }
 
 bool RemoteBrowserService::view(const rtcp_browser::Query& query,

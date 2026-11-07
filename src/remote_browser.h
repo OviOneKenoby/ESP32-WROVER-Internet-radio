@@ -18,6 +18,8 @@ public:
     uint8_t execute(const rtcp_browser::Command& command, uint32_t now_ms);
     bool takePlay(uint16_t token, char* name, size_t name_size,
                   char* url, size_t url_size, StationCodec& codec) const;
+    // True when the result's URL did not fit the buffer and was rejected at parse time.
+    bool urlTooLong(uint16_t token, size_t& length) const;
     uint64_t generation() const { return generation_; }
     uint64_t revision() const { return revision_; }
     bool active() const { return active_; }
@@ -31,7 +33,9 @@ private:
     } allocator_;
     struct Country { char name[BROWSE_COUNTRY_NAME_LEN]; };
     struct Genre { char name[BROWSE_TAG_NAME_LEN]; };
-    struct Result { char name[MAX_NAME_LENGTH]; char url[MAX_URL_LENGTH]; StationCodec codec; };
+    // url_length is the FULL length of url_resolved (saturating). When it does not fit
+    // url (NUL included) url[] is left empty: a truncated address is never stored.
+    struct Result { char name[MAX_NAME_LENGTH]; char url[MAX_URL_LENGTH]; StationCodec codec; uint16_t url_length; };
     enum class Job : uint8_t { none, countries, genres, results };
 
     Country* countries_{nullptr}; Genre* genres_{nullptr}; Result* results_{nullptr};
