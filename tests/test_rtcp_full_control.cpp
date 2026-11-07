@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 
 using namespace rtcp_full_control;
 
@@ -79,7 +80,9 @@ int main() {
 
     menu.selected = 1;
     menu.items[1].name = "bad\x01text";
-    assert(menuState(menu, 1, 1, bytes, sizeof bytes) == 0);
+    // A name with a control character is cleaned (safety net), not refused.
+    assert(menuState(menu, 1, 1, bytes, sizeof bytes) == 28 + 9 + 12 + 9);
+    assert(bytes[40] == 8 && std::memcmp(bytes + 41, "bad text", 8) == 0);
     menu.items[1].name = "Béta";
     menu.window_count = kMenuWindowItems + 1;
     assert(menuState(menu, 1, 1, bytes, sizeof bytes) == 0);

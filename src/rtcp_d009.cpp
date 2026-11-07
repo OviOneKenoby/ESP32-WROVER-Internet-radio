@@ -1,5 +1,6 @@
 #include "rtcp_d009.h"
 #include "correctness_guards.h"
+#include "browse_text.h"
 #include <cstring>
 
 namespace rtcp_d009 {
@@ -22,14 +23,13 @@ bool decode(const unsigned char* p,size_t n,size_t& width,uint32_t& cp) {
 
 bool copyText(const char* source,char* destination,size_t capacity,uint8_t& size,bool& was_truncated) {
     size=0;was_truncated=false;if(!source||!source[0]){destination[0]=0;return true;}
-    const size_t source_size=strlen(source);
-    if(!validUtf8Text(source,source_size)){destination[0]=0;return false;}
-    size_t at=0;
-    while(at<source_size){size_t width=0;uint32_t cp=0;
-        if(!decode(reinterpret_cast<const unsigned char*>(source)+at,source_size-at,width,cp))return false;
-        if(at+width>=capacity){was_truncated=true;break;} at+=width;
-    }
-    memcpy(destination,source,at);destination[at]=0;size=uint8_t(at);return true;
+    // Any text is cleaned first (control characters, invalid UTF-8) and cut at a
+    // character boundary instead of being dropped. No placeholder: a title that
+    // is empty after cleaning is simply absent.
+    char clean[256];
+    const size_t at=browse_text::sanitize(source,strlen(source),clean,capacity<sizeof clean?capacity:sizeof clean,nullptr,&was_truncated);
+    if(!validUtf8Text(clean,at)){destination[0]=0;was_truncated=false;return false;}
+    memcpy(destination,clean,at);destination[at]=0;size=uint8_t(at);return true;
 }
 
 bool same(const char* a,uint8_t an,const char* b,uint8_t bn) {

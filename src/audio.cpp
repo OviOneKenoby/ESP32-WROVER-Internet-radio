@@ -4,6 +4,7 @@
 #include "volume_target.h"
 #include "config.h"
 #include "correctness_guards.h"
+#include "browse_text.h"
 #include <driver/i2s.h> // legacy I2S API - still needed here for
                          // i2s_pin_config_t/I2S_PIN_NO_CHANGE used by
                          // enableBluetooth() below (the A2DP library uses
@@ -976,9 +977,13 @@ static void simplifyStreamTitle(char* destination, size_t destinationSize, const
 }
 
 void AudioPlayer::setNowPlaying(const char* value) {
+    // Stream-supplied text is cleaned before it is stored (control characters
+    // and invalid UTF-8 removed, long text cut at a character boundary). The
+    // cleaning runs outside the critical section.
+    char clean[sizeof(nowPlaying)];
+    browse_text::sanitize(value ? value : "", clean, sizeof(clean), nullptr);
     portENTER_CRITICAL(&nowPlayingMux);
-    strncpy(nowPlaying, value ? value : "", sizeof(nowPlaying) - 1);
-    nowPlaying[sizeof(nowPlaying) - 1] = '\0';
+    memcpy(nowPlaying, clean, sizeof(nowPlaying));
     portEXIT_CRITICAL(&nowPlayingMux);
 }
 

@@ -1,5 +1,6 @@
 #include "stations.h"
 #include "config.h"
+#include "station_text.h"
 #include <Preferences.h>
 #include <esp_heap_caps.h>
 #include <new>
@@ -85,9 +86,14 @@ uint8_t StationManager::addStation(const char* name, const char* url, StationCod
         Serial.println("[STATION] Invalid parameters");
         return 0xFF;
     }
+    // A URL with a control character, space or non-ASCII byte is never stored.
+    if (!station_text::urlAcceptable(url)) {
+        Serial.println("[STATION] URL rejected: unsupported character");
+        return 0xFF;
+    }
     
     RadioStation& station = stationRecords()[stationCount];
-    strncpy(station.name, name, MAX_NAME_LENGTH - 1);
+    station_text::copyName(station.name, MAX_NAME_LENGTH, name);
     strncpy(station.url, url, MAX_URL_LENGTH - 1);
     station.codec = codec;
     
@@ -298,6 +304,8 @@ bool StationManager::loadDefaultStations() {
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
         prefs.getString(nameKey, stationRecords()[i].name, MAX_NAME_LENGTH);
+        // Stored text is cleaned in memory only (no NVS write at load).
+        station_text::cleanStoredName(stationRecords()[i].name);
         prefs.getString(urlKey, stationRecords()[i].url, MAX_URL_LENGTH);
         stationRecords()[i].codec = stationCodecForURL(
             stationRecords()[i].url,
@@ -346,6 +354,7 @@ void StationManager::loadPersistedLists() {
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
         prefs.getString(nameKey, recentRecords()[i].name, MAX_NAME_LENGTH);
+        station_text::cleanStoredName(recentRecords()[i].name);
         prefs.getString(urlKey, recentRecords()[i].url, MAX_URL_LENGTH);
         recentRecords()[i].codec = stationCodecForURL(
             recentRecords()[i].url,
@@ -362,6 +371,7 @@ void StationManager::loadPersistedLists() {
         snprintf(urlKey, sizeof(urlKey), "u%d", i);
         snprintf(codecKey, sizeof(codecKey), "c%d", i);
         prefs.getString(nameKey, favoriteRecords()[i].name, MAX_NAME_LENGTH);
+        station_text::cleanStoredName(favoriteRecords()[i].name);
         prefs.getString(urlKey, favoriteRecords()[i].url, MAX_URL_LENGTH);
         favoriteRecords()[i].codec = stationCodecForURL(
             favoriteRecords()[i].url,
@@ -398,8 +408,7 @@ void StationManager::addToRecent(const char* name, const char* url, StationCodec
         recentRecords()[i] = recentRecords()[i - 1];
     }
 
-    strncpy(recentRecords()[0].name, name, MAX_NAME_LENGTH - 1);
-    recentRecords()[0].name[MAX_NAME_LENGTH - 1] = '\0';
+    station_text::copyName(recentRecords()[0].name, MAX_NAME_LENGTH, name);
     strncpy(recentRecords()[0].url, url, MAX_URL_LENGTH - 1);
     recentRecords()[0].url[MAX_URL_LENGTH - 1] = '\0';
     recentRecords()[0].codec = codec;
@@ -449,8 +458,7 @@ bool StationManager::addToFavorites(const char* name, const char* url, StationCo
         Serial.println("[STATION] Favorites list full");
         return false;
     }
-    strncpy(favoriteRecords()[favoriteCount].name, name, MAX_NAME_LENGTH - 1);
-    favoriteRecords()[favoriteCount].name[MAX_NAME_LENGTH - 1] = '\0';
+    station_text::copyName(favoriteRecords()[favoriteCount].name, MAX_NAME_LENGTH, name);
     strncpy(favoriteRecords()[favoriteCount].url, url, MAX_URL_LENGTH - 1);
     favoriteRecords()[favoriteCount].url[MAX_URL_LENGTH - 1] = '\0';
     favoriteRecords()[favoriteCount].codec = codec;

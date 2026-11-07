@@ -2,6 +2,8 @@
 #include "config.h"
 #include "net_manager.h"
 #include "stations.h"
+#include "station_text.h"
+#include "json_text.h"
 #include "time_service.h"
 #include "audio.h"
 #include "system_info.h"
@@ -15,6 +17,15 @@
 
 namespace {
 DiagnosticsPsramAllocator diagnosticsPsramAllocator;
+
+// Text that comes from outside (station names, URLs, SSIDs) is written as an
+// already-escaped JSON string, so any input bytes give valid strict JSON.
+// serialized(String) copies the escaped text into the document.
+SerializedValue<String> jsonText(const char* text) {
+    String quoted;
+    json_text::appendQuoted(quoted, text ? text : "");
+    return serialized(quoted);
+}
 }  // namespace
 
 WebPortal webPortal;
@@ -141,7 +152,7 @@ void WebPortal::handleRoot() {
 }
 
 void WebPortal::handleStatus() {
-    JsonDocument doc; doc["connected"] = wifiManager.isConnected(); doc["ssid"] = wifiManager.getSSID(); doc["ip"] = wifiManager.getIP(); doc["portal"] = configPortalActive ? portalSSID : ""; doc["timezone"] = timeService.getTimezone();
+    JsonDocument doc; doc["connected"] = wifiManager.isConnected(); doc["ssid"] = jsonText(wifiManager.getSSID()); doc["ip"] = wifiManager.getIP(); doc["portal"] = configPortalActive ? portalSSID : ""; doc["timezone"] = timeService.getTimezone();
     sendJson(200, doc);
 }
 void WebPortal::handleDiagnostics() {
@@ -293,8 +304,8 @@ void WebPortal::handleDiagnostics() {
     doc["wifi_framework_status"] =
         WiFiManager::frameworkStatusName(wifi.frameworkStatus);
     doc["wifi_framework_status_code"] = wifi.frameworkStatus;
-    doc["wifi_configured_ssid"] = wifi.configuredSsid;
-    doc["wifi_ssid"] = wifi.ssid;
+    doc["wifi_configured_ssid"] = jsonText(wifi.configuredSsid);
+    doc["wifi_ssid"] = jsonText(wifi.ssid);
     doc["wifi_bssid"] = wifi.bssid;
     doc["wifi_ip"] = wifi.ip;
     doc["wifi_gateway"] = wifi.gateway;
@@ -357,7 +368,7 @@ void WebPortal::handleDiagnostics() {
         doc["codec"] = SystemInfo::audioCodecName(audio.codec);
         doc["bluetooth_lifecycle"] = SystemInfo::bluetoothLifecycleName(audio.bluetoothLifecycle);
         doc["bluetooth_restartable"] = audio.bluetoothRestartable;
-        doc["stream_url"] = audio.streamURL;
+        doc["stream_url"] = jsonText(audio.streamURL);
         doc["audio_task_stack_high_water_mark"] = audio.taskStackHighWaterMark;
     } else {
         doc["audio_source"] = "unavailable";
@@ -373,15 +384,21 @@ void WebPortal::handleDiagnostics() {
 }
 void WebPortal::handleStations() {
     JsonDocument doc; JsonArray stations = doc["stations"].to<JsonArray>(); JsonArray favorites = doc["favorites"].to<JsonArray>();
-    for (uint8_t i=0;i<stationManager.getStationCount();i++) { RadioStation* s=stationManager.getStation(i); JsonObject o=stations.add<JsonObject>(); o["name"]=s->name; o["url"]=s->url; o["codec"]=s->codec==STATION_CODEC_AAC?"AAC":"MP3"; }
-    for (uint8_t i=0;i<stationManager.getFavoriteCount();i++) { RadioStation* s=stationManager.getFavorite(i); JsonObject o=favorites.add<JsonObject>(); o["name"]=s->name; o["url"]=s->url; o["codec"]=s->codec==STATION_CODEC_AAC?"AAC":"MP3"; }
+    for (uint8_t i=0;i<stationManager.getStationCount();i++) { RadioStation* s=stationManager.getStation(i); JsonObject o=stations.add<JsonObject>(); o["name"]=jsonText(s->name); o["url"]=jsonText(s->url); o["codec"]=s->codec==STATION_CODEC_AAC?"AAC":"MP3"; }
+    for (uint8_t i=0;i<stationManager.getFavoriteCount();i++) { RadioStation* s=stationManager.getFavorite(i); JsonObject o=favorites.add<JsonObject>(); o["name"]=jsonText(s->name); o["url"]=jsonText(s->url); o["codec"]=s->codec==STATION_CODEC_AAC?"AAC":"MP3"; }
     sendJson(200, doc);
 }
 void WebPortal::handleAddStation() {
     String name=server.arg("name"), url=server.arg("url"), codec=server.arg("codec");
     if (name.isEmpty() || name.length() >= MAX_NAME_LENGTH || url.length() >= MAX_URL_LENGTH || !(url.startsWith("http://") || url.startsWith("https://"))) { sendJsonError(400,"Use a name and direct http(s) URL within the field limits"); return; }
+    // The URL is rejected, never cleaned, when it holds a control character, a
+    // space or a non-ASCII byte (also an embedded NUL, which String keeps).
+    if (!station_text::urlAcceptable(url.c_str(), url.length())) { sendJsonError(400,"The URL contains a space, control or non-ASCII character"); return; }
+    // The name is cleaned with the Browse rule before it is stored.
+    char cleanName[MAX_NAME_LENGTH];
+    station_text::copyName(cleanName, sizeof cleanName, name.c_str(), name.length());
     StationCodec c = codec == "aac" ? STATION_CODEC_AAC : STATION_CODEC_MP3;
-    if (stationManager.addStation(name.c_str(),url.c_str(),c)==0xFF) { sendJsonError(409,"Station list is full"); return; }
+    if (stationManager.addStation(cleanName,url.c_str(),c)==0xFF) { sendJsonError(409,"Station list is full"); return; }
     server.send(201,"application/json","{\"ok\":true}");
 }
 void WebPortal::handleDeleteStation() {

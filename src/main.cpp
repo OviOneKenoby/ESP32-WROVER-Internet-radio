@@ -840,9 +840,13 @@ void closeRtcpBrowser() {
 // like a pick whose open failed: the Browse session is ended here, the REMOTE gets
 // a failed result (it closes Browse and shows "Station unavailable"), and the
 // saved previous station, if any, is restarted once through browsePickResolved().
-uint8_t rejectBrowsePickUrl(const rtcp_browser::Command& command, size_t urlLength) {
-    Serial.printf("[BROWSE] Pick rejected: URL length %u does not fit capacity %u (NUL included)\n",
-                  unsigned(urlLength), unsigned(MAX_URL_LENGTH));
+uint8_t rejectBrowsePickUrl(const rtcp_browser::Command& command, size_t urlLength,
+                            bool badCharacters = false) {
+    if (badCharacters)
+        Serial.println("[BROWSE] Pick rejected: URL contains a space, control or non-ASCII character");
+    else
+        Serial.printf("[BROWSE] Pick rejected: URL length %u does not fit capacity %u (NUL included)\n",
+                      unsigned(urlLength), unsigned(MAX_URL_LENGTH));
     if (command.operation != rtcp_browser::Operation::play) return rtcp_browser::execution_failed;
     if (deferredCatalogStart.active) return rtcp_browser::busy;
     remoteBrowser.cancel(RemoteBrowserCancelReason::playback_started);
@@ -862,6 +866,8 @@ uint8_t executeRtcpBrowser(const rtcp_browser::Command& command) {
     size_t urlLength = 0;
     if (remoteBrowser.urlTooLong(command.token, urlLength))
         return rejectBrowsePickUrl(command, urlLength);
+    if (remoteBrowser.urlUnusable(command.token))
+        return rejectBrowsePickUrl(command, 0, true);
     char name[MAX_NAME_LENGTH]{}, url[MAX_URL_LENGTH]{};
     StationCodec codec = STATION_CODEC_MP3;
     if (!remoteBrowser.takePlay(command.token, name, sizeof name,

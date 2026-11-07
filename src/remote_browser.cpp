@@ -3,6 +3,7 @@
 #include "remote_browser_tls_probe.h"
 #include "url_fit.h"
 #include "browse_text.h"
+#include "station_text.h"
 
 #include "audio.h"
 #include "browser.h"
@@ -450,6 +451,7 @@ bool RemoteBrowserService::takePlay(uint16_t token, char* name, size_t name_size
                                     char* url, size_t url_size, StationCodec& codec) const {
     if (!results_ || token >= result_count_ || !name || !url) return false;
     if (!urlFitsBuffer(size_t(results_[token].url_length), sizeof results_[token].url)) return false;
+    if (!station_text::urlAcceptable(results_[token].url)) return false;
     strlcpy(name, results_[token].name, name_size); strlcpy(url, results_[token].url, url_size);
     codec = results_[token].codec; return true;
 }
@@ -458,6 +460,12 @@ bool RemoteBrowserService::urlTooLong(uint16_t token, size_t& length) const {
     if (!results_ || token >= result_count_) return false;
     length = results_[token].url_length;
     return !urlFitsBuffer(length, sizeof results_[token].url);
+}
+
+bool RemoteBrowserService::urlUnusable(uint16_t token) const {
+    if (!results_ || token >= result_count_) return false;
+    return urlFitsBuffer(size_t(results_[token].url_length), sizeof results_[token].url) &&
+           !station_text::urlAcceptable(results_[token].url);
 }
 
 bool RemoteBrowserService::view(const rtcp_browser::Query& query,

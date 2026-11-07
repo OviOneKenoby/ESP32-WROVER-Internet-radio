@@ -1,5 +1,7 @@
 #include "rtcp_catalog.h"
 
+#include "browse_text.h"
+
 #include <cstring>
 
 namespace rtcp_catalog {
@@ -67,13 +69,13 @@ bool validText(const char* text, size_t size) {
 bool copyText(const char* source, uint8_t* output, size_t capacity,
               uint8_t& written) {
     written = 0;
-    if (!source || !source[0]) return false;
-    const size_t source_size = std::strlen(source);
-    if (!validText(source, source_size)) return false;
-    size_t size = source_size < kNameBytes ? source_size : kNameBytes;
-    while (size && (static_cast<uint8_t>(source[size]) & 0xc0) == 0x80) --size;
-    if (!size || size > capacity) return false;
-    std::memcpy(output, source, size);
+    if (!source) return false;
+    // Safety net: any text is cleaned first (control characters, invalid UTF-8,
+    // empty), so a bad name can no longer make the whole page unencodable.
+    char clean[kNameBytes + 1];
+    const size_t size = browse_text::sanitize(source, clean, sizeof clean, "(no name)");
+    if (!size || !validText(clean, size) || size > capacity) return false;
+    std::memcpy(output, clean, size);
     written = uint8_t(size);
     return true;
 }

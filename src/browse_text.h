@@ -52,9 +52,11 @@ inline size_t validWidth(const uint8_t* in, size_t size, size_t at) {
 }
 
 // Writes at most capacity-1 bytes plus the NUL. Returns the length written.
-// capacity 0: nothing is written.
+// capacity 0: nothing is written. When cut is given it reports whether text was
+// left out only because it did not fit.
 inline size_t sanitize(const char* text, size_t size, char* out, size_t capacity,
-                       const char* placeholder) {
+                       const char* placeholder, bool* cut = nullptr) {
+    if (cut) *cut = false;
     if (!out || !capacity) return 0;
     const uint8_t* in = reinterpret_cast<const uint8_t*>(text);
     size_t used = 0;
@@ -71,7 +73,10 @@ inline size_t sanitize(const char* text, size_t size, char* out, size_t capacity
         const uint8_t* source = in + at;
         if (!width) { source = reinterpret_cast<const uint8_t*>(&replacement); width = 1; }
         const size_t need = width + (pending_space ? 1 : 0);
-        if (used + need > capacity - 1) break;  // never split a character
+        if (used + need > capacity - 1) {  // never split a character
+            if (cut) *cut = true;  // text remained that did not fit
+            break;
+        }
         if (pending_space) out[used++] = ' ';
         pending_space = false;
         std::memcpy(out + used, source, width);

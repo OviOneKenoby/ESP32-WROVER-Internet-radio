@@ -69,7 +69,9 @@ int main(){
     const char malformed[]={'B','a','d',char(0xc0),char(0xaf),0};
     projection.publish(fixed(malformed,malformed));
     wire=projection.wire(3);
-    expect(!(wire.flags&rtcp_d009::station_valid)&&!(wire.flags&rtcp_d009::metadata_valid));
+    // Invalid UTF-8 is cleaned ('?' per bad byte), not dropped.
+    expect((wire.flags&rtcp_d009::station_valid)&&(wire.flags&rtcp_d009::metadata_valid));
+    expect(wire.station_size==5&&memcmp(wire.station,"Bad??",5)==0&&wire.combined_size==5);
     char oversized[300];memset(oversized,'x',sizeof oversized);oversized[sizeof oversized-1]=0;
     projection.publish(fixed(oversized,oversized));wire=projection.wire(4);
     expect(wire.station_size==63&&wire.combined_size==255&&(wire.flags&rtcp_d009::truncated));

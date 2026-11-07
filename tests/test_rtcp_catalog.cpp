@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 
 using namespace rtcp_catalog;
 
@@ -38,7 +39,9 @@ int main() {
     assert(output[38] == 6 && output[39] == 1 && output[40] == 5);
 
     view.items[1].name = "bad\x01text";
-    assert(page(view, 19, output, sizeof output) == 0);
+    // A name with a control character is cleaned (safety net), not refused.
+    assert(page(view, 19, output, sizeof output) == 28 + 9 + 12);
+    assert(output[40] == 8 && std::memcmp(output + 41, "bad text", 8) == 0);
     view.items[1].name = "B\xc3\xa9ta";
     view.items[1].token = 4;
     assert(page(view, 19, output, sizeof output) == 0);

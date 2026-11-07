@@ -20,6 +20,9 @@ public:
                   char* url, size_t url_size, StationCodec& codec) const;
     // True when the result's URL did not fit the buffer and was rejected at parse time.
     bool urlTooLong(uint16_t token, size_t& length) const;
+    // True when the result's URL fits but contains a control character, a space
+    // or a non-ASCII byte. Such an address is rejected, never cleaned.
+    bool urlUnusable(uint16_t token) const;
     uint64_t generation() const { return generation_; }
     uint64_t revision() const { return revision_; }
     bool active() const { return active_; }
