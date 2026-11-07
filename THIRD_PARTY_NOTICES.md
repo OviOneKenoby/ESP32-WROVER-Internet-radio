@@ -5,7 +5,10 @@ that is built into the firmware image, with the licence information found in
 the upstream files. Copyright lines are quoted as they appear in the upstream
 files. The licence texts at the end are copied from the upstream files named
 under each text (line endings normalised to LF). The project's own code is
-not covered by this file.
+not covered by this file. The copyright lists were generated from the file
+headers of the upstream sources and may include authors of files that are not
+compiled into this firmware; modifications applied to libraries at build time
+are listed in section 7.
 
 ## 1. Third-party files contained in this repository
 
@@ -7404,3 +7407,31 @@ only for attribution purposes and any distribution of this software
 after February 11, 2012 is no longer under the GPL v2 option.
 ~~~~~~~~~~
 
+
+## 7. Modifications applied at build time
+
+`platformio.ini` runs `tools/patch_esp8266audio_aac.py` before the build
+(`extra_scripts`, `pre:`). It changes the downloaded ESP8266Audio library
+sources in the build folder (`.pio/libdeps/<env>/ESP8266Audio/src`); the files
+in this repository are not changed. Each change is applied only if the
+expected original text is found, otherwise the build stops. Changes, from the
+script:
+
+- `AudioGeneratorAAC.h`: the output sample buffer size becomes a constant
+  `outSampleLen` (2048 * 2 on ESP32, 1024 * 2 on ESP8266).
+- `AudioGeneratorAAC.cpp`: the two allocations of `1024 * 2` samples use
+  `outSampleLen` instead.
+- `AudioGeneratorMP3a.cpp`: a decoded frame with a sample rate or channel count
+  of zero or less stops the decoder with the status message "MP3 frame has
+  invalid format"; two memory-diagnostic calls are added (constructor and after
+  decoder initialisation) through `mp3_memory_diagnostics_hooks.h`.
+- `libhelix-mp3/buffers.c`: memory-diagnostic calls are added after each
+  allocation in the decoder initialisation, through the same header.
+- `AudioFileSourceICYStream.cpp`: the wait for stream data in the library's
+  plain-http source changes from 500 ms to 3000 ms. The copy used for plain
+  http streams in this repository (`src/AudioFileSourcePlainICYStream.cpp`)
+  carries the 3000 ms value itself.
+
+`tools/build_info.py` adds the short commit id as the `BUILD_GIT_ID` define,
+and `tools/guard_uart_probe_sdk.py` only checks the SHA-256 of two SDK archives
+(it changes nothing).

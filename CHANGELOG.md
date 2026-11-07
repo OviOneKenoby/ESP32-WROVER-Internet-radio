@@ -20,9 +20,9 @@ and 046); not a full validation.
   longer than the buffer is cut on a character boundary instead of being
   dropped. Plain http streams use a vendored copy of the library class
   (`AudioFileSourcePlainICYStream`) with unchanged timing and HTTP handling.
-- Licence notices added: `THIRD_PARTY_NOTICES.md` lists the third-party
-  components and licence texts. No `LICENSE` file for the project's own code
-  was added.
+- Licence files added: `LICENSE` (GNU General Public License, version 3) for
+  the project's own code, and `THIRD_PARTY_NOTICES.md`, which lists the
+  third-party components and their licence texts.
 - Not fixed: a stream that fails or stops after "Playing", the RTCP close that
   can follow a station start, and the false "playback not confirmed" popup on
   https starts.
