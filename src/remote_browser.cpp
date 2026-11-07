@@ -2,6 +2,7 @@
 #include "remote_browser_transport_policy.h"
 #include "remote_browser_tls_probe.h"
 #include "url_fit.h"
+#include "browse_text.h"
 
 #include "audio.h"
 #include "browser.h"
@@ -243,7 +244,7 @@ bool RemoteBrowserService::parseJob() {
             if (country_count_ >= MAX_BROWSE_COUNTRIES) break;
             const char* name = object["name"] | "";
             if (!name[0]) continue;
-            strlcpy(countries_[country_count_].name, name, sizeof countries_[0].name);
+            browse_text::sanitize(name, countries_[country_count_].name, sizeof countries_[0].name, "(unknown)");
             ++country_count_;
         }
     } else if (job_ == Job::genres) {
@@ -251,7 +252,7 @@ bool RemoteBrowserService::parseJob() {
         for (JsonObject object : doc.as<JsonArray>()) {
             if (genre_count_ >= MAX_BROWSE_TAGS) break;
             const char* name = object["name"] | ""; if (!name[0]) continue;
-            strlcpy(genres_[genre_count_++].name, name, sizeof genres_[0].name);
+            browse_text::sanitize(name, genres_[genre_count_++].name, sizeof genres_[0].name, "(unknown)");
         }
     } else {
         result_count_ = 0;
@@ -265,7 +266,7 @@ bool RemoteBrowserService::parseJob() {
             else if (codec.indexOf("AAC") >= 0) type = STATION_CODEC_AAC;
             else continue;
             auto& result = results_[result_count_++];
-            strlcpy(result.name, name, sizeof result.name);
+            browse_text::sanitize(name, result.name, sizeof result.name, "(no name)");
             const size_t urlLength = strlen(url);
             result.url_length = urlLength > UINT16_MAX ? UINT16_MAX : uint16_t(urlLength);
             if (urlFitsBuffer(urlLength, sizeof result.url)) strlcpy(result.url, url, sizeof result.url);
