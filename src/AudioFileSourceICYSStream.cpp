@@ -2,9 +2,10 @@
     AudioFileSourceICYSStream
 
     Vendored from ESP8266Audio's AudioFileSourceICYStream.cpp (Copyright
-    (C) 2017 Earle F. Philhower, III, GPLv3). ICY metadata parsing logic
-    (readInternal - partial-read handling, StreamTitle extraction) is the
-    library's original implementation, unmodified. Only change: builds on
+    (C) 2017 Earle F. Philhower, III, GPLv3). Partial-read handling is the
+    library's original implementation, unmodified; the metadata block itself
+    is read by icy_metadata::consume() (same read sequence, but bounded and
+    NUL-terminated). Other change: builds on
     top of AudioFileSourceHTTPSStream (WiFiClientSecure) instead of the
     plain-HTTP AudioFileSourceHTTPStream, and the ESP32/ESP8266 #ifdef
     branches were removed since this project only targets ESP32.
@@ -16,6 +17,7 @@
 #define _GNU_SOURCE
 
 #include "AudioFileSourceICYSStream.h"
+#include "icy_metadata.h"
 #include <string.h>
 
 AudioFileSourceICYSStream::AudioFileSourceICYSStream() {
@@ -157,80 +159,14 @@ retry:
         }
         mdSize = c * 16;
         if ((mdret == 1) && (mdSize > 0)) {
-            // This is going to get ugly fast.
-            char icyBuff[256 + 16 + 1];
-            char *readInto = icyBuff + 16;
-            memset(icyBuff, 0, 16); // Ensure no residual matches occur
-            while (mdSize) {
-                int toRead = mdSize > 256 ? 256 : mdSize;
-                int ret = stream->read((uint8_t*)readInto, toRead);
-                if (ret < 0) {
-                    return read;
-                }
-                if (ret == 0) {
-                    delay(1);
-                    continue;
-                }
-                mdSize -= ret;
-                // At this point we have 0...15 = last 15 chars read from prior read plus new data
-                int end = 16 + ret; // The last byte of valid data
-                char *header = (char *)memmem((void*)icyBuff, end, (void*)"StreamTitle=", 12);
-                if (!header) {
-                    // No match, so move the last 16 bytes back to the start and continue
-                    memmove(icyBuff, icyBuff + end - 16, 16);
-                    delay(1);
-                    continue;
-                }
-                // Found header, now move it to the front
-                int lastValidByte = end - (header - icyBuff) + 1;
-                memmove(icyBuff, header, lastValidByte);
-                // Now fill the buffer to the end with read data
-                while (mdSize && lastValidByte < 255) {
-                    int toRead = mdSize > (256 - lastValidByte) ? (256 - lastValidByte) : mdSize;
-                    ret = stream->read((uint8_t*)icyBuff + lastValidByte, toRead);
-                    if (ret == -1) {
-                        return read;    // error
-                    }
-                    if (ret == 0) {
-                        delay(1);
-                        continue;
-                    }
-                    mdSize -= ret;
-                    lastValidByte += ret;
-                }
-                // Buffer now contains StreamTitle=....., parse it
-                char *p = icyBuff + 12;
-                if (*p == '\'' || *p == '"') {
-                    char closing[] = { *p, ';', '\0' };
-                    char *psz = strstr(p + 1, closing);
-                    if (!psz) {
-                        psz = strchr(&icyBuff[13], ';');
-                    }
-                    if (psz) {
-                        *psz = '\0';
-                    }
-                    p++;
-                } else {
-                    char *psz = strchr(p, ';');
-                    if (psz) {
-                        *psz = '\0';
-                    }
-                }
-                cb.md("StreamTitle", false, p);
-
-                // Now skip rest of MD block
-                while (mdSize) {
-                    int toRead = mdSize > 256 ? 256 : mdSize;
-                    ret = stream->read((uint8_t*)icyBuff, toRead);
-                    if (ret < 0) {
-                        return read;
-                    }
-                    if (ret == 0) {
-                        delay(1);
-                        continue;
-                    }
-                    mdSize -= ret;
-                }
+            // The block is read, bounded and handed to the callback by
+            // icy_metadata::consume(); a stream error ends this read as before.
+            const bool ok = icy_metadata::consume(
+                *stream, mdSize,
+                [this](const char *title) { cb.md("StreamTitle", false, title); },
+                []() { delay(1); });
+            if (!ok) {
+                return read;
             }
         }
         icyByteCount = 0;

@@ -425,7 +425,7 @@ bool AudioPlayer::playDeferredNow(uint64_t request, const char* streamURL,
     const bool isSecure = strncmp(streamURL, "https://", 8) == 0;
     AudioFileSource* openedSource = isSecure
         ? static_cast<AudioFileSource*>(new AudioFileSourceICYSStream())
-        : static_cast<AudioFileSource*>(new AudioFileSourceICYStream());
+        : static_cast<AudioFileSource*>(new AudioFileSourcePlainICYStream());
     if (isSecure) Serial.println("[AUDIO] Using HTTPS source");
     openedSource->RegisterMetadataCB(metadataCallback, (void*)this);
     openedSource->RegisterStatusCB(statusCallback, (void*)this);

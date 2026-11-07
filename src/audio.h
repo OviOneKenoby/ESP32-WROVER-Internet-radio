@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <AudioFileSource.h>
-#include <AudioFileSourceICYStream.h>
+#include "AudioFileSourcePlainICYStream.h" // plain-http variant, vendored (bounded ICY metadata reader)
 #include "AudioFileSourceICYSStream.h" // HTTPS variant, vendored into this
                                         // project (see its own file header
                                         // for why) - the library itself
@@ -107,7 +107,8 @@ public:
 
 private:
     // Real MP3 decoding pipeline (ESP8266Audio library):
-    //   AudioFileSourceICYStream  - HTTP connection + ICY metadata parsing
+    //   AudioFileSourcePlainICYStream / AudioFileSourceICYSStream
+    //                             - HTTP(S) connection + ICY metadata parsing
     //   AudioFileSourceBuffer     - ring buffer decoupling network reads
     //                               from decode timing (per the library's
     //                               own recommended usage pattern)
@@ -120,7 +121,7 @@ private:
     // straight to I2S as if they were already PCM samples - real decoding
     // was completely absent. This is the actual fix for that gap.
     AudioFileSource* audioSource; // base pointer - actually either
-                                   // AudioFileSourceICYStream (http://) or
+                                   // AudioFileSourcePlainICYStream (http://) or
                                    // AudioFileSourceICYSStream (https://),
                                    // chosen in play() based on the URL
     AudioFileSourceBuffer* audioSourceBuf;

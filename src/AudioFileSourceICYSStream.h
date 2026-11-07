@@ -4,9 +4,9 @@
     Vendored from ESP8266Audio's AudioFileSourceICYStream (Copyright (C)
     2017 Earle F. Philhower, III, GPLv3), retargeted to inherit from
     AudioFileSourceHTTPSStream (this project's vendored HTTPS variant)
-    instead of the library's plain-HTTP AudioFileSourceHTTPStream. ICY
-    metadata parsing logic itself (readInternal()) is the library's
-    original, unmodified implementation.
+    instead of the library's plain-HTTP AudioFileSourceHTTPStream. The
+    metadata block is read by icy_metadata::consume() (bounded and
+    NUL-terminated); the rest of readInternal() is the library's original.
 */
 
 #pragma once
