@@ -16,10 +16,12 @@ def patch_aac_sbr_output_buffer(build_env):
     mp3_implementation = library_dir / "AudioGeneratorMP3a.cpp"
     mp3_buffers = library_dir / "libhelix-mp3" / "buffers.c"
     http_icy_implementation = library_dir / "AudioFileSourceICYStream.cpp"
+    buffer_implementation = library_dir / "AudioFileSourceBuffer.cpp"
 
     if (not header.is_file() or not implementation.is_file() or
             not mp3_implementation.is_file() or not mp3_buffers.is_file() or
-            not http_icy_implementation.is_file()):
+            not http_icy_implementation.is_file() or
+            not buffer_implementation.is_file()):
         raise RuntimeError("ESP8266Audio dependency was not installed before the AAC patch step")
 
     header_text = header.read_text(encoding="utf-8")
@@ -167,6 +169,38 @@ def patch_aac_sbr_output_buffer(build_env):
         raise RuntimeError("Unexpected AudioFileSourceICYStream.cpp; refusing to apply an unverified patch")
 
 
+    patch_buffer_refill(buffer_implementation)
+
+
+def patch_buffer_refill(buffer_implementation):
+    # After an underflow, read() empties the ring and then calls fill(), which
+    # may already store new bytes. The next read() refilled from index 0 and
+    # overwrote them, dropping part of the stream. Only refill an empty ring.
+    text = buffer_implementation.read_text(encoding="utf-8")
+    old_refill = """        // Fill up completely before returning any data at all
+        cb.st(STATUS_FILLING, PSTR("Refilling buffer"));
+        length = src->read(buffer, buffSize);
+        writePtr = length % buffSize;
+        filled = true;
+"""
+    new_refill = """        // Fill before returning data. Bytes that fill() already stored after
+        // an underflow are kept, not overwritten.
+        cb.st(STATUS_FILLING, PSTR("Refilling buffer"));
+        if (length == 0) {
+            readPtr = 0;
+            writePtr = 0;
+            length = src->read(buffer, buffSize);
+            writePtr = length % buffSize;
+        }
+        filled = true;
+"""
+    if old_refill in text:
+        buffer_implementation.write_text(
+            text.replace(old_refill, new_refill), encoding="utf-8")
+    elif new_refill not in text:
+        raise RuntimeError("Unexpected AudioFileSourceBuffer.cpp; refusing to apply an unverified patch")
+
+
 def patch_before_aac_compilation(build_env, node):
     # Build middleware runs when PlatformIO is about to compile each source
     # node, after dependencies have been installed but before this library
@@ -175,6 +209,7 @@ def patch_before_aac_compilation(build_env, node):
     if (source.endswith("/ESP8266Audio/src/AudioGeneratorAAC.cpp") or
             source.endswith("/ESP8266Audio/src/AudioGeneratorMP3a.cpp") or
             source.endswith("/ESP8266Audio/src/AudioFileSourceICYStream.cpp") or
+            source.endswith("/ESP8266Audio/src/AudioFileSourceBuffer.cpp") or
             source.endswith("/ESP8266Audio/src/libhelix-mp3/buffers.c")):
         patch_aac_sbr_output_buffer(build_env)
     return node

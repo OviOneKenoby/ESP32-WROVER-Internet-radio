@@ -30,6 +30,7 @@
     branches removed since this project only targets ESP32.
 */
 
+#include "stream_wait.h"
 #include "AudioFileSourceHTTPSStream.h"
 
 AudioFileSourceHTTPSStream::AudioFileSourceHTTPSStream() {
@@ -119,10 +120,12 @@ retry:
     }
 
     if (!nonBlock) {
-        int start = millis();
-        while ((stream->available() < (int)len) && (millis() - start < 500)) {
-            yield();
-        }
+        // Sleep while waiting (lower-priority tasks keep running) and
+        // continue with a partial block.
+        stream_wait::forData(
+            len, 500, [stream]() { return stream->available(); },
+            []() { return static_cast<uint32_t>(millis()); },
+            []() { delay(1); });
     }
 
     size_t avail = stream->available();

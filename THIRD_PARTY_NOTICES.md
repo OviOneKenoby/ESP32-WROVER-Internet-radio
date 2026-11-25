@@ -23,6 +23,7 @@ version 3 or (at your option) any later version (see licence text A below).
 | `src/AudioFileSourceHTTPSStream.h`, `src/AudioFileSourceHTTPSStream.cpp` | `AudioFileSourceHTTPStream` | uses a secure client; header states "Copyright (C) 2017 Earle F. Philhower, III, GPLv3" |
 | `src/AudioFileSourceICYSStream.h`, `src/AudioFileSourceICYSStream.cpp` | `AudioFileSourceICYStream` | based on the HTTPS variant above; the metadata block is read by `src/icy_metadata.h` |
 | `src/AudioFileSourcePlainICYStream.h`, `src/AudioFileSourcePlainICYStream.cpp` | `AudioFileSourceHTTPStream` and `AudioFileSourceICYStream` merged into one class | the upstream licence header is kept in the `.cpp` |
+| the three source `.cpp` files above | local change | the blocking wait for stream data sleeps and continues with a partial block (`src/stream_wait.h`, project code) |
 | `src/icy_metadata.h` | derived from the metadata block handling in `AudioFileSourceICYStream::readInternal` | header names the origin and licence |
 
 ## 2. Libraries built into the firmware image (not contained in this repository)
@@ -7431,6 +7432,9 @@ script:
   plain-http source changes from 500 ms to 3000 ms. The copy used for plain
   http streams in this repository (`src/AudioFileSourcePlainICYStream.cpp`)
   carries the 3000 ms value itself.
+- `AudioFileSourceBuffer.cpp`: a refill after an underflow reads from the source
+  only when the ring is empty, so bytes already stored by `fill()` are no longer
+  overwritten.
 
 `tools/build_info.py` adds the short commit id as the `BUILD_GIT_ID` define,
 and `tools/guard_uart_probe_sdk.py` only checks the SHA-256 of two SDK archives

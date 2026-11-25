@@ -39,7 +39,7 @@ checks = {
         reader.index("buf[have] = '") < reader.index("std::strstr(") < reader.index("std::strchr("),
     "reader keeps the original buffer size": "256 + 16 + 1" in reader,
     "plain class keeps its 3000 ms wait, https keeps 500 ms":
-        "millis() - start < 3000" in plain and "millis() - start < 500" in secure,
+        "len, 3000, " in plain and "len, 500, " in secure,
     "plain class keeps the HTTP request setup":
         all(s in plain for s in ('http.addHeader("Icy-MetaData", "1");', "http.collectHeaders(hdr, 4);",
                                   "http.setReuse(true);", "HTTPC_FORCE_FOLLOW_REDIRECTS")),
