@@ -13,6 +13,44 @@ The current authenticated REMOTE Full Control protocol, ownership rules,
 offline verification and Radio Browser blocker are recorded in
 [REMOTE_FULL_CONTROL_PROTOCOL.md](REMOTE_FULL_CONTROL_PROTOCOL.md).
 
+## Latest release: 1.1.13 (beta)
+
+[Release v1.1.13](https://github.com/OviOneKenoby/ESP32-WROVER-Internet-radio/releases/tag/v1.1.13)
+fixes choppy playback of AAC radio stations:
+
+- AAC+ stations that stuttered now play smoothly in short tests.
+- A plain-http station that played with errors, noise and stalls now plays
+  cleanly.
+- A short network interruption no longer makes the player stall for seconds.
+- Volume and pause may react a few hundredths of a second later than before.
+
+It was checked for a few minutes each on one MP3 station and two AAC stations.
+This is beta firmware: read the known issues below. The image is the
+application only and is installed over USB; see
+[its build notes](artifacts/RELEASE_1.1.13_AAC_PLAYBACK/BUILD_MANIFEST.md).
+
+## Known issues
+
+- Bluetooth, pause/resume and volume changes during AAC playback have not been
+  tested with the 1.1.13 fixes.
+- A listening test of several hours across usual stations has not yet been done
+  on the 1.1.13 release.
+- The lowest free internal RAM seen on the release image was 32 KB, compared
+  with 51 KB in the test build that had the same fixes plus logging. The cause
+  is not explained.
+- After the radio had stopped responding on an earlier version, and both power
+  and USB were removed, the next start reported its restart reason as
+  `watchdog` instead of power-on. This is unexplained, so do not rely on that
+  field alone to tell what kind of restart happened.
+- Separately, while the 1.1.13 image was being tested, one start crashed while
+  the Wi-Fi radio was starting (reading the chip's own address failed a check)
+  and the board recovered by itself. A saved crash report from an earlier
+  build, without the 1.1.13 fixes, shows the same crash. The cause is unknown.
+- In the same test session the board restarted repeatedly right after being
+  flashed, and once did not start from its main supply until it had been
+  started from USB. It then started from the main supply 3 out of 3 times. The
+  cause is unknown; check the power supply and cable if you see this.
+
 ## Features
 
 ✅ **Internet Radio Streaming** - Play online radio stations with HTTP streaming
