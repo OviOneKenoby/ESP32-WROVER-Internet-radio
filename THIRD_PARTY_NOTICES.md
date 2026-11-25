@@ -24,6 +24,8 @@ version 3 or (at your option) any later version (see licence text A below).
 | `src/AudioFileSourceICYSStream.h`, `src/AudioFileSourceICYSStream.cpp` | `AudioFileSourceICYStream` | based on the HTTPS variant above; the metadata block is read by `src/icy_metadata.h` |
 | `src/AudioFileSourcePlainICYStream.h`, `src/AudioFileSourcePlainICYStream.cpp` | `AudioFileSourceHTTPStream` and `AudioFileSourceICYStream` merged into one class | the upstream licence header is kept in the `.cpp` |
 | the three source `.cpp` files above | local change | the blocking wait for stream data sleeps and continues with a partial block (`src/stream_wait.h`, project code) |
+| `src/AudioFileSourcePlainICYStream.cpp` | local change | requests an unchunked body (HTTP/1.0) and refuses a chunked one |
+| `src/paced_audio_output.h` | the sample conversion is adapted from `AudioOutputI2S::ConsumeSample` | project class derived from `AudioOutputI2S`: larger DMA queue, samples written in blocks |
 | `src/icy_metadata.h` | derived from the metadata block handling in `AudioFileSourceICYStream::readInternal` | header names the origin and licence |
 
 ## 2. Libraries built into the firmware image (not contained in this repository)

@@ -1,5 +1,29 @@
 # Changelog — What Was Actually Wrong and Fixed
 
+## 2026-11-25 - 1.1.13: AAC radio stations play without stuttering
+
+Status: the fixes were measured on hardware in a build with extra logging
+(`e324ee4`), a few minutes each on one MP3 station, one https AAC station and
+one plain-http AAC station: all samples delivered, no decode errors, no buffer
+underruns and no restart. Long listening, Bluetooth, pause and volume were not
+part of that test.
+
+- AAC+ stations stuttered: decoding one frame took longer than the audio output
+  queue could hold, and writing the output one sample per driver call used about
+  a quarter of the audio processor core. The queue is now 24 buffers (about
+  70 ms instead of 23 ms) and audio is written in blocks of 128 frames. The
+  audio task sleeps while the queue is full, which leaves more time for the
+  controls and the web page.
+- A plain-http station whose server sent the stream in chunks was played with
+  the chunk markers mixed into the audio (decode errors, noise, stalls). Such
+  streams are now requested unchunked; a server that chunks anyway is refused.
+- After a network shortfall the player could busy-wait for seconds and lose
+  part of the data already received. It now sleeps while waiting, continues
+  with partial data and keeps what is stored (a small build-time change to the
+  ESP8266Audio buffer class, listed in `THIRD_PARTY_NOTICES.md`).
+- Volume and pause can act a few hundredths of a second later than before,
+  because more audio is queued.
+
 ## 2026-11-07 - Input hardening: names and URLs cleaned, stream titles bounds-checked
 
 Status: hardware-checked in single sessions on build `074f328758c3` (tasks 045

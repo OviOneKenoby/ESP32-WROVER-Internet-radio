@@ -1,4 +1,8 @@
 #pragma once
+// The sample conversion in ConsumeSample() is adapted from
+// AudioOutputI2S::ConsumeSample() of ESP8266Audio, Copyright (C) 2017
+// Earle F. Philhower, III, GNU General Public License version 3 or (at your
+// option) any later version. See THIRD_PARTY_NOTICES.md.
 #include <AudioOutputI2S.h>
 #include <driver/i2s.h>
 
