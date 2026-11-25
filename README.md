@@ -21,7 +21,9 @@ fixes choppy playback of AAC radio stations:
 - AAC+ stations that stuttered now play smoothly in short tests.
 - A plain-http station that played with errors, noise and stalls now plays
   cleanly.
-- A short network interruption no longer makes the player stall for seconds.
+- When stream data runs short, the player now waits without blocking the
+  controls and keeps the data it already has (covered by tests on a computer;
+  a network interruption was not provoked on the radio).
 - Volume and pause may react a few hundredths of a second later than before.
 
 It was checked for a few minutes each on one MP3 station and two AAC stations.
