@@ -5,8 +5,11 @@
 Status: the fixes were measured on hardware in a build with extra logging
 (`e324ee4`), a few minutes each on one MP3 station, one https AAC station and
 one plain-http AAC station: all samples delivered, no decode errors, no buffer
-underruns and no restart. Long listening, Bluetooth, pause and volume were not
-part of that test.
+underruns and no restart. The release image `7b726c2f5e33` (same fixes, no
+logging) was then checked by listening on the same three kinds of station; see
+`artifacts/RELEASE_1.1.13_AAC_PLAYBACK/BUILD_MANIFEST.md`, which also records
+start-up problems seen in that session. Long listening, Bluetooth, pause and
+volume were not tested.
 
 - AAC+ stations stuttered: decoding one frame took longer than the audio output
   queue could hold, and writing the output one sample per driver call used about
