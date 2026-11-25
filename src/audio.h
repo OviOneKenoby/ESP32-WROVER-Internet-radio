@@ -12,6 +12,7 @@
 #include <AudioGenerator.h>
 #include <AudioGeneratorMP3a.h>
 #include <AudioGeneratorAAC.h>
+#include "paced_audio_output.h"
 #include <AudioOutputI2S.h>
 #include <esp_a2dp_api.h>
 #include <esp_avrc_api.h>
@@ -148,7 +149,7 @@ private:
                                 // than a rename sweep across every
                                 // reference to it, since it's an internal
                                 // member name, not part of the public API.
-    AudioOutputI2S* i2sOutput;
+    PacedAudioOutput* i2sOutput;
 
     void teardownRadioPlayback(); // stops decoder/source, frees them
 

@@ -385,7 +385,7 @@ bool AudioPlayer::init() {
     // peripheral until then (Bluetooth mode needs to be able to claim it
     // instead, via a completely different, legacy I2S driver API - see
     // enableBluetooth()/disableBluetooth() for that handoff).
-    i2sOutput = new AudioOutputI2S();
+    i2sOutput = new PacedAudioOutput();
     i2sOutput->SetPinout(I2S_BCK_PIN, I2S_WS_PIN, I2S_DIN_PIN);
     i2sOutput->SetGain(currentVolume / 100.0f);
 
@@ -897,14 +897,17 @@ void AudioPlayer::audioTaskFunc() {
                           playbackState == STATE_PLAYING &&
                           mp3Decoder && mp3Decoder->isRunning();
         bool captureStableMp3 = false;
+        bool outputFull = false;
         uint8_t diagnosticSource = 0;
         uint8_t diagnosticBluetooth = 0;
         if (isDecoding) {
+            i2sOutput->takeFull();
             if (!mp3Decoder->loop()) {
                 Serial.println("[AUDIO] Stream ended or decode error, stopping");
                 playbackState = STATE_STOPPED;
                 mp3Decoder->stop();
             }
+            outputFull = i2sOutput->takeFull();
             const uint32_t diagnosticNow = millis();
             if (mp3DiagnosticStablePending && mp3Decoder->isRunning() &&
                 static_cast<int32_t>(diagnosticNow - mp3DiagnosticStableAfterMs) >= 0) {
@@ -922,25 +925,17 @@ void AudioPlayer::audioTaskFunc() {
         }
 
         if (isDecoding) {
-            // Time-bounded yield, not a per-call one. The decoder's
-            // loop() is designed to be called back-to-back as fast as
-            // possible - it returns almost immediately once the I2S
-            // output's small internal buffer is momentarily full, relying
-            // on being called again very soon after. Yielding after
-            // EVERY call (the previous round's fix) capped this loop
-            // near ~1000 calls/sec regardless of how little work each one
-            // did, which throttled real decode throughput below what
-            // real-time playback needs - that's what caused the repeated
-            // cutting. This instead lets the loop run freely and only
-            // yields once at least 10ms of wall time has passed since the
-            // last yield, which still gives the main loop a guaranteed,
-            // regular scheduling opportunity (fixing the original
-            // starvation/unresponsiveness bug) without limiting how much
-            // real work happens between those yields.
-            uint32_t now = millis();
-            if (now - lastYield >= 10) {
-                lastYield = now;
-                vTaskDelay(1);
+            // A full output queue means there is nothing to do for several
+            // milliseconds: sleep so lower-priority work (controls, web,
+            // RTCP) can run. While the queue is not full the decoder is
+            // catching up, so only yield one tick every 10 ms; yielding
+            // after every call limits decode throughput.
+            const uint32_t now = millis();
+            const uint32_t sleepMs = audio_output::audioTaskSleepMs(
+                outputFull, now - lastYield);
+            if (sleepMs) {
+                vTaskDelay(pdMS_TO_TICKS(sleepMs));
+                lastYield = millis();
             }
         } else {
             vTaskDelay(50 / portTICK_PERIOD_MS);
