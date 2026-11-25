@@ -52,20 +52,29 @@ application only and is installed over USB; see
   flashed, and once did not start from its main supply until it had been
   started from USB. It then started from the main supply 3 out of 3 times. The
   cause is unknown; check the power supply and cable if you see this.
+- On the idle clock screen only the time is refreshed. The date line stays as it
+  was when the screen appeared, so it can show the previous day after midnight.
+  If the screen appeared before the first network time sync, it keeps showing
+  "Waiting for NTP time" above the correct time. Waking the screen with any
+  control and letting the clock appear again refreshes it. Found by reading the
+  code; not yet observed on the radio.
 
 ## Features
 
-✅ **Internet Radio Streaming** - Play online radio stations with HTTP streaming
-✅ **Bluetooth Audio Sink** - Receive audio from Bluetooth devices (A2DP)
-✅ **WiFi Management** - Connect to WiFi networks with credential saving
-✅ **Local Web Manager** - Configure WiFi and manage saved stations from a browser
-✅ **Runtime Diagnostics** - Read-only `/api/diagnostics` health snapshot
-✅ **Idle NTP Clock** - Shows Europe/Bucharest date and time after inactivity
-✅ **E-paper Display** - Beautiful 200x200px B&W display with GxEPD2
-✅ **Rotary Encoder** - Station selection and volume control with encoder
-✅ **Physical Buttons** - Play/Pause, Next, Previous buttons
-✅ **Volume Control** - Software-based volume adjustment
-✅ **Station Manager** - Browse stations, Favorites, Recent, and NVS-saved stations
+- ✅ **Internet Radio Streaming** - Play online radio stations with HTTP streaming
+- ✅ **Bluetooth Audio Sink** - Receive audio from Bluetooth devices (A2DP)
+- ✅ **WiFi Management** - Connect to WiFi networks with credential saving
+- ✅ **Local Web Manager** - Configure WiFi and manage saved stations from a browser
+- ✅ **Runtime Diagnostics** - Read-only `/api/diagnostics` health snapshot
+- ✅ **Idle NTP Clock** - After one minute on the stopped station screen, shows
+  the date and time from the network (NTP). The time zone is Europe/Bucharest
+  by default and can be changed in the web manager. See the known issue about
+  the date line.
+- ✅ **E-paper Display** - Beautiful 200x200px B&W display with GxEPD2
+- ✅ **Rotary Encoder** - Station selection and volume control with encoder
+- ✅ **Physical Buttons** - Play/Pause, Next, Previous buttons
+- ✅ **Volume Control** - Software-based volume adjustment
+- ✅ **Station Manager** - Browse stations, Favorites, Recent, and NVS-saved stations
 
 ## Hardware Specifications
 
