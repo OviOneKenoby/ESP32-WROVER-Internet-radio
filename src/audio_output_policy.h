@@ -12,6 +12,10 @@ constexpr uint32_t DMA_FRAMES_PER_BUFFER = 128;
 constexpr int DMA_BUFFERS = 24;
 constexpr uint32_t DMA_FRAMES = DMA_BUFFERS * DMA_FRAMES_PER_BUFFER;
 
+// Frames handed to the I2S driver per call: one DMA buffer (2.9 ms at
+// 44.1 kHz, 512 bytes of RAM) instead of one driver call per frame.
+constexpr unsigned WRITE_BLOCK_FRAMES = DMA_FRAMES_PER_BUFFER;
+
 constexpr uint32_t FULL_OUTPUT_SLEEP_MS = 5;
 constexpr uint32_t BUSY_YIELD_INTERVAL_MS = 10;
 constexpr uint32_t BUSY_YIELD_MS = 1;
