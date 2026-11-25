@@ -41,7 +41,8 @@ checks = {
     "plain class keeps its 3000 ms wait, https keeps 500 ms":
         "len, 3000, " in plain and "len, 500, " in secure,
     "plain class keeps the HTTP request setup":
-        all(s in plain for s in ('http.addHeader("Icy-MetaData", "1");', "http.collectHeaders(hdr, 4);",
+        all(s in plain for s in ('http.addHeader("Icy-MetaData", "1");', "http.collectHeaders(hdr, 5);",
+                                  "http.useHTTP10(true);", 'equalsIgnoreCase("chunked")',
                                   "http.setReuse(true);", "HTTPC_FORCE_FOLLOW_REDIRECTS")),
     "plain class does not add TLS or timeouts":
         "setInsecure" not in plain and "setConnectTimeout" not in plain and "setTimeout" not in plain,

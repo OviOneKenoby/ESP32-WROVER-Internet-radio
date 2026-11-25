@@ -39,17 +39,29 @@ AudioFileSourcePlainICYStream::AudioFileSourcePlainICYStream(const char *url) {
 }
 
 bool AudioFileSourcePlainICYStream::open(const char *url) {
-    static const char *hdr[] = { "icy-metaint", "icy-name", "icy-genre", "icy-br" };
+    static const char *hdr[] = { "icy-metaint", "icy-name", "icy-genre", "icy-br",
+                                 "Transfer-Encoding" };
     pos = 0;
     http.begin(client, url);
     http.addHeader("Icy-MetaData", "1");
-    http.collectHeaders(hdr, 4);
+    http.collectHeaders(hdr, 5);
     http.setReuse(true);
+    // This source reads HTTPClient's underlying stream, so chunk framing would
+    // reach the decoder and shift the ICY metadata positions. An HTTP/1.0
+    // request gets an unchunked body. Must follow setReuse().
+    http.useHTTP10(true);
     http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
         http.end();
         cb.st(STATUS_HTTPFAIL, PSTR("Can't open HTTP request"));
+        return false;
+    }
+    if (http.header(hdr[4]).equalsIgnoreCase("chunked")) {
+        // Not allowed in reply to HTTP/1.0 and not decoded here: refuse the
+        // stream instead of playing corrupted audio.
+        http.end();
+        cb.st(STATUS_HTTPFAIL, PSTR("Chunked stream is not supported"));
         return false;
     }
     if (http.hasHeader(hdr[0])) {
